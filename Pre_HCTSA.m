@@ -1,77 +1,73 @@
-%% Preprocessing of EEG data and generate time-series matrix for HCTSA
-homedir = pwd;
-cd 041017_Rawdata
-edffile = 'KJ_N2_data.mat'; 
-load(edffile)
-cd(homedir)
-%% Extract channel names, sampling frequency from header struct
+%% Reading EDF format into MAT using EEGLAB
+% EEGLAB: MATLAB toolbox https://sccn.ucsd.edu/eeglab/
+basedir = pwd;
+edffile = ('learn-nsrr01.edf'); % Change filename for new data set
+
+%% Add eeglab to path to use readedf function
+addpath(genpath('C:\Users\Piengkwan\Documents\MATLAB\eeglab'))  % Change directory accordingly
+% Read .edf data into workspace and save as .mat
+% Extract channels information, sampling frequency
+
+cd('.\310817\learn\polysomnography\edfs')
+
+% Possible to read without initiating EEGLAB?
+% [data,header]=readedf(edffile); 
+cd(basedir)
+%% Load edf file
+eeglab
+EEG = pop_biosig(['C:\Users\Piengkwan\Documents\MATLAB\unsup_sleep_staging\310817\learn\polysomnography\edfs\',edffile]);
+
+%% Load data manually (Only for 'Learn' dataset because the naming
+% convention is different - cannot use readedf() directly)
+data = EEG.data;
+header.channels = EEG.nbchan;
+header.records = EEG.pnts;
+header.samplerate = EEG.srate;
+for n = 1:EEG.nbchan
+    header.channelname(n,1) = cellstr(EEG.chanlocs(n).labels);
+end
+
+% Save data file
+dataname = sprintf([edffile(1:length(edffile)-4),'_','data']);
+save(dataname,'data','header')
+% save in base directory, for further use or modification of time segment
+% length
+%% After converting from .edf to .mat
+cd('.\010917_Learn01')
+addpath(genpath('C:\Users\Piengkwan\Documents\MATLAB\unsup_sleep_staging'))
+load('learn-nsrr01_data.mat')
+% Extract channel names, sampling frequency from header struct
 channel = cellstr(header.channelname);  % Channel names + converted into cell array
 fs = header.samplerate(1);      % Assume sampling rate are the same for all channels
 recordtime = header.records;    % Total recorded time (seconds)
 nchannels = header.channels;    % Number of channels
 
-%% (Additional part)
-% For preprocessing and channel selection
-%% Select 6 channels (EOG vertical, EOG horizontal, EMG, Frontal, Parietal, Occipital)
-% EOG vertical = EOGup - EOGdown (?)
-% figure;
-% up = subplot(4,1,1);
-% plot(data(1,1:120000))
-% legend('EOGup')
-% down = subplot(4,1,2);
-% plot(data(2,1:120000))
-% legend('EOGdown')
-% plus = subplot(4,1,3);
-% dataPlus = data(1,1:120000)+data(2,1:120000);
-% plot(dataPlus)
-% legend('EOGverPlus')
-% minus = subplot(4,1,4);
-% dataMinus = data(1,1:120000)-data(2,1:120000);
-% plot(dataMinus)
-% legend('EOGverMinus')
-% linkaxes([up,down,plus,minus],'xy')
-% Frontal = Fz
-% Parietal = Pz
-% Occipital = O1-O2
-% EOGvertical = EOGup-EOGdown
-chan6(1) = {'EOGvertical'};
-data6(1,:) = data(strcmp('EOGup',channel),:)-data(strcmp('EOGdown',channel),:);
-% EOGhorizontal = EOGright-EOGleft
-chan6(2) = {'EOGhorizontal'};
-data6(2,:) = data(strcmp('EOGright',channel),:)-data(strcmp('EOGleft',channel),:);
-% EMG = EMG1-EMG2;
-chan6(3) = {'EMG'};
-data6(3,:) = data(strcmp('EMG1',channel),:)-data(strcmp('EMG2',channel),:);
-% Frontal = Fz
-chan6(4) = {'Frontal'};
-data6(4,:) = data(strcmp('Fz',channel),:);
-% Parietal = Pz
-chan6(5) = {'Parietal'};
-data6(5,:) = data(strcmp('Pz',channel),:);
-% Occipital = O1-O2
-chan6(6) = {'Occipital'};
-data6(6,:) = data(strcmp('O1',channel),:)-data(strcmp('O2',channel),:);
-% Frontal = data((strcmp('Fz',channel)),:);
-%% Read data and segment into specified length 
-% 25-second epoch - For comparison with human performance)
+% Choose only EEG, EMG, EOG and ECG channels
+indexE_G = [3,5,6,7,8];
+channelE_G = channel(indexE_G);
+dataE_G = data(indexE_G,:);
+nchanE_G = length(indexE_G);
+% Read data and segment into specified length 
+% 30-second epoch - For comparison with human performance)
 % 5-second epoch - For detection substages
 interval = 30;
-timeSeriesData = read_edf_segment(data6,fs,interval,length(chan6));% Change function name
+timeSeriesData = read_edf_segment(dataE_G,fs,interval,nchanE_G);% Change function name
+
 
 % Number of time segment/epoch
-n_seg = recordtime; % Record time (second)
-n_ts = length(timeSeriesData);
-%% Time segment name
+n_seg = (recordtime/fs)/interval;
+% n_seg = size(timeSeriesData,2);
+n_ts = size(timeSeriesData,1);  % Number of row of timeseriesData
+
+% Time segment name
 for i=1:n_seg
-    name = sprintf('timeseg_%d',i)
+    name = sprintf('timeseg_%d',i);
     timelabel{i}=name;
 end
 
-[labels,keywords] = labelgen(n_ts,2,chan6,timelabel);
+[labels,keywords] = lagelgen(n_ts,2,channelE_G,timelabel);
 
-%% Save in HCTSA input format
-hctsafile = sprintf(['TS_',edffile(1:length(edffile)-9),'_',num2str(interval),'sec','_','6chan']);
-% mkdir 041017_KJ_N2
-% cd ./041017_KJ_N2
+% Save in HCTSA input format
+hctsafile = sprintf(['TS_',edffile(1:length(edffile)-4),'_',num2str(interval),'sec']);
 save(hctsafile,'timeSeriesData','labels','keywords')
 
