@@ -20,7 +20,7 @@ function datamat = read_edf_segment(dataset,fs,interval,nChannel)
 
     % Check if the expected number of channel matched with specified channel
     if (expChannel~=nChannel)
-        error('Number of channel specified does not match number of channel in dataset.\n')
+        error('Number of channel specified does not match number of channel in dataset.')
     end
 
     % Length of each segment

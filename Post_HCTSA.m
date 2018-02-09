@@ -7,7 +7,7 @@ cd('./HCTSA')
 startup
 cd(homedir)
 % % Load data and normalise
-cd('./020917_Learn03')
+cd('./041017_KJ_N2')
 TS_normalize('scaledRobustSigmoid',[0.8,1.0]);
 % % TS_LabelGroups({'T1','T2','T3','T4'},'raw');
 TS_plot_DataMatrix('norm');
@@ -50,16 +50,16 @@ end
 nclust = 6; % Ideally, 5 sleep stages + 1 artifact
 %% K-means clustering
 clustID = zeros(1,n);
-[clustID(112:912),centrek,~] = kmeans(timedata(112:912,:),nclust,'Distance','sqeuclidean',...
+[clustID,centrek,~] = kmeans(timedata,nclust,'Distance','sqeuclidean',...
                         'Display','final','Replicates',50,'MaxIter',500);
 
 % FullClust(length(clustID))=struct; % Store time, clustering ID after processing and cause of NaN (in causeNaN struct)
 
-% Visualise clustering time course 
-tt = 112:912; % Learn01 54:1074; Learn02 92:951; 1:length(timeuniq); % 200:1250;
+%% Visualise clustering time course 
+tt = 1:length(timeuniq); % Learn01 54:1074; Learn02 92:951; 1:length(timeuniq); % 200:1250;
 figure;
-stem(tt,clustID(tt),'Marker','.')
-axis([0 n 0 nclust+1])
+stem(tt,clustID,'Marker','.')
+axis([0 length(timeuniq) 0 nclust+1])
 title('Clustering time course')
 xlabel('Epoch (30-second segment)')
 ylabel('Cluster #')
@@ -75,7 +75,7 @@ ylabel('Cluster #')
 
 % Call TPM function
 % addpath(genpath('F:/AnalysisFunc/'))
-TransMat = TPM(clustID(112:912),nclust);
+TransMat = TPM(clustID,nclust);
 TransGraph = digraph(TransMat);
 figure;
 plot(TransGraph,'EdgeLabel',TransGraph.Edges.Weight)
@@ -118,24 +118,11 @@ H_given = sum(H_transmat,2);
 H_overall = -sum(stageProb.*H_given');
 TPMinfo = H_prior - H_overall;
 %% Save cluster ID to compare
-cd('./020917_Learn03')
-save('270917_Learn03_Result','tt','clustID','TransMat',...
-     'stageProb','stageCount','H_prior','H_overall','TPMinfo')
+% cd('./020917_Learn03')
+% save('270917_Learn03_Result','tt','clustID','TransMat',...
+%     'stageProb','stageCount','H_prior','H_overall','TPMinfo')
  
- 
-%% Compare with actual sleep stage data
-cd('C:\Users\Piengkwan\Documents\MATLAB\unsup_sleep_staging\310817\learn\polysomnography\annotations-events-profusion')
-load('Learn03Annot.mat')
-cd(homedir)
-%%
-corrComp = corr(sleepstage',clustID);
-figure;
-% imagesc(corrComp)
-% colormap gray
-plot(1:n,sleepstage,1:n,clustID)
-axis([0 n 0 nclust+1])
-legend('scored data','result data')
-% %% Remove time segment with artifacts (cluster #6)**** (Arbitrary - 
+ % %% Remove time segment with artifacts (cluster #6)**** (Arbitrary - 
 % % need to find some better way of finding artifact cluster)
 % % Cluster 6 seems to be cluster of time segment with large, visible
 % % artifacts (Large motion, abnormally high amplitude)
