@@ -1,8 +1,10 @@
 %% Cross-validation code
+configuration_settings;
+
 % Example: learn01 data
 % After reading the annotation file from xml using read_annot.m
 %addpath(genpath('/Users/sleeping/Documents/MATLAB/ccshs_data'))
-annotation = load('ccshs_1800001_annot.mat');
+annotation = load(ANSWER_FILE);
 label = annotation.sleepstage;
 
 %% Proportion of each sleep stage (0 - wake, 1-4 NREM, 5 - REM)
@@ -201,7 +203,8 @@ Output(k).trainError = mean(trainPerror);
 
 %% Confusion matrix - for both train and test
 % For one run(k)... can change which data to use later
-addpath(genpath('/Users/sleeping/Documents/MATLAB/unsup_sleep_staging/HCTSA'))
+% Commented by ZK - Not sure if the following has any impact
+%addpath(genpath('/Users/sleeping/Documents/MATLAB/unsup_sleep_staging/HCTSA'))
 
 
 %% Confusion matrix of train data
@@ -220,16 +223,17 @@ g_clustTrain(g_clustTrain==6) = 5;
 labelTrainBF= BF_ToBinaryClass(g_labelTrain,nclust);
 clustTrainBF = BF_ToBinaryClass(g_clustTrain,nclust);
 
-
 % Visualise confusion matrix
-figure;
-plotconfusion(labelTrainBF,clustTrainBF)
+% figure;
 
+%plotconfusion(double(labelTrainBF),double(clustTrainBF));
 % Plot setting
-ax = gca;
-ax.XTickLabel(1:nclust)=stgID.useStgName;
-ax.YTickLabel(1:nclust)=stgID.useStgName;
+% ax = gca;
+% ax.XTickLabel(1:nclust)=stgID.useStgName;
+% ax.YTickLabel(1:nclust)=stgID.useStgName;
 
+plotconfusion_custom(double(labelTrainBF),double(clustTrainBF), strcat('Confusion Matrix - Unsupervised (Training) k=', int2str(k)));
+saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TRN_', int2str(k), '.png'));
 
 %% Confusion matrix of test data
 % Labelled - make non-zero stage
@@ -248,14 +252,66 @@ clustTestBF = BF_ToBinaryClass(g_clustTest,nclust);
 
 
 % Visualise confusion matrix
-figure;
-plotconfusion(labelTestBF,clustTestBF)
+% figure;
+% plotconfusion(double(labelTestBF),double(clustTestBF))
+% 
+% % Plot setting
+% ax = gca;
+% ax.XTickLabel(1:nclust)=stgID.useStgName;
+% ax.YTickLabel(1:nclust)=stgID.useStgName;
 
-% Plot setting
-ax = gca;
-ax.XTickLabel(1:nclust)=stgID.useStgName;
-ax.YTickLabel(1:nclust)=stgID.useStgName;
-
+plotconfusion_custom(double(labelTestBF),double(clustTestBF), strcat('Confusion Matrix - Unsupervised (Test) k=', int2str(k)));
+saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TST_', int2str(k), '.png'));
 
 %% Clear variables for the next run
 clearvars -except Output datamat feat_id features k complexity
+
+
+function plotconfusion_custom(answer, predict, ttl)
+    [rows, cols] = size(answer);
+    confmat = zeros(rows, rows);
+    for i = 1:cols
+        answer_index = find(answer(:,i)); 
+        predict_index = find(predict(:,i));
+        confmat(answer_index, predict_index) = confmat(answer_index, predict_index) + 1;
+    end
+    
+    totalTarget = sum(confmat, 2);
+    perResponse = confmat./repmat(totalTarget, 1, rows)*100;
+    
+    t = strings(rows, rows);
+    for i=1:rows
+        for j=1:rows
+            t(i, j) = compose(strcat(num2str(confmat(i,j)), '\n', ...
+                num2str(round(perResponse(i,j), 2)), '%'));
+        end
+    end
+    
+    figure;
+    imagesc(perResponse);
+    title(ttl);
+
+    x = repmat(1:rows,rows,1);
+    y = x';
+    text(x(:), y(:), t, 'HorizontalAlignment', 'Center', 'FontSize', 12, ...
+        'FontWeight', 'bold');
+    ax = gca;
+    ax.XTick = 1:rows;
+    ax.YTick = 1:rows;
+    ax.XTickLabels = {'W', 'N1', 'N2', 'N3', 'R'};
+    ax.YTickLabels = {'W', 'N1', 'N2', 'N3', 'R'};
+    ylabel('Target Class');
+    xlabel('Output Class');
+    ax.XAxisLocation = 'top';
+    
+    %Define colormap
+    c1=[0 0.65 0]; %G
+    c2=[1 1 0]; %Y
+    c3=[1 0 0]; %R
+    n1=20;
+    n2=20;
+    cmap=[linspace(c1(1),c2(1),n1);linspace(c1(2),c2(2),n1);linspace(c1(3),c2(3),n1)];
+    cmap(:,end+1:end+n2)=[linspace(c2(1),c3(1),n2);linspace(c2(2),c3(2),n2);linspace(c2(3),c3(3),n2)];
+    colormap(cmap')
+    colorbar
+end

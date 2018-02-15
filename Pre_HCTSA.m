@@ -1,11 +1,13 @@
+configuration_settings
+
 %% Preprocessing of polysomnographic data and generate time-series matrix for HCTSA
 homedir = pwd;
-edffile = 'ccshs-trec-1800001.edf'; 
+edffile = strcat(EDF_FOLDER, filesep, EDF_FILE); 
 % load(edffile)
 cd(homedir)
 %% Load data using blockEdfLoad
 % https://sleepdata.org/tools/dennisdean-block-edf-loader
-addpath(genpath('C:\Users\Piengkwan\Documents\MATLAB\unsup_sleep_staging\blockEdfLoad'));
+addpath(genpath(BLOCKEDFLOAD_DIR));
 [header, signalHeader, signalCell] = blockEdfLoad(edffile);
 
 %% Extract channel names, sampling frequency for 1 EEG re-ref channel

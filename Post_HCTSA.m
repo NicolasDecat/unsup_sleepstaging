@@ -1,13 +1,15 @@
 % Post HCTSA
+configuration_settings
+
 % Following HCTSA analysis and combineBatchFiles.m 
 %% Normalise HCTSA.m
 homedir = pwd;
 % Start HCTSA tools
-cd('./HCTSA')
+cd(HCTSA_DIR)
 startup
 cd(homedir)
 % % Load data and normalise
-cd('./041017_KJ_N2')
+cd(HCTSA_DATA_DIR)
 TS_normalize('scaledRobustSigmoid',[0.8,1.0]);
 % % TS_LabelGroups({'T1','T2','T3','T4'},'raw');
 TS_plot_DataMatrix('norm');

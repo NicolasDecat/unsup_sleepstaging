@@ -1,8 +1,11 @@
 % Select features from reduced_ops.txt, make another .mat file to work on
 % cross-validation.
 clear all; clc;
+
+configuration_settings;
+
 %% Read text file
-fileID = fopen('reduced_ops.txt');
+fileID = fopen(REDUCE_OPTS_FILE);
 features = textscan(fileID,'%s %s %s');
 fclose(fileID);
 
@@ -10,7 +13,7 @@ fclose(fileID);
 feat_name = features{1,2};
 
 %% All operation names
-hctsafile = 'HCTSA_N.mat';
+hctsafile = HCTSA_FILE;
 all_op = load(hctsafile,'Operations');
 
 
@@ -40,6 +43,7 @@ datamat = datamat.TS_DataMat;
 % v
 %% Run cross-validation code
 % Change the number of operations
+set(0,'DefaultFigureVisible','off')
 for k = 1:10 % k is the condition to select operation
     if k==1
         hctsa_ops = datamat(:,feat_id(1:10));
@@ -70,12 +74,12 @@ for k = 1:10 % k is the condition to select operation
     [~,complexity(k)]=size(hctsa_ops);
     run('crossval.m')
 end
-
+set(0,'DefaultFigureVisible','on')
 %% Run 1 condition
-hctsa_ops = datamat(:,feat_id);
-k=1;
-%%
-run('crossval.m')
+% hctsa_ops = datamat(:,feat_id);
+% k=1;
+% %%
+% run('crossval.m')
 
 %% Plot output accuracy
 for k=1:length(Output)
