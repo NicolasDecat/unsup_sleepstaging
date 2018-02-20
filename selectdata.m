@@ -1,11 +1,8 @@
 % Select features from reduced_ops.txt, make another .mat file to work on
 % cross-validation.
 clear all; clc;
-
-configuration_settings;
-
 %% Read text file
-fileID = fopen(REDUCE_OPTS_FILE);
+fileID = fopen('reduced_ops.txt');
 features = textscan(fileID,'%s %s %s');
 fclose(fileID);
 
@@ -13,7 +10,7 @@ fclose(fileID);
 feat_name = features{1,2};
 
 %% All operation names
-hctsafile = HCTSA_FILE;
+hctsafile = 'HCTSA_N.mat';
 all_op = load(hctsafile,'Operations');
 
 
@@ -43,7 +40,6 @@ datamat = datamat.TS_DataMat;
 % v
 %% Run cross-validation code
 % Change the number of operations
-set(0,'DefaultFigureVisible','off')
 for k = 1:10 % k is the condition to select operation
     if k==1
         hctsa_ops = datamat(:,feat_id(1:10));
@@ -72,14 +68,13 @@ for k = 1:10 % k is the condition to select operation
     end
     % run('crossvalKR.m') 
     [~,complexity(k)]=size(hctsa_ops);
-    run('crossval.m')
+    run crossval.m
 end
-set(0,'DefaultFigureVisible','on')
+
 %% Run 1 condition
-% hctsa_ops = datamat(:,feat_id);
-% k=1;
-% %%
-% run('crossval.m')
+hctsa_ops = datamat(:,feat_id);
+k=1;
+%run('crossval.m')
 
 %% Plot output accuracy
 for k=1:length(Output)
@@ -92,3 +87,14 @@ semilogx(complexity,accuracy_train,complexity,accuracy_test)
 legend('Training','Test')
 ylabel('Accuracy [0-1]')
 xlabel('Number of features')
+
+
+%% Checking 
+
+for n=1:100
+    a = epochSampling(14);
+    boundary(n,:) = [min(a), max(a)];
+end
+minmin = min(boundary(:,1))
+maxmax = max(boundary(:,2))
+

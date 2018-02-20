@@ -1,15 +1,31 @@
 %% Cross-validation code
-configuration_settings;
-
+%% K-means clustering + Nearest centroid classifier
 % Example: learn01 data
 % After reading the annotation file from xml using read_annot.m
 %addpath(genpath('/Users/sleeping/Documents/MATLAB/ccshs_data'))
-annotation = load(ANSWER_FILE);
+annotation = load('ccshs_1800001_annot.mat');
 label = annotation.sleepstage;
 
 %% Proportion of each sleep stage (0 - wake, 1-4 NREM, 5 - REM)
 stgNum = size(unique(label));
 stgLab = {'W','N1','N2','N3','N4','R'}; % {'W','N1','N2','N3','R'};
+
+%% Remove initial W stage from randomisation and sampling
+% Marking the end of W stage
+endW = [334,380,391,375,174];
+end14 = [1492,1531];
+
+% endID = find(whichData==validData);
+endID = 1;
+whichData = 1;
+if whichData == 14 % Remove the ending epochs for the ccshs_1800014
+    selectID = [(endW(endID)+1):end14(1)]';
+else
+    selectID = [endW(endID)+1:length(label)]';
+end
+selectLabel = label(selectID);
+
+%% Counting number of each stage
 
 %======== Just to check but needed? =========
 for i = 1:stgNum
@@ -19,8 +35,8 @@ end
 
 % Sleep stage IDs
 w = 0; n1 = 0; n2 = 0; n3 = 0; n4 = 0; r = 0;
-for n = 1:length(label)
-    switch label(n)
+for n = 1:length(selectLabel)
+    switch selectLabel(n)
         case 0 % Wake
             w=w+1;
             stgID.allID.W(w) = n;
@@ -61,7 +77,7 @@ end
 stgID.Nmin = min(stgID.usePro);
 
 %% Multiple iteration of randomisation and cross-validation
-for Nf = 1:100
+for Nf = 1:20
 %% Random sampling from each class
 train70 = round(0.7*stgID.Nmin);
 
@@ -78,11 +94,11 @@ for m=1:length(stgID.useStg)
     stgID.testID.(stgLab{stgID.useStg(m)})= testID;
     % Combine training ID to perform classification
     if m==1 % First iteration
-        trainTS = trainID;
-        testTS = testID;
+        trainTS = selectID(trainID);
+        testTS = selectID(testID);
     else
-        trainTS = [trainTS,trainID]; 
-        testTS = [testTS,testID];
+        trainTS = [trainTS;selectID(trainID)]; 
+        testTS = [testTS;selectID(testID)];
     end
     clear randID allID useID randtrain trainID testID
 end
@@ -122,50 +138,96 @@ for n=1:length(testTS)
 end
 clustTest = clustTest';
 
-% %% tSNE
+%% tSNE
+% 
+% addpath(genpath('/Volumes/Seagate Expansion Drive/tSNE/'));
 % % Set parameters
 % no_dims = 2; 
 % initial_dim = 50;
 % perplexity = 50;
 % 
+% % Perform t-SNE for training and test together
+% 
+% % Concatenate training and test data matrix
+% concatMat = [trainMat;testMat];
+% 
+% 
 % % Run t-SNE
-% mapped_data = tsne(trainMat,[],no_dims,initial_dim,perplexity); % Unlabelled data
+% mapped_data = tsne(concatMat,[],no_dims,initial_dim,perplexity); % Unlabelled data
 % 
 % % Plot result
 % figure;
 % subplot(1,2,1)
-% gscatter(mapped_data(:,1),mapped_data(:,2),label(trainTS));
-% title('Labelled')
-% subplot(1,2,2)
-% gscatter(mapped_data(:,1),mapped_data(:,2),clustID)
-% title('Clustered')
-% %% Visualise labelled and clustered of training data
-% [sortID, I] = sort(testTS);
-% figure;
-% plot(sortID,clustTest(I),sortID,label(testTS(I)))
-% %%
-% figure;
-% plot(trainTS,clustID,'o',testTS,label(testTS),'*')
+% gscatter(mapped_data(1:130,1),mapped_data(1:130,2),label(trainTS),[],'.....',16)
 % hold on
-% plot(1:1374,label)
+% gscatter(mapped_data(131:185,1),mapped_data(131:185,2),label(testTS),[],'xxxxx',8)
+% legend('W','N1','N2','N3','R')
+% %h=plot(NaN,NaN,'k.',NaN,NaN,'kx')
+% %legend(h,'Training','Test')
 % hold off
+% title('Labelled')
+% axis([-10 6 -8 8])
+% 
+% subplot(1,2,2)
+% gscatter(mapped_data(131:185,1),mapped_data(131:185,2),clustTest,[],'xxxxx',8)
+% hold on
+% gscatter(mapped_data(1:130,1),mapped_data(1:130,2),clustID,[],'.....',16)
+% hold off
+% title('Clustered')
+% axis([-10 6 -8 8])
+%% Visualise labelled and clustered of training data
+[sortID, I] = sort(testTS);
+figure;
+plot(sortID,clustTest(I),sortID,label(testTS(I)))
+%%
+figure;
+plot(trainTS,clustID,'o',testTS,label(testTS),'*')
+hold on
+plot(1:1374,label)
+hold off
 
 %% Count number of sample from each class that are assigned to THE prototype (cluster)
 % Highest count = equivalent cluster
 for m = 1:length(unique(clustID))
     % ID that belongs to this cluster
     pro_id = find(clustID==m);
-    N = histcounts(label(trainTS(pro_id)))
+    N = histcounts(label(trainTS(pro_id)));
     
     for n = 1:stgNum
-        pro_no(n) = sum(label(trainTS(pro_id))==stgID.useStg(n)-1);
+        pro_no(m,n) = sum(label(trainTS(pro_id))==stgID.useStg(n)-1);
     end
-    disp(pro_no)
-    [~,equi_class(m)]=max(pro_no);
+    disp(pro_no);
+    [~,equi_class(m)]=max(pro_no(m,:));
     % Change to equivalent stage ID (0,1,2,3,5)
     
 end
 equi_stage = stgID.useStg(equi_class)-1;
+
+%% Equivalent stage - must be unique *** FIX THIS!!!
+
+% if length(unique(equi_stage))~=length(unique(clustID))
+%     % If some stages repeat, the one with more number of members would be
+%     % assigned as that stage. The other stage would be the remaining
+%     % stage.
+%     N = histcounts(equi_stage); % Count the number of each stage, if all are uniqe, count = 1.
+%     repeatIndex = find(N~=1);
+%     repeatStg = N(repeatIndex(1));
+%     % Looking at pro_no to determine which stage corresponds to the cluster
+%     pro_repeat = pro_no(repeatstage,:);
+%     % The one with most number of ... gets the stage
+%     
+% end
+    
+%% Equivalent stage - k-NN means
+for a = 1:length(clustTest_stg)
+    if clustTest_stg(a)==5
+        clustTest_stg(a)=5;
+    else
+        clustTest_stg(a)=clustTest_stg(a)-1;
+    end
+end
+
+correct_stg = sum(clustTest_stg==label(testTS)')
 
 %% Training error
 % Convert clustID into equivalent sleep stage label
@@ -192,6 +254,14 @@ Perror(Nf) = testIncorrect/(testCorrect+testIncorrect);
 trainPcorrect(Nf) = trainCorrect/(trainCorrect+trainIncorrect);
 trainPerror(Nf) = trainIncorrect/(trainCorrect+trainIncorrect);
 
+%% Confusion matrix input
+scoredTrain(Nf,:) = label(trainTS);
+scoredTest(Nf,:) = label(testTS);
+
+predictTrain(Nf,:)= equi_train;
+predictTest(Nf,:)=equi_test;
+
+
 end % End Nf-th randomisation
 
 %% Average output
@@ -199,21 +269,29 @@ Output(k).testCorrect = mean(Pcorrect);
 Output(k).testError = mean(Perror);
 Output(k).trainCorrect = mean(trainPcorrect);
 Output(k).trainError = mean(trainPerror);
-
+%% Hypnogram
+figure;
+plot(trainTS,equi_train,'o',testTS,equi_test,'*')
+hold on
+plot(1:1374,label)
+hold off
+legend('Training','Test')
 
 %% Confusion matrix - for both train and test
 % For one run(k)... can change which data to use later
-% Commented by ZK - Not sure if the following has any impact
-%addpath(genpath('/Users/sleeping/Documents/MATLAB/unsup_sleep_staging/HCTSA'))
+addpath('/Users/sleeping/Documents/MATLAB/unsup_sleep_staging/HCTSA/PeripheryFunctions/BF_ToBinaryClass.m')
 
 
 %% Confusion matrix of train data
+% Reshape scored and predict matrix
+g_labelTrain = reshape(scoredTrain,1,[]);
+g_clustTrain = reshape(predictTrain,1,[]);
 
 % Labelled - make non-zero stage
-g_labelTrain = label(trainTS)+1;
+g_labelTrain = g_labelTrain+1;
 
 % Clustered - Use final clustering output
-g_clustTrain = equi_train+1;
+g_clustTrain = g_clustTrain+1;
 
 % Cluster 6 becomes 5
 g_labelTrain(g_labelTrain==6) = 5;
@@ -223,24 +301,27 @@ g_clustTrain(g_clustTrain==6) = 5;
 labelTrainBF= BF_ToBinaryClass(g_labelTrain,nclust);
 clustTrainBF = BF_ToBinaryClass(g_clustTrain,nclust);
 
+
 % Visualise confusion matrix
-% figure;
+figure;
+plotconfusion(labelTrainBF,clustTrainBF)
 
-%plotconfusion(double(labelTrainBF),double(clustTrainBF));
 % Plot setting
-% ax = gca;
-% ax.XTickLabel(1:nclust)=stgID.useStgName;
-% ax.YTickLabel(1:nclust)=stgID.useStgName;
+ax = gca;
+ax.XTickLabel(1:nclust)=stgID.useStgName;
+ax.YTickLabel(1:nclust)=stgID.useStgName;
 
-plotconfusion_custom(double(labelTrainBF),double(clustTrainBF), strcat('Confusion Matrix - Unsupervised (Training) k=', int2str(k)));
-saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TRN_', int2str(k), '.png'));
 
 %% Confusion matrix of test data
+% Reshape scored and predict matrix
+g_labelTest = reshape(scoredTest,1,[]);
+g_clustTest = reshape(predictTest,1,[]);
+
 % Labelled - make non-zero stage
-g_labelTest = label(testTS)+1;
+g_labelTest = g_labelTest+1;
 
 % Clustered - Use final clustering output
-g_clustTest = equi_test+1;
+g_clustTest = g_clustTest+1;
 
 % Cluster 6 becomes 5
 g_labelTest(g_labelTest==6) = 5;
@@ -252,16 +333,14 @@ clustTestBF = BF_ToBinaryClass(g_clustTest,nclust);
 
 
 % Visualise confusion matrix
-% figure;
-% plotconfusion(double(labelTestBF),double(clustTestBF))
-% 
-% % Plot setting
-% ax = gca;
-% ax.XTickLabel(1:nclust)=stgID.useStgName;
-% ax.YTickLabel(1:nclust)=stgID.useStgName;
+figure;
+plotconfusion(labelTestBF,clustTestBF)
 
-plotconfusion_custom(double(labelTestBF),double(clustTestBF), strcat('Confusion Matrix - Unsupervised (Test) k=', int2str(k)));
-saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TST_', int2str(k), '.png'));
+% Plot setting
+ax = gca;
+ax.XTickLabel(1:nclust)=stgID.useStgName;
+ax.YTickLabel(1:nclust)=stgID.useStgName;
+
 
 %% Clear variables for the next run
 clearvars -except Output datamat feat_id features k complexity
