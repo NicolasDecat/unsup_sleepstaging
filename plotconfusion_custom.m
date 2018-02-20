@@ -1,18 +1,21 @@
 function plotconfusion_custom(answer, predict, ttl)
-    [rows, cols] = size(answer);
-    confmat = zeros(rows, rows);
+    [~, cols] = size(answer);
+    
+    max_elem = max(answer);
+    confmat = zeros(max_elem, max_elem);
+
     for i = 1:cols
-        answer_index = find(answer(:,i)); 
-        predict_index = find(predict(:,i));
+        answer_index = answer(:,i); 
+        predict_index = predict(:,i);
         confmat(answer_index, predict_index) = confmat(answer_index, predict_index) + 1;
     end
     
     totalTarget = sum(confmat, 2);
-    perResponse = confmat./repmat(totalTarget, 1, rows)*100;
+    perResponse = confmat./repmat(totalTarget, 1, max_elem)*100;
     
-    t = strings(rows, rows);
-    for i=1:rows
-        for j=1:rows
+    t = strings(max_elem, max_elem);
+    for i=1:max_elem
+        for j=1:max_elem
             t(i, j) = compose(strcat(num2str(confmat(i,j)), '\n', ...
                 num2str(round(perResponse(i,j), 2)), '%'));
         end
@@ -22,13 +25,13 @@ function plotconfusion_custom(answer, predict, ttl)
     imagesc(perResponse);
     title(ttl);
 
-    x = repmat(1:rows,rows,1);
+    x = repmat(1:max_elem,max_elem,1);
     y = x';
     text(x(:), y(:), t, 'HorizontalAlignment', 'Center', 'FontSize', 12, ...
         'FontWeight', 'bold');
     ax = gca;
-    ax.XTick = 1:rows;
-    ax.YTick = 1:rows;
+    ax.XTick = 1:max_elem;
+    ax.YTick = 1:max_elem;
     ax.XTickLabels = {'W', 'N1', 'N2', 'N3', 'R'};
     ax.YTickLabels = {'W', 'N1', 'N2', 'N3', 'R'};
     ylabel('Target Class');

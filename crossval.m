@@ -1,9 +1,11 @@
 %% Cross-validation code
+configuration_settings; 
+
 %% K-means clustering + Nearest centroid classifier
 % Example: learn01 data
 % After reading the annotation file from xml using read_annot.m
 %addpath(genpath('/Users/sleeping/Documents/MATLAB/ccshs_data'))
-annotation = load('ccshs_1800001_annot.mat');
+annotation = load(ANSWER_FILE);
 label = annotation.sleepstage;
 
 %% Proportion of each sleep stage (0 - wake, 1-4 NREM, 5 - REM)
@@ -302,14 +304,17 @@ labelTrainBF= BF_ToBinaryClass(g_labelTrain,nclust);
 clustTrainBF = BF_ToBinaryClass(g_clustTrain,nclust);
 
 
+
 % Visualise confusion matrix
 figure;
-plotconfusion(labelTrainBF,clustTrainBF)
+plotconfusion_custom(g_labelTrain, g_clustTrain, 'Confusion Matrix - Training');
+saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TRN_', int2str(k), '.png'));
+%plotconfusion(labelTrainBF,clustTrainBF)
 
 % Plot setting
-ax = gca;
-ax.XTickLabel(1:nclust)=stgID.useStgName;
-ax.YTickLabel(1:nclust)=stgID.useStgName;
+% ax = gca;
+% ax.XTickLabel(1:nclust)=stgID.useStgName;
+% ax.YTickLabel(1:nclust)=stgID.useStgName;
 
 
 %% Confusion matrix of test data
@@ -333,13 +338,13 @@ clustTestBF = BF_ToBinaryClass(g_clustTest,nclust);
 
 
 % Visualise confusion matrix
-figure;
-plotconfusion(labelTestBF,clustTestBF)
+plotconfusion_custom(g_labelTest, g_clustTest, 'Confusion Matrix - Testing');
+saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TST_', int2str(k), '.png'));
 
 % Plot setting
-ax = gca;
-ax.XTickLabel(1:nclust)=stgID.useStgName;
-ax.YTickLabel(1:nclust)=stgID.useStgName;
+% ax = gca;
+% ax.XTickLabel(1:nclust)=stgID.useStgName;
+% ax.YTickLabel(1:nclust)=stgID.useStgName;
 
 
 %% Clear variables for the next run
