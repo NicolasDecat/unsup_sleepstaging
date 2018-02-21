@@ -3,15 +3,17 @@
 % could be used so that all .m files have no hardcoded path.
 
 % Pre HCTSA
-%BLOCKEDFLOAD_DIR='C:\Users\Piengkwan\Documents\MATLAB\unsup_sleep_staging\blockEdfLoad'
-BLOCKEDFLOAD_DIR='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging/library/blockedfloader';
-DATA_DIR = '/Volumes/Untitled/edfs';
-WHICH_DATA = 5;
+BLOCKEDFLOAD_DIR='C:\Users\Piengkwan\Documents\MATLAB\unsup_sleep_staging\blockEdfLoad'
+%BLOCKEDFLOAD_DIR='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging/library/blockedfloader';
+DATA_DIR = 'C:\Users\Piengkwan\Documents\MATLAB\unsup_sleep_staging/';
+%DATA_DIR = '/Volumes/Untitled/edfs';
+WHICH_DATA = 1;
 NUM_CHANNELS = 3;
 
 % Post HCTSA
 HCTSA_DATA_DIR='./180001_HCTSA';
-HCTSA_DIR='/Users/Zhao/SleepPsychoPhysics/Source/hctsa';
+%HCTSA_DIR='/Users/Zhao/SleepPsychoPhysics/Source/hctsa';
+HCTSA_DIR = 'C:\Users\Piengkwan\Documents\MATLAB\unsup_sleep_staging\HCTSAC:\Users\Piengkwan\Documents\MATLAB\unsup_sleep_staging\HCTSA';
 
 % selectdata and crossval
 ANSWER_FILE='ccshs_1800001_annot.mat';

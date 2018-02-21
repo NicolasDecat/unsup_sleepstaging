@@ -1,5 +1,10 @@
 %% Preprocessing of polysomnographic data and generate time-series matrix for HCTSA
-homedir = pwd;
+% Before submitting data for features extraction,
+% 1. Read data in EDF format into matrix/cell array of 30-second epochs
+% 2. Generate labels and keywords to identify time-series
+% 3. Save data in the format suitable for HCTSA
+% #########################################################################
+%
 whichData = WHICH_DATA;
 edfname = strcat('ccshs-trec-1800',num2str(whichData,'%03d'),'.edf'); % 'ccshs-trec-1800001.edf'; 
 edffile = strcat(DATA_DIR,edfname);
@@ -8,7 +13,7 @@ nChannel = NUM_CHANNELS; % Number of channels to be used:[1,2,3]
 % Read data and segment into specified length 
 % 25-second epoch - For comparison with human performance)
 % 5-second epoch - For detection substages
-interval = 30;
+interval = 30; % unit: second
 %% Load data using blockEdfLoad
 % https://sleepdata.org/tools/dennisdean-block-edf-loader 
 addpath(genpath(BLOCKEDFLOAD_DIR));
@@ -16,7 +21,7 @@ addpath(genpath(BLOCKEDFLOAD_DIR));
 
 %% Extract channel names, sampling frequency for different cases
 switch (nChannel)
-    case 1: %1 EEG re-ref channel
+    case 1 %1 EEG re-ref channel
         channel = strcat(signalHeader(1).signal_labels,'-',signalHeader(4).signal_labels);
         fs = [signalHeader(1).samples_in_record, signalHeader(4).samples_in_record]; % Sampling rate of the C3 channel
         recordtime = header.num_data_records; % Total recording time (seconds)
@@ -34,12 +39,13 @@ switch (nChannel)
         % Number of epochs
         [n_ts,~] = size(timeSeriesData);
         %% Generate time segment name labels
-        for i=1:n_ts
-            name = sprintf('timeseg_%d',i)
-            timelabel{i}=name;
+        for t=1:n_ts
+            name = sprintf('timeseg_%d',t);
+            timelabel{t}=name;
         end
         [labels,keywords] = labelgen(n_ts,1,timelabel);
-    case {2,3}: %  3 channels (EEG,EOG,EMG)
+    case {2,3} %  3 channels (EEG,EOG,EMG)
+        % Can include more pairs of channels**
         firstChanIndex = [1,5,13];
         secondChanIndex = [4,4,14];
         % Select channels
@@ -64,8 +70,8 @@ switch (nChannel)
             end
             
             % Combine 2/3 channels into single timeSeriesData matrix
-            timeSeriesData(n_ts*(m-1)+1:n_ts*m,:) = selectedSignal(i).chopped;
-            [labels(n_ts*(m-1)+1:n_ts*m),keywords(n_ts*(m-1)+1:n_ts*m)] = labelgen(n_ts,2,{selectedHeader(i).signal_labels},timelabel);            
+            timeSeriesData(n_ts*(m-1)+1:n_ts*m,:) = selectedSignal(m).chopped;
+            [labels(n_ts*(m-1)+1:n_ts*m),keywords(n_ts*(m-1)+1:n_ts*m)] = labelgen(n_ts,2,{selectedHeader(m).signal_labels},timelabel);            
         end
 end
         
