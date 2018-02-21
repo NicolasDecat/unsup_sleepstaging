@@ -1,109 +1,109 @@
-%% Cross-validation code
-configuration_settings; 
-
-%% K-means clustering + Nearest centroid classifier
-% Example: learn01 data
-% After reading the annotation file from xml using read_annot.m
-%addpath(genpath('/Users/sleeping/Documents/MATLAB/ccshs_data'))
-annotation = load(ANSWER_FILE);
-label = annotation.sleepstage;
-
-%% Proportion of each sleep stage (0 - wake, 1-4 NREM, 5 - REM)
-stgNum = size(unique(label));
-stgLab = {'W','N1','N2','N3','N4','R'}; % {'W','N1','N2','N3','R'};
-
-%% Remove initial W stage from randomisation and sampling
-% Marking the end of W stage
-endW = [334,380,391,375,174];
-end14 = [1492,1531];
-
-% endID = find(whichData==validData);
-endID = 1;
-whichData = 1;
-if whichData == 14 % Remove the ending epochs for the ccshs_1800014
-    selectID = [(endW(endID)+1):end14(1)]';
-else
-    selectID = [endW(endID)+1:length(label)]';
-end
-selectLabel = label(selectID);
-
-%% Counting number of each stage
-
-%======== Just to check but needed? =========
-for i = 1:stgNum
-    stgID.stgPro(i) = sum(label==i-1);
-end
-% ===============
-
-% Sleep stage IDs
-w = 0; n1 = 0; n2 = 0; n3 = 0; n4 = 0; r = 0;
-for n = 1:length(selectLabel)
-    switch selectLabel(n)
-        case 0 % Wake
-            w=w+1;
-            stgID.allID.W(w) = n;
-        case 1 % N1
-            n1=n1+1;
-            stgID.allID.N1(n1) = n;
-        case 2 % N2
-            n2=n2+1;
-            stgID.allID.N2(n2) = n;
-        case 3 % N3
-            n3=n3+1;
-            stgID.allID.N3(n3) = n;
-        case 4 % N4
-            n4=n4+1;
-            stgID.allID.N4(n4) = n;
-        case 5 % REM
-            r=r+1;
-            stgID.allID.R(r) = n;
-    end
-end
-
-stgID.stgPro = [w, n1, n2, n3, n4, r];
-% ===============
-
-clear w n1 n2 n3 n4 r
-%% Remove class with less than cut-off
-cutoff = 0.02*length(label);
-n=0;
-for i = 1:length(stgID.stgPro)
-    if stgID.stgPro(i)>=cutoff
-        n=n+1;
-        stgID.useStg(n)=i;
-        stgID.usePro(n)=stgID.stgPro(i);
-        stgID.useStgName(n) = stgLab(i);
-    end
-end
-%% Minimum samples
-stgID.Nmin = min(stgID.usePro);
+% %% Cross-validation code
+% configuration_settings; 
+% 
+% %% K-means clustering + Nearest centroid classifier
+% % Example: learn01 data
+% % After reading the annotation file from xml using read_annot.m
+% %addpath(genpath('/Users/sleeping/Documents/MATLAB/ccshs_data'))
+% annotation = load(ANSWER_FILE);
+% label = annotation.sleepstage;
+% 
+% %% Proportion of each sleep stage (0 - wake, 1-4 NREM, 5 - REM)
+% stgNum = size(unique(label));
+% stgLab = {'W','N1','N2','N3','N4','R'}; % {'W','N1','N2','N3','R'};
+% 
+% %% Remove initial W stage from randomisation and sampling
+% % Marking the end of W stage
+% endW = [334,380,391,375,174];
+% endS = [1374,1442,1442,1531,1492];
+% 
+% % endID = find(whichData==validData);
+% endID = 1;
+% whichData = 1;
+% if whichData == 14 % Remove the ending epochs for the ccshs_1800014
+%     selectID = [(endW(endID)+1):end14(1)]';
+% else
+%     selectID = [endW(endID)+1:length(label)]';
+% end
+% selectLabel = label(selectID);
+% 
+% %% Counting number of each stage
+% 
+% %======== Just to check but needed? =========
+% for i = 1:stgNum
+%     stgID.stgPro(i) = sum(label==i-1);
+% end
+% % ===============
+% 
+% % Sleep stage IDs
+% w = 0; n1 = 0; n2 = 0; n3 = 0; n4 = 0; r = 0;
+% for n = 1:length(selectLabel)
+%     switch selectLabel(n)
+%         case 0 % Wake
+%             w=w+1;
+%             stgID.allID.W(w) = n;
+%         case 1 % N1
+%             n1=n1+1;
+%             stgID.allID.N1(n1) = n;
+%         case 2 % N2
+%             n2=n2+1;
+%             stgID.allID.N2(n2) = n;
+%         case 3 % N3
+%             n3=n3+1;
+%             stgID.allID.N3(n3) = n;
+%         case 4 % N4
+%             n4=n4+1;
+%             stgID.allID.N4(n4) = n;
+%         case 5 % REM
+%             r=r+1;
+%             stgID.allID.R(r) = n;
+%     end
+% end
+% 
+% stgID.stgPro = [w, n1, n2, n3, n4, r];
+% % ===============
+% 
+% clear w n1 n2 n3 n4 r
+% %% Remove class with less than cut-off
+% cutoff = 0.02*length(label);
+% n=0;
+% for i = 1:length(stgID.stgPro)
+%     if stgID.stgPro(i)>=cutoff
+%         n=n+1;
+%         stgID.useStg(n)=i;
+%         stgID.usePro(n)=stgID.stgPro(i);
+%         stgID.useStgName(n) = stgLab(i);
+%     end
+% end
+% %% Minimum samples
+% stgID.Nmin = min(stgID.usePro);
 
 %% Multiple iteration of randomisation and cross-validation
 for Nf = 1:20
 %% Random sampling from each class
-train70 = round(0.7*stgID.Nmin);
-
-for m=1:length(stgID.useStg)
-    randID = randperm(stgID.usePro(m),stgID.Nmin);
-    allID = stgID.allID.(stgLab{stgID.useStg(m)});
-    useID = allID(randID);
-    stgID.useID.(stgLab{stgID.useStg(m)}) = useID;
-    % 70% training
-    randtrain = randperm(stgID.Nmin);
-    trainID = useID(randtrain(1:train70));
-    testID = useID(randtrain((train70+1):end));
-    stgID.trainID.(stgLab{stgID.useStg(m)})= trainID;
-    stgID.testID.(stgLab{stgID.useStg(m)})= testID;
-    % Combine training ID to perform classification
-    if m==1 % First iteration
-        trainTS = selectID(trainID);
-        testTS = selectID(testID);
-    else
-        trainTS = [trainTS;selectID(trainID)]; 
-        testTS = [testTS;selectID(testID)];
-    end
-    clear randID allID useID randtrain trainID testID
-end
+% train70 = round(0.7*stgID.Nmin);
+% 
+% for m=1:length(stgID.useStg)
+%     randID = randperm(stgID.usePro(m),stgID.Nmin);
+%     allID = stgID.allID.(stgLab{stgID.useStg(m)});
+%     useID = allID(randID);
+%     stgID.useID.(stgLab{stgID.useStg(m)}) = useID;
+%     % 70% training
+%     randtrain = randperm(stgID.Nmin);
+%     trainID = useID(randtrain(1:train70));
+%     testID = useID(randtrain((train70+1):end));
+%     stgID.trainID.(stgLab{stgID.useStg(m)})= trainID;
+%     stgID.testID.(stgLab{stgID.useStg(m)})= testID;
+%     % Combine training ID to perform classification
+%     if m==1 % First iteration
+%         trainTS = selectID(trainID);
+%         testTS = selectID(testID);
+%     else
+%         trainTS = [trainTS;selectID(trainID)]; 
+%         testTS = [testTS;selectID(testID)];
+%     end
+%     clear randID allID useID randtrain trainID testID
+% end
 % trainTS and testTS are the time segment ID for training set and test set
 % respectively.
 

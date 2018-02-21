@@ -20,8 +20,9 @@ for m=1:stgNum
     useID = allID(randID);                          % Take randomised epoch id
     stgID.useID.(stgLab{m}) = useID;                % Index in selectLabel
     stgID.actualID.(stgLab{m}) = stgID.selectID(useID);   % Actual epochIDs
+    %
     %% Sample 70% for training and 30% for test
-    sampID = stgID.actualID.(stgLab{m}); % Redundant but in the case of switching between two versions
+    sampID = stgID.useID.(stgLab{m}); % Redundant but in the case of switching between two versions
     randtrain = randperm(stgID.Nmin);
     trainID = sampID(randtrain(1:trainPP)); % Select actual ID as 70% training
     testID = sampID(randtrain((trainPP+1):end));    % Select actual epoch IDs as test
@@ -29,11 +30,11 @@ for m=1:stgNum
     stgID.testID.(stgLab{m})= testID;
     % Combine training ID to perform classification
     if m==1 % First iteration
-        trainTS = trainID;
-        testTS = testID;
+        trainTS = stgID.selectID(trainID);
+        testTS = stgID.selectID(testID);
     else
-        trainTS = [trainTS;trainID]; 
-        testTS = [testTS;testID];
+        trainTS = [trainTS;stgID.selectID(trainID)]; 
+        testTS = [testTS;stgID.selectID(testID)];
     end
 end
 end
