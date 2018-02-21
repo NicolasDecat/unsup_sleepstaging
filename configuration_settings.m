@@ -21,5 +21,5 @@ ANSWER_FILE='ccshs_1800001_annot.mat';
 CONFUSION_MATRIX_FILE='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging/180001_HCTSA';
 CM_SAVE_DIR='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging/180001_HCTSA';
 HCTSA_FILE='180001_HCTSA/HCTSA_N.mat';
-REDUCE_OPTS_FILE='reduced_ops.txt';
+OPS_FILE='reduced_ops.txt';
 TRAINING_PERCENTAGE = 0.7;
