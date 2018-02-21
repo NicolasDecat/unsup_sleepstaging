@@ -5,9 +5,11 @@
 % 3. Save data in the format suitable for HCTSA
 % #########################################################################
 %
+configuration_settings
+
 whichData = WHICH_DATA;
-edfname = strcat('ccshs-trec-1800',num2str(whichData,'%03d'),'.edf'); % 'ccshs-trec-1800001.edf'; 
-edffile = strcat(DATA_DIR,edfname);
+% edfname = strcat('ccshs-trec-1800',num2str(whichData,'%03d'),'.edf'); % 'ccshs-trec-1800001.edf'; 
+edffile = strcat(DARA_DIR, filesep, EDF_FILE);
 %% Specify case (How many channel?)
 nChannel = NUM_CHANNELS; % Number of channels to be used:[1,2,3] 
 % Read data and segment into specified length 
