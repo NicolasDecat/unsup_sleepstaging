@@ -11,7 +11,7 @@ startup
 cd(homedir)
 
 %% Read text file
-fileID = fopen(REDUCE_OPTS_FILE);
+fileID = fopen(OPS_FILE);
 features = textscan(fileID,'%s %s %s');
 fclose(fileID);
 
@@ -47,6 +47,7 @@ datamat = datamat.TS_DataMat;
 % v
 % v
 % v
+
 %% Run cross-validation code
 % Change the number of operations
 %set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying (sometimes it could be lots of figures!)
@@ -103,10 +104,10 @@ xlabel('Number of features')
 
 %% Checking 
 
-for n=1:100
-    a = epochSampling(14);
-    boundary(n,:) = [min(a), max(a)];
-end
-minmin = min(boundary(:,1))
-maxmax = max(boundary(:,2))
+% for n=1:100
+%     a = epochSampling(14);
+%     boundary(n,:) = [min(a), max(a)];
+% end
+% minmin = min(boundary(:,1))
+% maxmax = max(boundary(:,2))
 

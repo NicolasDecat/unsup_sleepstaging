@@ -8,6 +8,7 @@
 function [trainTS, testTS] = epochSelect(stgID,pTraining)
 % Stage labels
 stgLab = {'W','N1','N2','N3','R'};
+stgNum = length(unique(stgID.selectLabel));
 
 trainPP = round(pTraining*stgID.Nmin); 
 %% Randomly sample from each class

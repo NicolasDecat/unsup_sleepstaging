@@ -23,12 +23,18 @@ for Nf = 1:nIterations
     [block(Nf).trainTS,block(Nf).testTS]=epochSelect(stgID,trainingProportion);
     % trainTS and testTS are the time segment ID for training set and test set respectively.
 
+    % The following turn the nxm matrix to 1x(n*m) matrix
+    trainTS = block(Nf).trainTS.';
+    trainTS = trainTS(:).';
+    testTS = block(Nf).testTS.';
+    testTS = testTS(:).';
+
     %% Select data of wanted time ID
     % Features used for clustering are specified in selectdata.m (passing
     % on hctsa_ops variable)
     % Timeseries used for crossval are specified here.
-    trainMat = hctsa_ops(block(Nf).trainTS,:);
-    testMat = hctsa_ops(block(Nf).testTS,:);
+    trainMat = hctsa_ops(trainTS',:);
+    testMat = hctsa_ops(testTS',:);
  
     %% Clustering using training dataset
     % Record cluster ID and centre of each cluster
@@ -39,7 +45,8 @@ for Nf = 1:nIterations
 
     %% Classification of test dataset(Nearest centroid classifier)
     % Minimum Euclidean distance from centre/mean features of the cluster
-    for n=1:length(block(Nf).testTS)
+    
+    for n=1:length(testTS)
         % Calculate Euclidean distance from datapoint to each centre
         distance = sqrt(sum((block(Nf).Kcentre-testMat(n,:)).^2,2));
         % Find the cluster of minimum distance
@@ -80,29 +87,33 @@ for Nf = 1:nIterations
     for j=1:length(clustTest)
         block(Nf).equi_test(j) = equi_stage(clustTest(j));
     end
+    
     %% Percentage correct
     trainCorrect = sum(block(Nf).equi_train==label(trainTS)');
     testCorrect = sum(block(Nf).equi_test==label(testTS)');
     block(Nf).P_trainCorrect = trainCorrect/(length(trainTS));
     block(Nf).P_testCorrect = testCorrect/(length(testTS));
     %% Confusion matrix input
-    scoredTrain(Nf,:) = label(trainTS);
-    scoredTest(Nf,:) = label(testTS);
+    scoredTrain(Nf,:) = label(trainTS)';
+    scoredTest(Nf,:) = label(testTS)';
     predictTrain(Nf,:) = block(Nf).equi_train;
     predictTest(Nf,:) = block(Nf).equi_test;
 end % End Nf-th randomisation
 
 %% Average output
 % For comparing different k (changing features used as a condition)
-% Output(k).testCorrect = mean(Pcorrect);
+PTrainCorrectList = block(:).P_trainCorrect;
+PTestCorrectList = block(:).P_testCorrect;
+
+Output(k).trainCorrect = mean(PTrainCorrectList); 
+Output(k).testCorrect = mean(PTestCorrectList);
 % Output(k).testError = mean(Perror);
-% Output(k).trainCorrect = mean(trainPcorrect); 
 % Output(k).trainError = mean(trainPerror);
 % clearvars -except Output datamat feat_id features k complexity
 
 %% Confusion matrix - for both train and test
 % For one run(k)... can change which data to use later
-addpath('/Users/sleeping/Documents/MATLAB/unsup_sleep_staging/HCTSA/PeripheryFunctions/BF_ToBinaryClass.m')
+%addpath('/Users/sleeping/Documents/MATLAB/unsup_sleep_staging/HCTSA/PeripheryFunctions/BF_ToBinaryClass.m')
 
 %% Confusion matrix of train data
 % Reshape scored and predict matrix
@@ -119,23 +130,10 @@ g_clustTrain = g_clustTrain+1;
 g_labelTrain(g_labelTrain==6) = 5;
 g_clustTrain(g_clustTrain==6) = 5;
 
-% BINARY TO CLASS FUNCTION FROM BEN'S HCTSA
-labelTrainBF= BF_ToBinaryClass(g_labelTrain,nclust);
-clustTrainBF = BF_ToBinaryClass(g_clustTrain,nclust);
-
-
-
 % Visualise confusion matrix
 figure;
 plotconfusion_custom(g_labelTrain, g_clustTrain, 'Confusion Matrix - Training');
 saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TRN_', int2str(k), '.png'));
-%plotconfusion(labelTrainBF,clustTrainBF)
-
-% Plot setting
-% ax = gca;
-% ax.XTickLabel(1:nclust)=stgID.useStgName;
-% ax.YTickLabel(1:nclust)=stgID.useStgName;
-
 
 %% Confusion matrix of test data
 % Reshape scored and predict matrix
@@ -152,20 +150,9 @@ g_clustTest = g_clustTest+1;
 g_labelTest(g_labelTest==6) = 5;
 g_clustTest(g_clustTest==6) = 5;
 
-% BINARY TO CLASS FUNCTION FROM BEN'S HCTSA
-labelTestBF= BF_ToBinaryClass(g_labelTest,nclust);
-clustTestBF = BF_ToBinaryClass(g_clustTest,nclust);
-
-
 % Visualise confusion matrix
 plotconfusion_custom(g_labelTest, g_clustTest, 'Confusion Matrix - Testing');
 saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TST_', int2str(k), '.png'));
-
-% Plot setting
-% ax = gca;
-% ax.XTickLabel(1:nclust)=stgID.useStgName;
-% ax.YTickLabel(1:nclust)=stgID.useStgName;
-
 
 %% Clear variables for the next run
 clearvars -except Output datamat feat_id features k complexity

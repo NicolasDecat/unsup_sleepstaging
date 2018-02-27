@@ -37,8 +37,8 @@ all_op = hctsafile.Operations; % After loading HCTSA_N.mat - All HCTSA.mat/HCTSA
 opCount = 0;
 for n = 1:length(feat_name)
     op_name = char(feat_name(n));
-    for i = 1:length(all_op.Operations)
-        name = all_op.Operations(i).Name;
+    for i = 1:length(all_op)
+        name = all_op(i).Name;
         if strcmp(op_name,name)
             opCount = opCount+1;
             feat_id(opCount) = i;

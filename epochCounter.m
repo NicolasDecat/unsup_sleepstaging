@@ -30,7 +30,7 @@ stgID.selectLabel = selectLabel;
 
 %% Counting number of stages
 % Proportion of each sleep stage (0 - wake, 1-4 NREM, 5 - REM)
-stgNum = length(unique(label));
+stgNum = length(unique(LabeledStage));
 stgLab = {'W','N1','N2','N3','R'};
 
 % Record number of epochs in each stage and the ID of the epoch 
