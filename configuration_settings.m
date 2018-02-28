@@ -23,3 +23,5 @@ CM_SAVE_DIR='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging/180001_HCT
 HCTSA_FILE='180001_HCTSA/HCTSA_N.mat';
 OPS_FILE='reduced_ops.txt';
 TRAINING_PERCENTAGE = 0.7;
+NUM_CHANNELS_USED_FOR_CROSSVAL = 1;
+FSLIB_TOOLBOX_DIR='/Users/Zhao/Documents/MATLAB/Add-Ons/Toolboxes/Feature Selection Library/code/FSLib_v5.2_2017';

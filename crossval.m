@@ -28,14 +28,22 @@ for Nf = 1:nIterations
     trainTS = trainTS(:).';
     testTS = block(Nf).testTS.';
     testTS = testTS(:).';
-
+    
     %% Select data of wanted time ID
     % Features used for clustering are specified in selectdata.m (passing
     % on hctsa_ops variable)
     % Timeseries used for crossval are specified here.
-    trainMat = hctsa_ops(trainTS',:);
-    testMat = hctsa_ops(testTS',:);
- 
+    for c=1:NUM_CHANNELS_USED_FOR_CROSSVAL
+        if c==1
+            trainMat = hctsa_ops(trainTS',:);
+            testMat = hctsa_ops(testTS',:);
+        else
+            % Other channels (assumes the index is increment of c)
+            trainMat = [trainMat hctsa_ops((trainTS*c)',:)];
+            testMat = [testMat hctsa_ops((testTS*c)',:)];
+        end
+    end
+    
     %% Clustering using training dataset
     % Record cluster ID and centre of each cluster
     n_clust = 5;
@@ -102,8 +110,8 @@ end % End Nf-th randomisation
 
 %% Average output
 % For comparing different k (changing features used as a condition)
-PTrainCorrectList = block(:).P_trainCorrect;
-PTestCorrectList = block(:).P_testCorrect;
+PTrainCorrectList = [block(:).P_trainCorrect];
+PTestCorrectList = [block(:).P_testCorrect];
 
 Output(k).trainCorrect = mean(PTrainCorrectList); 
 Output(k).testCorrect = mean(PTestCorrectList);

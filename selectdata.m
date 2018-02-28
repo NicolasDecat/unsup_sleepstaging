@@ -48,11 +48,79 @@ datamat = datamat.TS_DataMat;
 % v
 % v
 
+% annotation = load(ANSWER_FILE);
+% label = annotation.sleepstage;
+% 
+%% Perform feature selection (experimental)
+
+% Include dependencies
+% addpath(strcat(FSLIB_TOOLBOX_DIR, filesep, 'lib')); % dependencies
+% addpath(strcat(FSLIB_TOOLBOX_DIR, filesep, 'methods')); % FS methods
+% addpath(genpath(strcat(FSLIB_TOOLBOX_DIR, filesep, 'lib/drtoolbox')));
+% 
+% features_channel1 = datamat(334:1374, :);
+% features_channel2 = datamat((1374+334):1374*2, :);
+% features_channel3 = datamat(((1374*2)+334):1374*3, :);
+
+% X_train = [features_channel1; features_channel2; features_channel3];
+% Y_train = [label(334:1374); label(334:1374); label(334:1374)];
+
+% X_train = features_channel1;
+% Y_train = label(334:1374);
+% numF = size(X_train, 2);
+
+%[ranking, w] = reliefF(x_data, y_data, 20);
+%[ranking, w, subset] = ILFS_auto(x_data, y_data, 4, 0 )
+%ranking = mRMR(x_data, y_data, size(x_data, 2));
+%[ ranking , w] = mutInfFS( X_train, Y_train, size(X_train , 2));
+%[ ranking , w] = fsvFS( X_train, Y_train, size(X_train , 2) );
+
+%Laplacian
+% W = dist(X_train');
+% W = -W./max(max(W)); % it's a similarity
+% [lscores] = LaplacianScore(X_train, W);
+% [junk, ranking] = sort(-lscocd cd gires);
+
+% MCFS: Unsupervised Feature Selection for Multi-Cluster Data
+% options = [];
+% options.k = 5; %For unsupervised feature selection, you should tune
+% %this parameter k, the default k is 5.
+% options.nUseEigenfunction = 4;  %You should tune this parameter.
+% [FeaIndex,~] = MCFS_p(X_train,numF,options);
+% ranking = FeaIndex{1};
+        
+% ranking = spider_wrapper(X_train,Y_train,numF,lower('rfe'));
+% ranking = spider_wrapper(X_train,Y_train,numF,lower('10'));
+% ranking = spider_wrapper(X_train,Y_train,numF,lower('fisher'));
+
+% Infinite Feature Selection 2015 updated 2016
+% alpha = 0.5;    % default, it should be cross-validated.
+% sup = 1;        % Supervised or Not
+% [ranking, w] = infFS( X_train , Y_train, alpha , sup , 0 );    
+
+% This is matlab feature selection
+%[ranked, weight] = relieff(features_channel1, label(trainTS), 10, 'method', 'classification', 'categoricalx', 'on');
+
+% Features Selection via Eigenvector Centrality 2016
+% alpha = 0.5; % default, it should be cross-validated.
+% ranking = ECFS( X_train, Y_train, alpha )  ;
+
+% Regularized Discriminative Feature Selection for Unsupervised Learning
+% nClass = 2;
+% ranking = UDFS(X_train , nClass ); 
+
+% BASELINE - Sort features according to pairwise correlations
+% ranking = cfs(X_train);     
+%         
+% [B, I] = sort(ranking);
+% feat_id = I;
+
+
 %% Run cross-validation code
 % Change the number of operations
 %set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying (sometimes it could be lots of figures!)
 for k = 1:10 % k is the condition to select operation
-%for k = 4:5 % k is the condition to select operation
+%for k = 5:5 % k is the condition to select operation
     if k==1
         hctsa_ops = datamat(:,feat_id(1:10));
     elseif k==2
@@ -63,6 +131,7 @@ for k = 1:10 % k is the condition to select operation
         hctsa_ops = datamat(:,feat_id(1:100));
     elseif k==5 % Top 198 features
         hctsa_ops = datamat(:,feat_id);
+        %hctsa_ops = datamat(:,feat_id(1:200));
     elseif k==6 % Random 500 features
         rand_id = randperm(features,500);
         hctsa_ops = datamat(:,rand_id);
