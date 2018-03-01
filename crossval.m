@@ -56,7 +56,7 @@ for Nf = 1:nIterations
     
     for n=1:length(testTS)
         % Calculate Euclidean distance from datapoint to each centre
-        distance = sqrt(sum((block(Nf).Kcentre-testMat(n,:)).^2,2));
+        distance = sqrt(sum((bsxfun(@minus,block(Nf).Kcentre,testMat(n,:))).^2,2));
         % Find the cluster of minimum distance
         [~,clustTest(n)] = min(distance);
     end
@@ -163,4 +163,4 @@ plotconfusion_custom(g_labelTest, g_clustTest, 'Confusion Matrix - Testing');
 saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TST_', int2str(k), '.png'));
 
 %% Clear variables for the next run
-clearvars -except Output datamat feat_id features k complexity
+clearvars -except Output datamat feat_id features k complexity CM_SAVE_DIR

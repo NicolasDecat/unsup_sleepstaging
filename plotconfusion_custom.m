@@ -13,11 +13,11 @@ function plotconfusion_custom(answer, predict, ttl)
     totalTarget = sum(confmat, 2);
     perResponse = confmat./repmat(totalTarget, 1, max_elem)*100;
     
-    t = strings(max_elem, max_elem);
+    t = cell(max_elem, max_elem);
     for i=1:max_elem
         for j=1:max_elem
-            t(i, j) = compose(strcat(num2str(confmat(i,j)), '\n', ...
-                num2str(round(perResponse(i,j), 2)), '%'));
+            t(i, j) = cellstr([num2str(confmat(i,j)), 10, ...
+                num2str(round(perResponse(i,j), 2)), '%']);
         end
     end
     

@@ -170,6 +170,7 @@ legend('Training','Test')
 ylabel('Accuracy [0-1]')
 xlabel('Number of features')
 
+saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'ACCURACY_REPORT.png'));
 
 %% Checking 
 
