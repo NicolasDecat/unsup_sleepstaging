@@ -120,7 +120,7 @@ set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displayi
 exps = EXPS_TO_RUN; % This allow us to selectively choose which experiment to run
 statistics = [];
 
-exp_configuration = readtable("experiment_runs.csv");
+exp_configuration = readtable('experiment_runs.csv');
 actual_exp_run = exp_configuration; 
 actual_exp_run(:,:) = []; % delete all rows to accumulate the actual run
 
@@ -136,22 +136,22 @@ for exp_count = exps
     disp(strcat('Running experiment ', int2str(exp.id), ': ', exp.name, '...'));
     
     selected_features = [];
-    if (string(exp.fs_algorithm) == 'BEN' && string(exp.fs_type) == 'Top')
+    if (strcmp(char(exp.fs_algorithm), 'BEN') == 1 & strcmp(char(exp.fs_type), 'Top') == 1)
         selected_features = feat_id;
-    elseif (string(exp.fs_algorithm) == 'BEN')
+    elseif (strcmp(char(exp.fs_algorithm), 'BEN') == 1)
         selected_features = [1:features];
     end
     
     selected_feature_indexes = 1:length(selected_features);
-    if (string(exp.fs_type) == 'Random') 
+    if (strcmp(char(exp.fs_type), 'Random') == 1)
         selected_feature_indexes = randperm(length(selected_features), exp.fs_count);
-    elseif (string(exp.fs_type) == 'Top')
+    elseif (strcmp(char(exp.fs_type), 'Top') == 1)
         selected_feature_indexes = [1: exp.fs_count];
     end
 
     for repeat = 1:exp.repeat
         if (length(selected_feature_indexes) > length(selected_features))
-            disp("WARNING: Feature length is greater than features.");
+            disp('WARNING: Feature length is greater than features.');
             selected_feature_indexes = selected_feature_indexes(1:length(selected_features));
         end
         
