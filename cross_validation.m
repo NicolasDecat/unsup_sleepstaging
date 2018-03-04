@@ -1,3 +1,10 @@
+%% Function: Count the number of epochs in each stages and recore the epochIDs
+% Input: - whichData // which dataset to be used ([1,5,7,13,14] for now)
+%        - LabeledStage // labelled sleep stage from annotation
+% Output : stgID // randomised order of epoch IDs
+
+function statsOut = cross_validation(experiment, hctsa_ops, cm_save_dir)
+
 %% Cross-validation code
 % Classification algorithm: K-means clustering + Nearest centroid
 % classifier (similat to k-NN classifer)
@@ -17,6 +24,7 @@ nIterations = 20;
 %% Multiple iteration of randomisation and cross-validation
 % Initialise result struct
 block(nIterations) = struct();
+stats = struct();
 
 for Nf = 1:nIterations  
     % Sample epoch ID from each stage and divide into training and test
@@ -48,9 +56,9 @@ for Nf = 1:nIterations
     % Record cluster ID and centre of each cluster
     n_clust = 5;
     [clustID,block(Nf).Kcentre,~] = kmeans(trainMat,n_clust,'Distance','sqeuclidean',...
-                        'Display','final','Replicates',50,'MaxIter',500);
-    % K-means clustering                  
-
+                        'Display','off','Replicates',50,'MaxIter',500);
+    % K-means clustering 
+    
     %% Classification of test dataset(Nearest centroid classifier)
     % Minimum Euclidean distance from centre/mean features of the cluster
     
@@ -82,6 +90,35 @@ for Nf = 1:nIterations
         [~,equi_class(m)]=max(pro_no(m,:));
     end
     equi_stage = stgLabel(equi_class);
+    
+    %% Match up the nearest neighbours with cluster ID
+%     matched_stages = [];
+%     for m = 1:length(unique(clustID))
+%        clust_point = block(Nf).Kcentre(m,:);
+%        
+%        % Find the top 5 closest neighbours to the centroid.
+%        idx = knnsearch(trainMat, clust_point, 'k', 1)';
+%        
+%        % Original labels
+%        orig_labels = label(trainTS(idx));
+       
+       % Find out if any of the labels has already been matched and remove
+       % them
+%        indexes = find(ismember(orig_labels, matched_stages));
+%        orig_labels(indexes) = [];
+%        
+%        % To avoid NaN (i.e. all orig_labels have been removed)
+%        if (length(orig_labels) == 0)
+%           orig_labels = label(trainTS(idx)); 
+%        end
+       
+%        stage_label_most_occurence = mode(orig_labels);
+%        matched_stages = [matched_stages, stage_label_most_occurence];
+%        % Determine the most occurrence of the labels and associate with the
+%        % cluster
+%        %disp("Cluster " + m + " associated with stage " + stage_label_most_occurence);
+%     end
+    
     %% Case: Counts are equal -> repeating equivalent class
     % if unique(equi_class)~=[1:5]  
     % pro_no?
@@ -95,12 +132,16 @@ for Nf = 1:nIterations
     for j=1:length(clustTest)
         block(Nf).equi_test(j) = equi_stage(clustTest(j));
     end
+
+%     addpath('/Users/Zhao/Documents/MATLAB/Add-Ons/Functions/fm_index( X, Y )/code');
+%     addpath('/Users/Zhao/Documents/MATLAB/Add-Ons/Functions/The Adjusted Mutual Information/code');
     
     %% Percentage correct
     trainCorrect = sum(block(Nf).equi_train==label(trainTS)');
     testCorrect = sum(block(Nf).equi_test==label(testTS)');
     block(Nf).P_trainCorrect = trainCorrect/(length(trainTS));
     block(Nf).P_testCorrect = testCorrect/(length(testTS));
+
     %% Confusion matrix input
     scoredTrain(Nf,:) = label(trainTS)';
     scoredTest(Nf,:) = label(testTS)';
@@ -108,13 +149,37 @@ for Nf = 1:nIterations
     predictTest(Nf,:) = block(Nf).equi_test;
 end % End Nf-th randomisation
 
+fm_train = [];
+fm_test = [];
+ami_train = [];
+ami_test = [];
+% for i=1:size(scoredTrain, 1)
+%     fm_train(i) = fm_index(scoredTrain(i,:)+1, predictTrain(i, :)+1);
+%     fm_test(i) = fm_index(scoredTest(i,:)+1, predictTest(i, :)+1);
+%     
+%     % AMI requires non-zero values
+%     ami_train(i) = ami(scoredTrain(i,:)+1, predictTrain(i, :)+1);
+%     ami_test(i) = ami(scoredTest(i,:)+1, predictTest(i,:)+1);
+% end
+% 
+% stats.fm_train_score = mean(fm_train);
+% stats.fm_test_score = mean(fm_test);
+% stats.ami_train_score = mean(ami_train);
+% stats.ami_test_score = mean(ami_test);
+
+% disp("Mean train Fowlkes-Mallows scores for k = " + experiment + " is " + mean(fm_train));
+% disp("Mean test Fowlkes-Mallows scores for k = " + experiment + " is " + mean(fm_test));
+% disp("Mean train Adjusted Mutual Information scores for k = " + experiment + " is " + mean(ami_train));
+% disp("Mean test Adjusted Mutual Information scores for k = " + experiment + " is " + mean(ami_test));
+
 %% Average output
 % For comparing different k (changing features used as a condition)
 PTrainCorrectList = [block(:).P_trainCorrect];
 PTestCorrectList = [block(:).P_testCorrect];
 
-Output(k).trainCorrect = mean(PTrainCorrectList); 
-Output(k).testCorrect = mean(PTestCorrectList);
+stats.output.trainCorrect = mean(PTrainCorrectList); 
+stats.output.testCorrect = mean(PTestCorrectList);
+
 % Output(k).testError = mean(Perror);
 % Output(k).trainError = mean(trainPerror);
 % clearvars -except Output datamat feat_id features k complexity
@@ -139,9 +204,11 @@ g_labelTrain(g_labelTrain==6) = 5;
 g_clustTrain(g_clustTrain==6) = 5;
 
 % Visualise confusion matrix
-figure;
-plotconfusion_custom(g_labelTrain, g_clustTrain, 'Confusion Matrix - Training');
-saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TRN_', int2str(k), '.png'));
+if PLOT_CONFUSION_MATRIX
+    figure;
+    plotconfusion_custom(g_labelTrain, g_clustTrain, 'Confusion Matrix - Training');
+    saveas(gcf, strcat(cm_save_dir, filesep, 'CM_TRN_', int2str(experiment), '.png'));
+end
 
 %% Confusion matrix of test data
 % Reshape scored and predict matrix
@@ -159,8 +226,15 @@ g_labelTest(g_labelTest==6) = 5;
 g_clustTest(g_clustTest==6) = 5;
 
 % Visualise confusion matrix
-plotconfusion_custom(g_labelTest, g_clustTest, 'Confusion Matrix - Testing');
-saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'CM_TST_', int2str(k), '.png'));
+if PLOT_CONFUSION_MATRIX
+    figure;
+    plotconfusion_custom(g_labelTest, g_clustTest, 'Confusion Matrix - Testing');
+    saveas(gcf, strcat(cm_save_dir, filesep, 'CM_TST_', int2str(experiment), '.png'));
+end
+
+statsOut = stats;
 
 %% Clear variables for the next run
-clearvars -except Output datamat feat_id features k complexity CM_SAVE_DIR
+%clearvars -except Output datamat feat_id features k complexity CM_SAVE_DIR exps statsOut
+
+end

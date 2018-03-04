@@ -1,0 +1,11 @@
+id, name, repeat, fs_algorithm, fs_type, fs_count
+1, "Ben's top 10", 1, "BEN", "Top", 10
+2, "Ben's top 25", 1, "BEN", "Top", 25
+3, "Ben's top 50", 1, "BEN", "Top", 50
+4, "Ben's top 100", 1, "BEN", "Top", 100
+5, "Ben's top 200", 1, "BEN", "Top", 200
+6, "Ben's random 500", 1, "BEN", "Random", 500
+7, "Ben's random 1000", 1, "BEN", "Random", 1000
+8, "Ben's random 2000", 1, "BEN", "Random", 2000
+9, "Ben's random 5000", 1, "BEN", "Random", 5000
+10, "Ben's all", 1, "BEN", "All", -1
