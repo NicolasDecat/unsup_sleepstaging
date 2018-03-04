@@ -99,13 +99,15 @@ for l=1:length(exps)
     complexity = [complexity, statistics(l).complexity];
 end
 
-figure;
-plot(complexity,accuracy_train,complexity,accuracy_test)
-legend('Training','Test')
-ylabel('Accuracy [0-1]')
-xlabel('Number of features')
+if PLOT_ACCURACY_REPORT
+    figure;
+    plot(complexity,accuracy_train,complexity,accuracy_test)
+    legend('Training','Test')
+    ylabel('Accuracy [0-1]')
+    xlabel('Number of features')
 
-saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'ACCURACY_REPORT.png'));
+    saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'ACCURACY_REPORT.png'));
+end
 
 %% Checking 
 

@@ -25,6 +25,7 @@ OPS_FILE='reduced_ops.txt';
 TRAINING_PERCENTAGE = 0.7;
 NUM_CHANNELS_USED_FOR_CROSSVAL = 1;
 PLOT_CONFUSION_MATRIX=true;
+PLOT_ACCURACY_REPORT=true;
 
 %% Experiment configurations to run
 EXPS_TO_RUN=[1:10];
