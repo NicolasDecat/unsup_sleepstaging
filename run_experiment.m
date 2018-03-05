@@ -116,7 +116,6 @@ datamat = datamat.TS_DataMat;
 set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying (sometimes it could be lots of figures!)
 %for k = 1:10 % k is the condition to select operation
 exps = EXPS_TO_RUN; % This allow us to selectively choose which experiment to run
-statistics = [];
 
 exp_configuration = readtable('experiment_runs.csv');
 actual_exp_run = exp_configuration; 
@@ -131,59 +130,51 @@ myCluster = parcluster('local')
 myCluster.NumWorkers = THREAD_POOL
 parpool(THREAD_POOL);
 
-for exp_count = exps
-    exp = exp_configuration(exp_count, :);
-    disp(strcat('Running experiment ', int2str(exp.id), ': ', exp.name, '...'));
-    
-    try
-        
-        parfor repeat = 1:exp.repeat
+try
+    parfor indx = 1:length(exps)
+        exp_count = exps(indx);
+        exp = exp_configuration(exp_count, :);
+        disp(strcat('Running experiment ', int2str(exp.id), ': ', exp.name, '...'));
+
+        max_stats = [];
+        for repeat = 1:exp.repeat
             fs_algorithm = char(exp.fs_algorithm);
-            
+
             selected_features = [];
             selected_feature_indexes = [];
-            
+
             if (strcmp(char(exp.fs_algorithm), 'BEN') == 1)
                 [selected_features, selected_feature_indexes] = fs_htsca(exp, features, feat_id);
             end
-            
+
             % Safeguard to ensure the indexes length are always <= features
             if (length(selected_feature_indexes) > length(selected_features))
-                disp('WARNING: Feature length is greater than features.');
+                disp(strcat('WARNING: Feature length is greater than features.', 'Experiment ', num2str(exp.id)));
                 selected_feature_indexes = selected_feature_indexes(1:length(selected_features));
             end
 
             hctsa_ops = datamat(:, selected_features(selected_feature_indexes));
-            statsOut(repeat,:) = cross_validation(exp.id, hctsa_ops, output_folder);
-            statsOut(repeat,:).complexity = exp.id;
-        end
-
-        max_stats = [];
-        for repeat = 1:exp.repeat
-            stats = statsOut(repeat,:);
+            statsOut = cross_validation(exp.id, hctsa_ops, output_folder);
+            statsOut.complexity = exp.id;
 
             if isempty(max_stats)
-               max_stats = stats;
-            elseif stats.output.trainCorrect > max_stats.output.trainCorrect
-               max_stats = stats; 
+               max_stats = statsOut;
+            elseif statsOut.output.trainCorrect > max_stats.output.trainCorrect
+               max_stats = statsOut; 
             end
         end
 
         % Collect only the statistics for the maximum trainCorrect for all
         % repeats.
-        statistics = [statistics, max_stats];
+        statistics(indx, :) = max_stats;
+        
         exp.trainCorrect = max_stats.output.trainCorrect;
         exp.testCorrect = max_stats.output.testCorrect;
-        
-        if isempty(actual_exp_run)
-            actual_exp_run = [exp];
-        else
-            actual_exp_run = [actual_exp_run; exp];
-        end
-    catch ME
-        delete(gcp('nocreate'));
-        rethrow(ME);
+        exp_runs(indx, :) = exp;
     end
+catch ME
+    delete(gcp('nocreate'));
+    rethrow(ME);
 end
 
 delete(gcp('nocreate'));
@@ -311,5 +302,12 @@ if PLOT_ACCURACY_REPORT
     saveas(gcf, strcat(output_folder, filesep, 'ACCURACY_REPORT.png'));
 end
 
+for i = 1:height(exp_runs)
+    if isempty(actual_exp_run)
+        actual_exp_run = exp_runs(i,:);
+    else
+        actual_exp_run = [actual_exp_run; exp_runs(i,:)];
+    end
+end
 writetable(actual_exp_run, strcat(output_folder, filesep, 'experiment_summary.csv'));
 
