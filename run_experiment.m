@@ -111,8 +111,6 @@ datamat = datamat.TS_DataMat;
 % [B, I] = sort(ranking);
 % feat_id = I;
 
-LABEL_ASSOC_ALGORITHM = 'count';
-
 %% Run cross-validation code
 % Change the number of operations
 set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying (sometimes it could be lots of figures!)
@@ -129,83 +127,72 @@ current_dir = pwd;
 output_folder = strcat(pwd, filesep, sprintf('ExpRunResult_%s',datestr(clock,'yyyymmdd_HHMMSS')));
 mkdir(output_folder);
 
+myCluster = parcluster('local')
+myCluster.NumWorkers = THREAD_POOL
+parpool(THREAD_POOL);
+
 for exp_count = exps
     exp = exp_configuration(exp_count, :);
     actual_exp_run = [actual_exp_run; exp];
     
     disp(strcat('Running experiment ', int2str(exp.id), ': ', exp.name, '...'));
     
-    selected_features = [];
-    if (strcmp(char(exp.fs_algorithm), 'BEN') == 1 & strcmp(char(exp.fs_type), 'Top') == 1)
-        selected_features = feat_id;
-    elseif (strcmp(char(exp.fs_algorithm), 'BEN') == 1)
-        selected_features = [1:features];
-    end
-    
-    selected_feature_indexes = 1:length(selected_features);
-    if (strcmp(char(exp.fs_type), 'Random') == 1)
-        selected_feature_indexes = randperm(length(selected_features), exp.fs_count);
-    elseif (strcmp(char(exp.fs_type), 'Top') == 1)
-        selected_feature_indexes = [1: exp.fs_count];
-    end
+    try
+        parfor repeat = 1:exp.repeat
+            selected_features = [];
+            if (strcmp(char(exp.fs_algorithm), 'BEN') == 1 && strcmp(char(exp.fs_type), 'Top') == 1)
+                selected_features = feat_id;
+            elseif (strcmp(char(exp.fs_algorithm), 'BEN') == 1)
+                selected_features = [1:features];
+            end
 
-    for repeat = 1:exp.repeat
-        if (length(selected_feature_indexes) > length(selected_features))
-            disp('WARNING: Feature length is greater than features.');
-            selected_feature_indexes = selected_feature_indexes(1:length(selected_features));
+            selected_feature_indexes = 1:length(selected_features);
+            if (strcmp(char(exp.fs_type), 'Random') == 1)
+                selected_feature_indexes = randperm(length(selected_features), exp.fs_count);
+            elseif (strcmp(char(exp.fs_type), 'Top') == 1)
+                selected_feature_indexes = [1: exp.fs_count];
+            end
+
+            if (length(selected_feature_indexes) > length(selected_features))
+                disp('WARNING: Feature length is greater than features.');
+                selected_feature_indexes = selected_feature_indexes(1:length(selected_features));
+            end
+
+            hctsa_ops = datamat(:, selected_features(selected_feature_indexes));
+            statsOut(repeat,:) = cross_validation(exp.id, hctsa_ops, output_folder);
+            statsOut(repeat,:).complexity = exp.id;
         end
-        
-        hctsa_ops = datamat(:, selected_features(selected_feature_indexes));
-        statsOut = cross_validation(exp.id, hctsa_ops, output_folder);
-        statsOut.complexity = exp.id;
-        statistics = [statistics, statsOut];
+
+        max_stats = [];
+        for repeat = 1:exp.repeat
+            stats = statsOut(repeat,:);
+
+            if isempty(max_stats)
+               max_stats = stats;
+            elseif stats.output.trainCorrect > max_stats.output.trainCorrect
+               max_stats = stats; 
+            end
+        end
+
+        % Collect only the statistics for the maximum trainCorrect for all
+        % repeats.
+        statistics = [statistics, max_stats];
+    catch ME
+        delete(gcp('nocreate'));
+        rethrow(ME);
     end
 end
 
-% for l  = 1:length(exps) 
-%     k = exps(l); % k is the condition to select operation
-%     if k==1
-%         hctsa_ops = datamat(:,feat_id(1:10));
-%     elseif k==2
-%         hctsa_ops = datamat(:,feat_id(1:25));
-%     elseif k==3
-%         hctsa_ops = datamat(:,feat_id(1:50));
-%     elseif k==4
-%         hctsa_ops = datamat(:,feat_id(1:100));
-%     elseif k==5 % Top 198 features
-%         hctsa_ops = datamat(:,feat_id);
-%         %hctsa_ops = datamat(:,feat_id(1:200));
-%     elseif k==6 % Random 500 features
-%         rand_id = randperm(features,500);
-%         hctsa_ops = datamat(:,rand_id);
-%     elseif k==7
-%         rand_id = randperm(features,1000);
-%         hctsa_ops = datamat(:,rand_id);
-%     elseif k==8
-%         rand_id = randperm(features,2000);
-%         hctsa_ops = datamat(:,rand_id);
-%     elseif k==9
-%         rand_id = randperm(features,5000);
-%         hctsa_ops = datamat(:,rand_id);
-%     elseif k==11
-%         hctsa_ops = datamat(:,feat_id);
-%         %LABEL_ASSOC_ALGORITHM = 'Closest';
-%     elseif k==12
-%         indexes = FILTERED_FEATURE_IDS;
-%         for top_n = NUMBER_OF_FEATURES_CHOSEN
-%             hctsa_ops = datamat(:, indexes(1:TOP_FEATURE_COUNT));
-%         end
-%     else
-%         hctsa_ops = datamat;
-%     end
-%     
-%     % run('crossvalKR.m') 
-%     %[~, statistics(l).complexity]=size(hctsa_ops);
-%     statsOut = cross_validation(k, hctsa_ops, LABEL_ASSOC_ALGORITHM);
-%     statsOut.complexity = k;
-%     statistics = [statistics, statsOut];
-%     %run crossval.m
-% end
+delete(gcp('nocreate'));
+
+%% Draw the confusion matrix for the repeat that has maximum trainCorrect
+if PLOT_CONFUSION_MATRIX
+    for idx = 1:length(exps)
+        exp = exp_configuration(exps(idx), :);
+        plot_confusion_matrix(exp.id, statistics(idx).scoredTrain, statistics(idx).predictTrain, ...
+            statistics(idx).scoredTest, statistics(idx).predictTest, CM_SAVE_DIR)
+    end
+end
 
 %% Start the base line
 % hctsa_ops = datamat(:,feat_id);
@@ -315,20 +302,11 @@ if PLOT_ACCURACY_REPORT
     plot(complexity,accuracy_train,complexity,accuracy_test)
     legend('Training','Test')
     ylabel('Accuracy [0-1]')
-    xlabel('Number of features')
+    xlabel('Experiment Id')
+    set(gca,'XTick',(min(exps):1:max(exps)))
 
     saveas(gcf, strcat(output_folder, filesep, 'ACCURACY_REPORT.png'));
 end
 
 writetable(actual_exp_run, strcat(output_folder, filesep, 'experiment_summary.csv'));
-
-%% Checking 
-
-% for n=1:100
-%     a = epochSampling(14);
-%     boundary(n,:) = [min(a), max(a)];
-% end
-% minmin = min(boundary(:,1))
-% maxmax = max(boundary(:,2))
-
 

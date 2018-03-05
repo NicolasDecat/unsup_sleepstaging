@@ -143,10 +143,10 @@ for Nf = 1:nIterations
     block(Nf).P_testCorrect = testCorrect/(length(testTS));
 
     %% Confusion matrix input
-    scoredTrain(Nf,:) = label(trainTS)';
-    scoredTest(Nf,:) = label(testTS)';
-    predictTrain(Nf,:) = block(Nf).equi_train;
-    predictTest(Nf,:) = block(Nf).equi_test;
+    stats.scoredTrain(Nf,:) = label(trainTS)';
+    stats.scoredTest(Nf,:) = label(testTS)';
+    stats.predictTrain(Nf,:) = block(Nf).equi_train;
+    stats.predictTest(Nf,:) = block(Nf).equi_test;
 end % End Nf-th randomisation
 
 fm_train = [];
@@ -179,58 +179,6 @@ PTestCorrectList = [block(:).P_testCorrect];
 
 stats.output.trainCorrect = mean(PTrainCorrectList); 
 stats.output.testCorrect = mean(PTestCorrectList);
-
-% Output(k).testError = mean(Perror);
-% Output(k).trainError = mean(trainPerror);
-% clearvars -except Output datamat feat_id features k complexity
-
-%% Confusion matrix - for both train and test
-% For one run(k)... can change which data to use later
-%addpath('/Users/sleeping/Documents/MATLAB/unsup_sleep_staging/HCTSA/PeripheryFunctions/BF_ToBinaryClass.m')
-
-%% Confusion matrix of train data
-% Reshape scored and predict matrix
-g_labelTrain = reshape(scoredTrain,1,[]);
-g_clustTrain = reshape(predictTrain,1,[]);
-
-% Labelled - make non-zero stage
-g_labelTrain = g_labelTrain+1;
-
-% Clustered - Use final clustering output
-g_clustTrain = g_clustTrain+1;
-
-% Cluster 6 becomes 5
-g_labelTrain(g_labelTrain==6) = 5;
-g_clustTrain(g_clustTrain==6) = 5;
-
-% Visualise confusion matrix
-if PLOT_CONFUSION_MATRIX
-    figure;
-    plotconfusion_custom(g_labelTrain, g_clustTrain, 'Confusion Matrix - Training');
-    saveas(gcf, strcat(cm_save_dir, filesep, 'CM_TRN_', int2str(experiment), '.png'));
-end
-
-%% Confusion matrix of test data
-% Reshape scored and predict matrix
-g_labelTest = reshape(scoredTest,1,[]);
-g_clustTest = reshape(predictTest,1,[]);
-
-% Labelled - make non-zero stage
-g_labelTest = g_labelTest+1;
-
-% Clustered - Use final clustering output
-g_clustTest = g_clustTest+1;
-
-% Cluster 6 becomes 5
-g_labelTest(g_labelTest==6) = 5;
-g_clustTest(g_clustTest==6) = 5;
-
-% Visualise confusion matrix
-if PLOT_CONFUSION_MATRIX
-    figure;
-    plotconfusion_custom(g_labelTest, g_clustTest, 'Confusion Matrix - Testing');
-    saveas(gcf, strcat(cm_save_dir, filesep, 'CM_TST_', int2str(experiment), '.png'));
-end
 
 statsOut = stats;
 

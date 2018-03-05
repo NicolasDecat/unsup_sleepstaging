@@ -5,7 +5,7 @@ clear all; clc;
 configuration_settings;
 
 homedir = pwd;
-% Start HCTSA tools
+%% Start HCTSA tools
 cd(HCTSA_DIR)
 startup
 cd(homedir)
@@ -21,7 +21,6 @@ feat_name = features{1,2};
 %% All operation names
 hctsafile = HCTSA_FILE;
 all_op = load(hctsafile,'Operations');
-
 
 %% Check operation name, get feat_id
 nn=0;
@@ -81,11 +80,21 @@ for l  = 1:length(exps)
     end
     
     % run('crossvalKR.m') 
-    %[~, statistics(l).complexity]=size(hctsa_ops);
     statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR);
-    statsOut.complexity = k;
+    [~, statsOut.complexity]=size(hctsa_ops);
+    %statsOut.complexity = k;
+    statsOut.id = k;
     statistics = [statistics, statsOut];
 end
+
+%% Draw the confusion matrix for the repeat that has maximum trainCorrect
+if PLOT_CONFUSION_MATRIX
+    for idx = 1:length(exps)
+        plot_confusion_matrix(statistics(idx).id, statistics(idx).scoredTrain, statistics(idx).predictTrain, ...
+            statistics(idx).scoredTest, statistics(idx).predictTest, CM_SAVE_DIR)
+    end
+end
+
 set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
 
 %% Plot output accuracy
@@ -101,21 +110,10 @@ end
 
 if PLOT_ACCURACY_REPORT
     figure;
-    plot(complexity,accuracy_train,complexity,accuracy_test)
+    semilogx(complexity,accuracy_train,complexity,accuracy_test)
     legend('Training','Test')
     ylabel('Accuracy [0-1]')
     xlabel('Number of features')
 
     saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'ACCURACY_REPORT.png'));
 end
-
-%% Checking 
-
-% for n=1:100
-%     a = epochSampling(14);
-%     boundary(n,:) = [min(a), max(a)];
-% end
-% minmin = min(boundary(:,1))
-% maxmax = max(boundary(:,2))
-
-
