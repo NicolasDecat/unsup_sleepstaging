@@ -147,7 +147,7 @@ try
             if (strcmp(char(exp.fs_algorithm), 'BEN') == 1)
                 [selected_features, selected_feature_indexes] = fs_htsca(exp, features, feat_id);
             elseif (strcmp(char(exp.fs_algorithm), 'RELIEFF') == 1)
-                [selected_features, selected_feature_indexes] = fs_reliefF(exp, datamat, answers);
+                [selected_features, selected_feature_indexes] = fs_reliefF(exp, datamat, sleep_answers);
             end
 
             % Safeguard to ensure the indexes length are always <= features
