@@ -309,5 +309,17 @@ for i = 1:height(exp_runs)
         actual_exp_run = [actual_exp_run; exp_runs(i,:)];
     end
 end
-writetable(actual_exp_run, strcat(output_folder, filesep, 'experiment_summary.csv'));
+
+%% Sort the actual run table based on the trainCorrect descending
+col_index = find(strcmpi(actual_exp_run.Properties.VariableNames,'trainCorrect'));
+[sorted_table, indexes] = sortrows(actual_exp_run, col_index, 'descend');
+
+% Print out the top 3
+top_n = 3;
+if top_n > height(sorted_table)
+   top_n = height(sorted_table);
+end
+
+disp(sorted_table(1:top_n, :));
+writetable(sorted_table, strcat(output_folder, filesep, 'experiment_summary.csv'));
 
