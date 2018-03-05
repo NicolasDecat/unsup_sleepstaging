@@ -3,6 +3,7 @@
 clear all; clc;
 
 configuration_settings;
+addpath(genpath('./feature_selection'));
 
 homedir = pwd;
 % Start HCTSA tools
@@ -21,7 +22,6 @@ feat_name = features{1,2};
 %% All operation names
 hctsafile = HCTSA_FILE;
 all_op = load(hctsafile,'Operations');
-
 
 %% Check operation name, get feat_id
 nn=0;
@@ -133,26 +133,21 @@ parpool(THREAD_POOL);
 
 for exp_count = exps
     exp = exp_configuration(exp_count, :);
-    actual_exp_run = [actual_exp_run; exp];
-    
     disp(strcat('Running experiment ', int2str(exp.id), ': ', exp.name, '...'));
     
     try
+        
         parfor repeat = 1:exp.repeat
+            fs_algorithm = char(exp.fs_algorithm);
+            
             selected_features = [];
-            if (strcmp(char(exp.fs_algorithm), 'BEN') == 1 && strcmp(char(exp.fs_type), 'Top') == 1)
-                selected_features = feat_id;
-            elseif (strcmp(char(exp.fs_algorithm), 'BEN') == 1)
-                selected_features = [1:features];
+            selected_feature_indexes = [];
+            
+            if (strcmp(char(exp.fs_algorithm), 'BEN') == 1)
+                [selected_features, selected_feature_indexes] = fs_htsca(exp, features, feat_id);
             end
-
-            selected_feature_indexes = 1:length(selected_features);
-            if (strcmp(char(exp.fs_type), 'Random') == 1)
-                selected_feature_indexes = randperm(length(selected_features), exp.fs_count);
-            elseif (strcmp(char(exp.fs_type), 'Top') == 1)
-                selected_feature_indexes = [1: exp.fs_count];
-            end
-
+            
+            % Safeguard to ensure the indexes length are always <= features
             if (length(selected_feature_indexes) > length(selected_features))
                 disp('WARNING: Feature length is greater than features.');
                 selected_feature_indexes = selected_feature_indexes(1:length(selected_features));
@@ -177,6 +172,14 @@ for exp_count = exps
         % Collect only the statistics for the maximum trainCorrect for all
         % repeats.
         statistics = [statistics, max_stats];
+        exp.trainCorrect = max_stats.output.trainCorrect;
+        exp.testCorrect = max_stats.output.testCorrect;
+        
+        if isempty(actual_exp_run)
+            actual_exp_run = [exp];
+        else
+            actual_exp_run = [actual_exp_run; exp];
+        end
     catch ME
         delete(gcp('nocreate'));
         rethrow(ME);
@@ -190,7 +193,7 @@ if PLOT_CONFUSION_MATRIX
     for idx = 1:length(exps)
         exp = exp_configuration(exps(idx), :);
         plot_confusion_matrix(exp.id, statistics(idx).scoredTrain, statistics(idx).predictTrain, ...
-            statistics(idx).scoredTest, statistics(idx).predictTest, CM_SAVE_DIR)
+            statistics(idx).scoredTest, statistics(idx).predictTest, output_folder)
     end
 end
 
