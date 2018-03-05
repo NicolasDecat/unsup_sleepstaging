@@ -44,8 +44,8 @@ datamat = datamat.TS_DataMat;
 
 [timeseries,features]=size(datamat);
 
-% annotation = load(ANSWER_FILE);
-% label = annotation.sleepstage;
+annotation = load(ANSWER_FILE);
+sleep_answers = annotation.sleepstage;
 % 
 %% Perform feature selection (experimental)
 
@@ -134,6 +134,7 @@ try
     parfor indx = 1:length(exps)
         exp_count = exps(indx);
         exp = exp_configuration(exp_count, :);
+        
         disp(strcat('Running experiment ', int2str(exp.id), ': ', exp.name, '...'));
 
         max_stats = [];
@@ -145,6 +146,8 @@ try
 
             if (strcmp(char(exp.fs_algorithm), 'BEN') == 1)
                 [selected_features, selected_feature_indexes] = fs_htsca(exp, features, feat_id);
+            elseif (strcmp(char(exp.fs_algorithm), 'RELIEFF') == 1)
+                [selected_features, selected_feature_indexes] = fs_htsca(exp, features, feat_id);
             end
 
             % Safeguard to ensure the indexes length are always <= features
@@ -153,9 +156,11 @@ try
                 selected_feature_indexes = selected_feature_indexes(1:length(selected_features));
             end
 
-            hctsa_ops = datamat(:, selected_features(selected_feature_indexes));
+            crossval_features = selected_features(selected_feature_indexes);
+            hctsa_ops = datamat(:, crossval_features);
             statsOut = cross_validation(exp.id, hctsa_ops, output_folder);
             statsOut.complexity = exp.id;
+            statsOut.features = crossval_features;
 
             if isempty(max_stats)
                max_stats = statsOut;
@@ -170,6 +175,10 @@ try
         
         exp.trainCorrect = max_stats.output.trainCorrect;
         exp.testCorrect = max_stats.output.testCorrect;
+        feature_str = sprintf('%.0f,' , max_stats.features);
+        feature_str = feature_str(1:end-1);% strip final comma
+        
+        exp.feature_list{1} = feature_str;
         exp_runs(indx, :) = exp;
     end
 catch ME

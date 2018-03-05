@@ -9,3 +9,9 @@ id, name, repeat, fs_algorithm, fs_type, fs_count
 8, "Ben's random 2000", 1, "BEN", "Random", 2000
 9, "Ben's random 5000", 1, "BEN", "Random", 5000
 10, "Ben's all", 1, "BEN", "All", -1
+11, "Relief F with K=20 top 10", 1, "RELIEFF", "Top", 10
+12, "Relief F with K=20 top 25", 1, "RELIEFF", "Top", 25
+13, "Relief F with K=20 top 50", 1, "RELIEFF", "Top", 50
+14, "Relief F with K=20 top 100", 1, "RELIEFF", "Top", 100
+15, "Relief F with K=20 top 200", 1, "RELIEFF", "Top", 200
+16, "Relief F with K=20 top 500", 1, "RELIEFF", "Top", 500
