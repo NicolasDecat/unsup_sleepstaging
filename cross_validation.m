@@ -18,6 +18,8 @@ whichData = WHICH_DATA;
 annotation = load(ANSWER_FILE);
 label = annotation.sleepstage;
 stgID = epochCounter(whichData,label);
+stgLab = {'W','N1','N2','N3','R'};
+
 % Training
 trainingProportion = TRAINING_PERCENTAGE;
 nIterations = 20;
@@ -26,7 +28,7 @@ nIterations = 20;
 block(nIterations) = struct();
 stats = struct();
 
-for Nf = 1:nIterations  
+for Nf = 1:nIterations
     % Sample epoch ID from each stage and divide into training and test
     [block(Nf).trainTS,block(Nf).testTS]=epochSelect(stgID,trainingProportion);
     % trainTS and testTS are the time segment ID for training set and test set respectively.
@@ -36,7 +38,27 @@ for Nf = 1:nIterations
     trainTS = trainTS(:).';
     testTS = block(Nf).testTS.';
     testTS = testTS(:).';
+
+    if DEBUG_CROSSVALIDATION
+        debug_folder =  strcat('Exp_', sprintf('%d', experiment), '_iteration_', num2str(Nf));
+        if exist(debug_folder)==7
+           rmdir(debug_folder, 's');
+        end
+        mkdir(debug_folder);       
+        
+        for stage=1:size(block(Nf).trainTS,1)
+            stage_folder = strcat(debug_folder, filesep, stgLab{stage});
+            mkdir(stage_folder);
+            
+            stage_data = block(Nf).trainTS(stage, :);
+            for k=1:length(stage_data)
+                imageFile = strcat('ccshs_001_', sprintf('%04d', stage_data(k)), '.png');
+                copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageFile));
+            end
+        end
+    end
     
+
     %% Select data of wanted time ID
     % Features used for clustering are specified in selectdata.m (passing
     % on hctsa_ops variable)
@@ -91,6 +113,22 @@ for Nf = 1:nIterations
     end
     equi_stage = stgLabel(equi_class);
     
+    if DEBUG_CROSSVALIDATION
+        print_stage = equi_stage+1;
+        print_stage(print_stage == 6) = 5;
+
+        print_stage_name = stgLab(print_stage);
+
+        fileID = fopen(strcat(debug_folder, filesep, 'results.txt'),'w');
+        fmt = [repmat('%4d ', 1, size(pro_no,2)-1), '%4d\n'];
+        fprintf(fileID, fmt, pro_no.');   %transpose is important!
+        fprintf(fileID, '\n');
+        
+        for l=1:length(print_stage_name)
+           fprintf(fileID, 'Cluster %d => %s\n ', l, print_stage_name{l});
+        end
+    end
+    
     %% Match up the nearest neighbours with cluster ID
 %     matched_stages = [];
 %     for m = 1:length(unique(clustID))
@@ -135,6 +173,18 @@ for Nf = 1:nIterations
 
 %     addpath('/Users/Zhao/Documents/MATLAB/Add-Ons/Functions/fm_index( X, Y )/code');
 %     addpath('/Users/Zhao/Documents/MATLAB/Add-Ons/Functions/The Adjusted Mutual Information/code');
+    
+    if DEBUG_CROSSVALIDATION
+        Index = trainTS';
+        Answers = label(trainTS);
+        Predicts = block(Nf).equi_train';
+
+        csvTable = table(Index,Answers,Predicts);
+        writetable(csvTable, strcat(debug_folder, filesep, 'summary.csv'));
+        
+        plot_confusion_matrix(experiment, label(trainTS)', block(Nf).equi_train, ...
+            label(testTS)', block(Nf).equi_test, debug_folder)
+    end
     
     %% Percentage correct
     trainCorrect = sum(block(Nf).equi_train==label(trainTS)');

@@ -52,7 +52,9 @@ statistics = [];
 
 for l  = 1:length(exps) 
     k = exps(l); % k is the condition to select operation
-    if k==1
+    if k==0
+        hctsa_ops = datamat(:,feat_id(1:1));
+    elseif k==1
         hctsa_ops = datamat(:,feat_id(1:10));
     elseif k==2
         hctsa_ops = datamat(:,feat_id(1:25));
@@ -101,6 +103,7 @@ set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure display
 accuracy_train = [];
 accuracy_test = [];
 complexity = [];
+
 for l=1:length(exps)
     k = exps(l);
     accuracy_train = [accuracy_train, statistics(l).output.trainCorrect];
