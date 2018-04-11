@@ -16,7 +16,7 @@ end
 %% Remove initial W stage from randomisation and sampling
 % Marking the end of W stage and Sleep stages (N1-N3) (Manually)
 endW = [334,380,391,375,174];
-endS = [1374,1442,1442,1531,1492];
+endS = [1374,1442,1338,1531,1492];
 endID = find(whichData==validData); % Determine which ending/beginning to use
 
 selectID = endW(endID)+1:endS(endID)-1;
