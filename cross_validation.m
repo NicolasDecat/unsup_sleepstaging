@@ -69,8 +69,9 @@ for Nf = 1:nIterations
             testMat = hctsa_ops(testTS',:);
         else
             % Other channels (assumes the index is increment of c)
-            trainMat = [trainMat hctsa_ops((trainTS*c)',:)];
-            testMat = [testMat hctsa_ops((testTS*c)',:)];
+            increment=(size(hctsa_ops,1)/3)*(c-1);
+            trainMat = [trainMat hctsa_ops((trainTS+increment)',:)];
+            testMat = [testMat hctsa_ops((testTS+increment)',:)];
         end
     end
     
