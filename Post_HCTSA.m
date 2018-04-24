@@ -76,15 +76,23 @@ if checking ~= timeseries
     %?
 end
 
+datamat = hctsafile.TS_DataMat;
+hctsa_temp = datamat;
 %% Group same time series together
 n = 0; % show state of featurexchannels
 if NUM_CHANNELS == 1
-    hctsa_ops = hcta_temp;
+    hctsa_ops = hctsa_temp;
 else
     for t = 1:length(timeuniq)
         n=n+1; % Essentially n = length(timeuniq)
         timename = sprintf('timeseg_%d',t);
         id = find(ismember(timelabel,timename)); %Find timeseries ID of the time label
+        
+        % The id could be 0 if HCTSA_Normalise remove the row.
+        if isempty(id)
+            continue
+        end
+        
         temp = hctsa_temp(id,:);
         % Reshape to make a row of the same time with all the features
         hctsa_ops(n,:) = reshape(temp,1,[]);

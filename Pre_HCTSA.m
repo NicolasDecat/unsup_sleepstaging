@@ -5,11 +5,11 @@
 % 3. Save data in the format suitable for HCTSA
 % #########################################################################
 %
-configuration_settings
+configuration_settings;
 
 whichData = WHICH_DATA;
-% edfname = strcat('ccshs-trec-1800',num2str(whichData,'%03d'),'.edf'); % 'ccshs-trec-1800001.edf'; 
-edffile = strcat(DARA_DIR, filesep, EDF_FILE);
+edfname = EDF_FILE;
+edffile = strcat(DATA_DIR, filesep, EDF_FILE);
 %% Specify case (How many channel?)
 nChannel = NUM_CHANNELS; % Number of channels to be used:[1,2,3] 
 % Read data and segment into specified length 
@@ -58,8 +58,10 @@ switch (nChannel)
             selectedHeader(n).sampling_rate = signalHeader(firstChanIndex(n)).samples_in_record;
         end
         % Downsample EMG channel
-        selectedSignal(3).raw = downsample(selectedSignal().raw,2); % Downsampled by factor of 2
+        selectedSignal(3).raw = downsample(selectedSignal(3).raw,2); % Downsampled by factor of 2
         selectedHeader(3).sampling_rate = selectedHeader(3).sampling_rate/2;
+        
+        
         % Segmentation
         for m = 1:nChannel
             selectedSignal(m).chopped = read_edf_segment(selectedSignal(m).raw',...
@@ -67,7 +69,7 @@ switch (nChannel)
             % Generate time labels
             [n_ts,~]  = size(selectedSignal(m).chopped);
             for t = 1:n_ts
-                name = sprint('timeseg_%d',t);
+                name = sprintf('timeseg_%d',t);
                 timelabel{t} = name;
             end
             
@@ -78,6 +80,6 @@ switch (nChannel)
 end
         
 %% Save in HCTSA input format
-hctsafile = strcat('TS_',edfname(1:length(edffile)-4),'_',num2str(nChannel),'chan');
+hctsafile = strcat('TS_',edfname(1:length(edfname)-4),'_',num2str(nChannel),'chan');
 save(hctsafile,'timeSeriesData','labels','keywords')
 

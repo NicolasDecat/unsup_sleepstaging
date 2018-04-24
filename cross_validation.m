@@ -3,7 +3,7 @@
 %        - LabeledStage // labelled sleep stage from annotation
 % Output : stgID // randomised order of epoch IDs
 
-function statsOut = cross_validation(experiment, hctsa_ops, cm_save_dir)
+function statsOut = cross_validation(experiment, hctsa_ops, cm_save_dir, number_of_channels_used)
 
 %% Cross-validation code
 % Classification algorithm: K-means clustering + Nearest centroid
@@ -22,7 +22,8 @@ stgLab = {'W','N1','N2','N3','R'};
 
 % Training
 trainingProportion = TRAINING_PERCENTAGE;
-nIterations = 20;
+nIterations = CROSSVAL_ITERATION;
+
 %% Multiple iteration of randomisation and cross-validation
 % Initialise result struct
 block(nIterations) = struct();
@@ -52,7 +53,7 @@ for Nf = 1:nIterations
             
             stage_data = block(Nf).trainTS(stage, :);
             for k=1:length(stage_data)
-                imageFile = strcat('ccshs_001_', sprintf('%04d', stage_data(k)), '.png');
+                imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', stage_data(k)), '.png');
                 copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageFile));
             end
         end
@@ -63,12 +64,11 @@ for Nf = 1:nIterations
     % Features used for clustering are specified in selectdata.m (passing
     % on hctsa_ops variable)
     % Timeseries used for crossval are specified here.
-    for c=1:NUM_CHANNELS_USED_FOR_CROSSVAL
+    for c=1:number_of_channels_used
         if c==1
             trainMat = hctsa_ops(trainTS',:);
             testMat = hctsa_ops(testTS',:);
         else
-            % Other channels (assumes the index is increment of c)
             increment=(size(hctsa_ops,1)/3)*(c-1);
             trainMat = [trainMat hctsa_ops((trainTS+increment)',:)];
             testMat = [testMat hctsa_ops((testTS+increment)',:)];
@@ -77,10 +77,28 @@ for Nf = 1:nIterations
     
     %% Clustering using training dataset
     % Record cluster ID and centre of each cluster
+
+    %% UNSUPERVISED
     n_clust = 5;
-    [clustID,block(Nf).Kcentre,~] = kmeans(trainMat,n_clust,'Distance','sqeuclidean',...
+    [clustID,block(Nf).Kcentre] = kmeans(trainMat,n_clust,'Distance','sqeuclidean',...
                         'Display','off','Replicates',50,'MaxIter',500);
+                   
+%% SUPERVISED
+%     Model =fitcecoc(trainMat,label(trainTS),'OptimizeHyperparameters','auto',...
+%     'HyperparameterOptimizationOptions',struct('AcquisitionFunctionName',...
+%     'expected-improvement-plus')); 
+
+
+    %Model =fitctree(trainMat,label(trainTS),'ClassNames',{'0','1', '2','3','5'});                    
+
     % K-means clustering 
+%     clear clust;
+%     for i=1:10
+%         clust(:,i) = kmeans(trainMat,i,'Distance','sqeuclidean',...
+%                 'Display','off','Replicates',50,'MaxIter',500);
+%     end
+%     
+%     va = evalclusters(trainMat,clust,'CalinskiHarabasz');
     
     %% Classification of test dataset(Nearest centroid classifier)
     % Minimum Euclidean distance from centre/mean features of the cluster
@@ -91,8 +109,8 @@ for Nf = 1:nIterations
         % Find the cluster of minimum distance
         [~,clustTest(n)] = min(distance);
     end
-    clustTest = clustTest';
-    % Test set are classified into 5 classes(clusters) obtained from
+      
+%% Test set are classified into 5 classes(clusters) obtained from
     % clustering of training set.
     %% Find equivalent cluster-sleep stage pair
     % Method 1: Highest count = Equivalent cluster
@@ -113,7 +131,7 @@ for Nf = 1:nIterations
         [~,equi_class(m)]=max(pro_no(m,:));
     end
     equi_stage = stgLabel(equi_class);
-    
+
     if DEBUG_CROSSVALIDATION
         print_stage = equi_stage+1;
         print_stage(print_stage == 6) = 5;
@@ -187,6 +205,12 @@ for Nf = 1:nIterations
             label(testTS)', block(Nf).equi_test, debug_folder)
     end
     
+%     dataset_model = load("Data1EnsembleModel.mat");
+%     model = dataset_model.trainedModel;
+% 
+%     prediction = model.predictFcn(realTestMat);
+%     disp(prediction');
+    
     %% Percentage correct
     trainCorrect = sum(block(Nf).equi_train==label(trainTS)');
     testCorrect = sum(block(Nf).equi_test==label(testTS)');
@@ -200,10 +224,6 @@ for Nf = 1:nIterations
     stats.predictTest(Nf,:) = block(Nf).equi_test;
 end % End Nf-th randomisation
 
-fm_train = [];
-fm_test = [];
-ami_train = [];
-ami_test = [];
 % for i=1:size(scoredTrain, 1)
 %     fm_train(i) = fm_index(scoredTrain(i,:)+1, predictTrain(i, :)+1);
 %     fm_test(i) = fm_index(scoredTest(i,:)+1, predictTest(i, :)+1);

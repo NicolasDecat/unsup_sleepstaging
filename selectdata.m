@@ -36,6 +36,7 @@ for n = 1:length(feat_name)
         end
     end
 end
+
 clear i n nn op_name name
 %% Use feat_id to select data from full op
 datamat = load(hctsafile,'TS_DataMat');
@@ -82,7 +83,7 @@ for l  = 1:length(exps)
     end
     
     % run('crossvalKR.m') 
-    statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR);
+    statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR, NUM_CHANNELS_USED_FOR_CROSSVAL);
     [~, statsOut.complexity]=size(hctsa_ops);
     %statsOut.complexity = k;
     statsOut.id = k;
