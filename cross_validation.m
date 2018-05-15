@@ -41,7 +41,7 @@ for Nf = 1:nIterations
     testTS = testTS(:).';
 
     if DEBUG_CROSSVALIDATION
-        debug_folder =  strcat('Exp_', sprintf('%d', experiment), '_iteration_', num2str(Nf));
+        debug_folder =  strcat('Exp_', sprintf('%d', experiment), '_iteration_', num2str(Nf), '_channel_', num2str(number_of_channels_used));
         if exist(debug_folder)==7
            rmdir(debug_folder, 's');
         end
@@ -54,9 +54,10 @@ for Nf = 1:nIterations
             stage_data = block(Nf).trainTS(stage, :);
             for k=1:length(stage_data)
                 imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', stage_data(k)), '.png');
-                copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageFile));
+                %copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageFile));
             end
         end
+
     end
     
 
@@ -79,27 +80,22 @@ for Nf = 1:nIterations
     % Record cluster ID and centre of each cluster
 
     %% UNSUPERVISED
-    n_clust = 5;
-    [clustID,block(Nf).Kcentre] = kmeans(trainMat,n_clust,'Distance','sqeuclidean',...
+    [clustID,block(Nf).Kcentre,~] = kmeans(trainMat,NUM_CLUSTERS,'Distance','sqeuclidean',...
                         'Display','off','Replicates',50,'MaxIter',500);
                    
-%% SUPERVISED
-%     Model =fitcecoc(trainMat,label(trainTS),'OptimizeHyperparameters','auto',...
-%     'HyperparameterOptimizationOptions',struct('AcquisitionFunctionName',...
-%     'expected-improvement-plus')); 
+    %% SUPERVISED (same data)
+    template = templateSVM(...
+    'KernelFunction', 'linear', ...
+    'PolynomialOrder', [], ...
+    'KernelScale', 'auto', ...
+    'BoxConstraint', 1, ...
+    'Standardize', true);
 
-
-    %Model =fitctree(trainMat,label(trainTS),'ClassNames',{'0','1', '2','3','5'});                    
-
-    % K-means clustering 
-%     clear clust;
-%     for i=1:10
-%         clust(:,i) = kmeans(trainMat,i,'Distance','sqeuclidean',...
-%                 'Display','off','Replicates',50,'MaxIter',500);
-%     end
-%     
-%     va = evalclusters(trainMat,clust,'CalinskiHarabasz');
-    
+     SVMModel = fitcecoc(trainMat, label(trainTS),'Learners', template, ...
+         'Coding', 'onevsone', 'ClassNames', [0; 1; 2; 3; 5]);
+     svmTrain = predict(SVMModel, trainMat);
+     svmTest = predict(SVMModel, testMat);
+     
     %% Classification of test dataset(Nearest centroid classifier)
     % Minimum Euclidean distance from centre/mean features of the cluster
     
@@ -128,8 +124,33 @@ for Nf = 1:nIterations
         for n = 1:length(stgID.nStg)
             pro_no(m,n) = sum(actualStg==stgLabel(n));
         end
-        [~,equi_class(m)]=max(pro_no(m,:));
+        %[~,equi_class(m)]=max(pro_no(m,:));
     end
+    
+    % Now we give the stage that has the highest sum choose first.
+    [~, row_index] = sort(max(pro_no'), 'd');
+    remaining_cluster_to_allocate=unique(clustID)';
+    for s = 1:length(row_index)
+        row = row_index(s);
+        a_row = pro_no(row, :);
+        
+        while sum(a_row) > -5
+            max_value = max(a_row);
+            max_index = find(a_row == max_value);
+            max_index = max_index(randperm(length(max_index), 1));
+            cluster_allocate_index = find(ismember(remaining_cluster_to_allocate, max_index));
+            if cluster_allocate_index > 0
+                % The cluster ID has not been allocated yet.
+                equi_class(row) = max_index;
+                remaining_cluster_to_allocate(cluster_allocate_index) = [];
+                break;
+            else
+                a_row(max_index) = -1; % Remove the maximum value because the cluster already assigned.
+            end
+            
+        end
+    end
+    
     equi_stage = stgLabel(equi_class);
 
     if DEBUG_CROSSVALIDATION
@@ -146,35 +167,33 @@ for Nf = 1:nIterations
         for l=1:length(print_stage_name)
            fprintf(fileID, 'Cluster %d => %s\n ', l, print_stage_name{l});
         end
+        
+        %% Find the top X closest neighbours to each state.
+        for m = 1:length(unique(clustID))
+            stage_name = print_stage_name{m};
+            clust_point = block(Nf).Kcentre(m,:);
+            idx = knnsearch(trainMat, clust_point, 'k', 5)';
+            ts_idx = trainTS(idx);
+            
+            stage_folder = strcat(debug_folder, filesep, stage_name);
+            
+            ll=label(ts_idx);
+            ll = ll+1;
+            ll(ll == 6) = 5;
+            
+            for s = 1:length(ts_idx)
+                imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', ts_idx(s)), '.png');
+                
+                suffix = '_CORRECT';
+                if (stgLab{ll(s)} ~= stage_name)
+                    suffix = strcat('_INCORRECT_', stgLab{ll(s)});
+                end
+                
+                imageToFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', ts_idx(s)), '_CLOSEST', suffix, '.png');
+                copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageToFile));
+            end
+        end
     end
-    
-    %% Match up the nearest neighbours with cluster ID
-%     matched_stages = [];
-%     for m = 1:length(unique(clustID))
-%        clust_point = block(Nf).Kcentre(m,:);
-%        
-%        % Find the top 5 closest neighbours to the centroid.
-%        idx = knnsearch(trainMat, clust_point, 'k', 1)';
-%        
-%        % Original labels
-%        orig_labels = label(trainTS(idx));
-       
-       % Find out if any of the labels has already been matched and remove
-       % them
-%        indexes = find(ismember(orig_labels, matched_stages));
-%        orig_labels(indexes) = [];
-%        
-%        % To avoid NaN (i.e. all orig_labels have been removed)
-%        if (length(orig_labels) == 0)
-%           orig_labels = label(trainTS(idx)); 
-%        end
-       
-%        stage_label_most_occurence = mode(orig_labels);
-%        matched_stages = [matched_stages, stage_label_most_occurence];
-%        % Determine the most occurrence of the labels and associate with the
-%        % cluster
-%        %disp("Cluster " + m + " associated with stage " + stage_label_most_occurence);
-%     end
     
     %% Case: Counts are equal -> repeating equivalent class
     % if unique(equi_class)~=[1:5]  
@@ -190,9 +209,6 @@ for Nf = 1:nIterations
         block(Nf).equi_test(j) = equi_stage(clustTest(j));
     end
 
-%     addpath('/Users/Zhao/Documents/MATLAB/Add-Ons/Functions/fm_index( X, Y )/code');
-%     addpath('/Users/Zhao/Documents/MATLAB/Add-Ons/Functions/The Adjusted Mutual Information/code');
-    
     if DEBUG_CROSSVALIDATION
         Index = trainTS';
         Answers = label(trainTS);
@@ -205,43 +221,23 @@ for Nf = 1:nIterations
             label(testTS)', block(Nf).equi_test, debug_folder)
     end
     
-%     dataset_model = load("Data1EnsembleModel.mat");
-%     model = dataset_model.trainedModel;
-% 
-%     prediction = model.predictFcn(realTestMat);
-%     disp(prediction');
-    
     %% Percentage correct
     trainCorrect = sum(block(Nf).equi_train==label(trainTS)');
     testCorrect = sum(block(Nf).equi_test==label(testTS)');
     block(Nf).P_trainCorrect = trainCorrect/(length(trainTS));
     block(Nf).P_testCorrect = testCorrect/(length(testTS));
 
+    %fprintf('trainCorrect: %0.2f testCorrect: %0.2f\n', block(Nf).P_trainCorrect, block(Nf).P_testCorrect);
+    
     %% Confusion matrix input
     stats.scoredTrain(Nf,:) = label(trainTS)';
     stats.scoredTest(Nf,:) = label(testTS)';
     stats.predictTrain(Nf,:) = block(Nf).equi_train;
     stats.predictTest(Nf,:) = block(Nf).equi_test;
+    stats.svmPredictTrain(Nf, :) = svmTrain';
+    stats.svmPredictTest(Nf, :) = svmTest';
+    
 end % End Nf-th randomisation
-
-% for i=1:size(scoredTrain, 1)
-%     fm_train(i) = fm_index(scoredTrain(i,:)+1, predictTrain(i, :)+1);
-%     fm_test(i) = fm_index(scoredTest(i,:)+1, predictTest(i, :)+1);
-%     
-%     % AMI requires non-zero values
-%     ami_train(i) = ami(scoredTrain(i,:)+1, predictTrain(i, :)+1);
-%     ami_test(i) = ami(scoredTest(i,:)+1, predictTest(i,:)+1);
-% end
-% 
-% stats.fm_train_score = mean(fm_train);
-% stats.fm_test_score = mean(fm_test);
-% stats.ami_train_score = mean(ami_train);
-% stats.ami_test_score = mean(ami_test);
-
-% disp("Mean train Fowlkes-Mallows scores for k = " + experiment + " is " + mean(fm_train));
-% disp("Mean test Fowlkes-Mallows scores for k = " + experiment + " is " + mean(fm_test));
-% disp("Mean train Adjusted Mutual Information scores for k = " + experiment + " is " + mean(ami_train));
-% disp("Mean test Adjusted Mutual Information scores for k = " + experiment + " is " + mean(ami_test));
 
 %% Average output
 % For comparing different k (changing features used as a condition)

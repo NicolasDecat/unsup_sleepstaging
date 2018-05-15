@@ -14,17 +14,19 @@ NUM_CHANNELS = 3;
 
 %% Post HCTSA
 HCTSA_DIR='/Users/Zhao/SleepPsychoPhysics/Source/hctsa';
-HCTSA_DATA_DIR='/Volumes/Spaceship/Voss_Lucid/KJ_N1/5seconds';
+%HCTSA_DATA_DIR='/Volumes/Spaceship/Voss_Lucid/KJ_N1/5seconds';
+HCTSA_DATA_DIR='./180001_HCTSA';
 
 %% selectdata and crossval
-ANSWER_FILE='ccshs_1800001_annot.mat';
-CONFUSION_MATRIX_FILE='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging/180001_HCTSA';
-CM_SAVE_DIR='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging/180001_HCTSA';
-HCTSA_FILE='180001_HCTSA/HCTSA_N.mat';
+ANSWER_FILE='/Volumes/Spaceship/ccshs_datasets/ccshs_1800001_annot.mat';
+CONFUSION_MATRIX_FILE='/Volumes/Spaceship/SleepResearch/sleep_documentation_results/results/sleep_org_180001_HCTSA';
+CM_SAVE_DIR='/Volumes/Spaceship/SleepResearch/sleep_documentation_results/results/sleep_org_180001_HCTSA';
+HCTSA_FILE='/Volumes/Spaceship/SleepResearch/sleep_documentation_results/results/sleep_org_180001_HCTSA/HCTSA_N.mat';
 OPS_FILE='reduced_ops.txt';
 TRAINING_PERCENTAGE = 0.7;
-NUM_CHANNELS_USED_FOR_CROSSVAL = 3;
-CROSSVAL_ITERATION=5;
+NUM_CLUSTERS = 5;
+NUM_CHANNELS_USED_FOR_CROSSVAL = 2;
+CROSSVAL_ITERATION=3;
 PLOT_CONFUSION_MATRIX=true;
 PLOT_ACCURACY_REPORT=true;
 

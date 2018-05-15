@@ -1,7 +1,5 @@
 % Select features from reduced_ops.txt, make another .mat file to work on
 % cross-validation.
-clear all; clc;
-
 configuration_settings;
 
 homedir = pwd;
@@ -40,7 +38,7 @@ end
 clear i n nn op_name name
 %% Use feat_id to select data from full op
 datamat = load(hctsafile,'TS_DataMat');
-    datamat = datamat.TS_DataMat;
+datamat = datamat.TS_DataMat;
 
 [timeseries,features]=size(datamat);
 hctsa_ops = datamat(:,feat_id);
@@ -51,6 +49,11 @@ set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displayi
 exps = EXPS_TO_RUN; % This allow us to selectively choose which experiment to run
 statistics = [];
 
+save_stats_columns = {'Type', 'Iteration', 'TrainingAccuracy', 'TestingAccuracy', 'NumberOfFeatures','NumberOfChannels'};
+save_stats = array2table(zeros(0,length(save_stats_columns)));
+save_stats.Properties.VariableNames = save_stats_columns;
+    
+for c = 3:3
 for l  = 1:length(exps) 
     k = exps(l); % k is the condition to select operation
     if k==0
@@ -83,11 +86,33 @@ for l  = 1:length(exps)
     end
     
     % run('crossvalKR.m') 
-    statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR, NUM_CHANNELS_USED_FOR_CROSSVAL);
+    statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR, c);
     [~, statsOut.complexity]=size(hctsa_ops);
     %statsOut.complexity = k;
     statsOut.id = k;
     statistics = [statistics, statsOut];
+
+    iteration=1:size(statsOut.scoredTrain, 1);
+    iteration_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.predictTrain)'))/size(statsOut.scoredTrain, 2))';
+    iteration_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.predictTest)'))/size(statsOut.scoredTest, 2))';
+    iteration_svm_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.svmPredictTrain)'))/size(statsOut.scoredTrain, 2))';
+    iteration_svm_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.svmPredictTest)'))/size(statsOut.scoredTest, 2))';
+    num_of_features=zeros(size(statsOut.scoredTrain, 1), 1);
+    num_of_features(:) = size(hctsa_ops, 2);
+    num_of_channels=zeros(size(statsOut.scoredTrain, 1), 1);
+    num_of_channels(:) = c;
+    
+    types=strings(size(statsOut.scoredTrain, 1), 1);
+    types(:)="Unsupervised_Balanced_Labeled";
+    row = [types, iteration', iteration_training_accuracy, iteration_testing_accuracy, num_of_features, num_of_channels];
+    save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
+
+    types=strings(size(statsOut.scoredTrain, 1), 1);
+    types(:)="Supervised_Balanced_Labeled";
+    row = [types, iteration', iteration_svm_training_accuracy, iteration_svm_testing_accuracy, num_of_features, num_of_channels];
+    save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
+    
+end
 end
 
 %% Draw the confusion matrix for the repeat that has maximum trainCorrect
@@ -99,6 +124,8 @@ if PLOT_CONFUSION_MATRIX
 end
 
 set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
+
+%save(strcat(CM_SAVE_DIR, filesep, 'UNBALANCE_UNLABEL.mat'), 'save_stats');
 
 %% Plot output accuracy
 accuracy_train = [];
