@@ -36,7 +36,7 @@ switch (nChannel)
         data = transpose(signalCell{1}-signalCell{4});
         
         % Segmentation
-        timeSeriesData = read_edf_segment(data,fs,interval,nchannels);% Change function name
+        timeSeriesData = read_edf_segment(data,fs,interval,nChannel);% Change function name
     
         % Number of epochs
         [n_ts,~] = size(timeSeriesData);
