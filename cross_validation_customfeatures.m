@@ -3,7 +3,7 @@
 %        - LabeledStage // labelled sleep stage from annotation
 % Output : stgID // randomised order of epoch IDs
 
-function statsOut = cross_validation(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, total_channels, epochSelectFunction)
+function statsOut = cross_validation_customfeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, top_eeg_feature_indexes, top_eog_feature_indexes, top_emg_feature_indexes)
 
 %% Cross-validation code
 % Classification algorithm: K-means clustering + Nearest centroid
@@ -19,13 +19,6 @@ annotation = load(ANSWER_FILE);
 label = annotation.sleepstage;
 stgID = epochCounter(whichData,label);
 stgLab = {'W','N1','N2','N3','R'};
-
-s=find(label~=0); epochEnd = s(end)+2; if (epochEnd > length(label)) epochEnd = length(label); end; strcat(num2str(s(1)-1),'-',num2str(epochEnd))
-
-% Safeguard against mismatch of annotation data and the actual epoch
-% numbers.
-assert(size(label, 1) == size(hctsa_ops, 1)/total_channels, "The length of the annotation must be the same as one channel length");
-
 
 % Training
 trainingProportion = TRAINING_PERCENTAGE;
@@ -54,16 +47,16 @@ for Nf = 1:nIterations
         end
         mkdir(debug_folder);       
         
-%         for stage=1:size(block(Nf).trainTS,1)
-%             stage_folder = strcat(debug_folder, filesep, stgLab{stage});
-%             mkdir(stage_folder);
-%             
-%             stage_data = block(Nf).trainTS(stage, :);
-%             for k=1:length(stage_data)
-%                 imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', stage_data(k)), '.png');
-%                 copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageFile));
-%             end
-%         end
+        for stage=1:size(block(Nf).testTS,1)
+            stage_folder = strcat(debug_folder, filesep, stgLab{stage});
+            mkdir(stage_folder);
+            
+            stage_data = block(Nf).testTS(stage, :);
+            for k=1:length(stage_data)
+                imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', stage_data(k)), '.png');
+                %copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageFile));
+            end
+        end
 
     end
     
@@ -74,12 +67,17 @@ for Nf = 1:nIterations
     % Timeseries used for crossval are specified here.
     for ch=1:number_of_channels_used
         if ch==1
-            trainMat = hctsa_ops(trainTS',:);
-            testMat = hctsa_ops(testTS',:);
+            trainMat = hctsa_ops(trainTS',top_eeg_feature_indexes);
+            testMat = hctsa_ops(testTS',top_eeg_feature_indexes);
         else
-            increment=(size(hctsa_ops,1)/total_channels)*(ch-1);
-            trainMat = [trainMat hctsa_ops((trainTS+increment)',:)];
-            testMat = [testMat hctsa_ops((testTS+increment)',:)];
+            increment=(size(hctsa_ops,1)/3)*(ch-1);
+            top_features_indexes=top_eog_feature_indexes;
+            if ch==3
+                top_features_indexes=top_emg_feature_indexes;
+            end
+            
+            trainMat = [trainMat hctsa_ops((trainTS+increment)',top_features_indexes)];
+            testMat = [testMat hctsa_ops((testTS+increment)',top_features_indexes)];
         end
     end
     
@@ -176,30 +174,30 @@ for Nf = 1:nIterations
         end
         
         %% Find the top X closest neighbours to each state.
-%         for m = 1:length(unique(clustID))
-%             stage_name = print_stage_name{m};
-%             clust_point = block(Nf).Kcentre(m,:);
-%             idx = knnsearch(trainMat, clust_point, 'k', 5)';
-%             ts_idx = trainTS(idx);
-%             
-%             stage_folder = strcat(debug_folder, filesep, stage_name);
-%             
-%             ll=label(ts_idx);
-%             ll = ll+1;
-%             ll(ll == 6) = 5;
-%             
-%             for s = 1:length(ts_idx)
-%                 imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', ts_idx(s)), '.png');
-%                 
-%                 suffix = '_CORRECT';
-%                 if (stgLab{ll(s)} ~= stage_name)
-%                     suffix = strcat('_INCORRECT_', stgLab{ll(s)});
-%                 end
-%                 
-%                 imageToFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', ts_idx(s)), '_CLOSEST', suffix, '.png');
-%                 copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageToFile));
-%             end
-%         end
+        for m = 1:length(unique(clustID))
+            stage_name = print_stage_name{m};
+            clust_point = block(Nf).Kcentre(m,:);
+            idx = knnsearch(trainMat, clust_point, 'k', 5)';
+            ts_idx = trainTS(idx);
+            
+            stage_folder = strcat(debug_folder, filesep, stage_name);
+            
+            ll=label(ts_idx);
+            ll = ll+1;
+            ll(ll == 6) = 5;
+            
+            for s = 1:length(ts_idx)
+                imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', ts_idx(s)), '.png');
+                
+                suffix = '_CORRECT';
+                if (stgLab{ll(s)} ~= stage_name)
+                    suffix = strcat('_INCORRECT_', stgLab{ll(s)});
+                end
+                
+                imageToFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', ts_idx(s)), '_CLOSEST', suffix, '.png');
+                copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageToFile));
+            end
+        end
     end
     
     %% Case: Counts are equal -> repeating equivalent class
@@ -243,9 +241,10 @@ for Nf = 1:nIterations
     stats.predictTest(Nf,:) = block(Nf).equi_test;
     stats.svmPredictTrain(Nf, :) = svmTrain';
     stats.svmPredictTest(Nf, :) = svmTest';
-    
+
     assert(size(trainMat, 2) == size(testMat, 2));
     stats.totalFeatures(Nf, :) = size(trainMat, 2);
+    
 end % End Nf-th randomisation
 
 %% Average output

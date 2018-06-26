@@ -41,7 +41,12 @@ datamat = load(hctsafile,'TS_DataMat');
 datamat = datamat.TS_DataMat;
 
 [timeseries,features]=size(datamat);
-hctsa_ops = datamat(:,feat_id);
+single_channel_size = timeseries/3;
+
+% CONFIG
+hctsa_ops = datamat(1:single_channel_size,feat_id);
+%hctsa_ops = datamat(single_channel_size + 1 : single_channel_size*2,feat_id);
+%hctsa_ops = datamat(single_channel_size*2 + 1 : single_channel_size*3,feat_id);
 
 %% Run cross-validation code
 % Change the number of operations
@@ -49,59 +54,23 @@ set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displayi
 exps = EXPS_TO_RUN; % This allow us to selectively choose which experiment to run
 statistics = [];
 
-save_stats_columns = {'Type', 'Iteration', 'TrainingAccuracy', 'TestingAccuracy', 'NumberOfFeatures','NumberOfChannels'};
+save_stats_columns = {'Type', 'Iteration', 'TrainingAccuracy', 'TestingAccuracy', 'FeatureId', 'FeatureName','Channels'};
 save_stats = array2table(zeros(0,length(save_stats_columns)));
 save_stats.Properties.VariableNames = save_stats_columns;
     
 for c = NUM_CHANNELS_TO_RUN
 for configuration = 1:length(CONFIGURATIONS_TO_RUN)
     conf = CONFIGURATIONS_TO_RUN(configuration);
+
+for l  = 1:size(feat_id,2)
+    k = feat_id(l);
     
-for l  = 1:length(exps) 
-    k = exps(l); % k is the condition to select operation
-    if k==0
-        hctsa_ops = datamat(:,feat_id(1:1));
-    elseif k==1
-        hctsa_ops = datamat(:,feat_id(1:10));
-    elseif k==2
-        hctsa_ops = datamat(:,feat_id(1:25));
-    elseif k==3
-        hctsa_ops = datamat(:,feat_id(1:50));
-    elseif k==4
-        hctsa_ops = datamat(:,feat_id(1:100));
-    elseif k==5 % Top 198 features
-        disp(size(feat_id));
-        hctsa_ops = datamat(:,feat_id);
-        %hctsa_ops = datamat(:,feat_id(1:200));
-    elseif k==6 % Random 500 features
-        rand_id = randperm(features,500);
-        hctsa_ops = datamat(:,rand_id);
-    elseif k==7
-        rand_id = randperm(features,1000);
-        hctsa_ops = datamat(:,rand_id);
-    elseif k==8
-        rand_id = randperm(features,2000);
-        hctsa_ops = datamat(:,rand_id);
-    elseif k==9
-        rand_id = randperm(features,5000);
-        hctsa_ops = datamat(:,rand_id);
-    else
-        hctsa_ops = datamat;
-    end
+    hctsa_ops = datamat(:, k);
     
-    % run('crossvalKR.m') 
-    if conf == 'BALANCED_LABELED'
-        epochSelectFunc = @epochSelect;
-    elseif conf == 'UNBALANCED_LABELED_A'
-        epochSelectFunc = @epochSelect_unbalanced;
-    elseif conf == 'UNBALANCED_LABELED_B'
-        epochSelectFunc = @epochSelect_unbalanced_b;
-    else
-        warning(strcat(conf, ' does not match any of the configuration, please check the code...'));
-        epochSelectFunc = @epochSelect;
-    end
+    % NOTE: Here the number of channel is always 1 because we use
+    % exclusively the data from this channel.
+    statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR, 1, @epochSelect);
     
-    statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR, c, NUM_CHANNELS, epochSelectFunc);
     [~, statsOut.complexity]=size(hctsa_ops);
     %statsOut.complexity = k;
     statsOut.id = k;
@@ -113,48 +82,57 @@ for l  = 1:length(exps)
     iteration_svm_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.svmPredictTrain)'))/size(statsOut.scoredTrain, 2))';
     iteration_svm_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.svmPredictTest)'))/size(statsOut.scoredTest, 2))';
     num_of_features=zeros(size(statsOut.scoredTrain, 1), 1);
-    num_of_features(:) = unique(statsOut.totalFeatures);
+    num_of_features(:) = size(hctsa_ops, 2);
     num_of_channels=zeros(size(statsOut.scoredTrain, 1), 1);
-    num_of_channels(:) = c;
+    num_of_channels(:) = 1; % NOTE: Here hardcoded to 1
     
     types=strings(size(statsOut.scoredTrain, 1), 1);
     types(:)=strcat('Unsupervised_', conf);
-    row = [types, iteration', iteration_training_accuracy, iteration_testing_accuracy, num_of_features, num_of_channels];
+    
+    feature_ids = ones(size(iteration, 2), 1) .* k;
+    feature_names = cell(1, size(iteration, 2));
+    feature_names(:) = cellstr(all_op.Operations(k).Name);
+
+    channels = cell(1, size(iteration, 2));
+    
+    if (c == 1)
+        channels(:) = cellstr("EEG");
+    elseif(c==2)
+        channels(:) = cellstr("EOG");
+    elseif(c==3)
+        channels(:) = cellstr("EMG");
+    end
+
+    row = [types, iteration', double(iteration_training_accuracy), double(iteration_testing_accuracy), feature_ids, string(cell2mat(feature_names')), channels'];
     save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
 
     types=strings(size(statsOut.scoredTrain, 1), 1);
     types(:)=strcat('Supervised_', conf);
-    row = [types, iteration', iteration_svm_training_accuracy, iteration_svm_testing_accuracy, num_of_features, num_of_channels];
+    row = [types, iteration', double(iteration_svm_training_accuracy), double(iteration_svm_testing_accuracy), feature_ids, string(cell2mat(feature_names')), channels'];
     save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
-    
-    if PLOT_CONFUSION_MATRIX
-        plot_confusion_matrix(strcat('_chan_', num2str(c), '_', conf), statsOut.scoredTrain, statsOut.predictTrain, ...
-            statsOut.scoredTest, statsOut.predictTest, CM_SAVE_DIR)
-    end
     
 end
 end
 end
 
 %% Draw the confusion matrix for the repeat that has maximum trainCorrect
-% if PLOT_CONFUSION_MATRIX
-%     for idx = 1:length(exps)
-%         plot_confusion_matrix(statistics(idx).id, statistics(idx).scoredTrain, statistics(idx).predictTrain, ...
-%             statistics(idx).scoredTest, statistics(idx).predictTest, CM_SAVE_DIR)
-%     end
-% end
+if PLOT_CONFUSION_MATRIX
+    for idx = 1:size(feat_id,2)
+        plot_confusion_matrix(statistics(idx).id, statistics(idx).scoredTrain, statistics(idx).predictTrain, ...
+            statistics(idx).scoredTest, statistics(idx).predictTest, CM_SAVE_DIR)
+    end
+end
 
 set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
-save_stats
-save(strcat(CM_SAVE_DIR, filesep, OUTPUT_STATS_FILENAME), 'save_stats');
+
+save(strcat(CM_SAVE_DIR, filesep, 'SINGLE_FEATURES_DS1.mat'), 'save_stats');
 
 %% Plot output accuracy
 accuracy_train = [];
 accuracy_test = [];
 complexity = [];
 
-for l=1:length(exps)
-    k = exps(l);
+for l=1:size(feat_id,2)
     accuracy_train = [accuracy_train, statistics(l).output.trainCorrect];
     accuracy_test = [accuracy_test, statistics(l).output.testCorrect];
     complexity = [complexity, statistics(l).complexity];

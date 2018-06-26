@@ -3,7 +3,7 @@
 %        - LabeledStage // labelled sleep stage from annotation
 % Output : stgID // randomised order of epoch IDs
 
-function statsOut = cross_validation(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, total_channels, epochSelectFunction)
+function statsOut = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_features)
 
 %% Cross-validation code
 % Classification algorithm: K-means clustering + Nearest centroid
@@ -19,13 +19,6 @@ annotation = load(ANSWER_FILE);
 label = annotation.sleepstage;
 stgID = epochCounter(whichData,label);
 stgLab = {'W','N1','N2','N3','R'};
-
-s=find(label~=0); epochEnd = s(end)+2; if (epochEnd > length(label)) epochEnd = length(label); end; strcat(num2str(s(1)-1),'-',num2str(epochEnd))
-
-% Safeguard against mismatch of annotation data and the actual epoch
-% numbers.
-assert(size(label, 1) == size(hctsa_ops, 1)/total_channels, "The length of the annotation must be the same as one channel length");
-
 
 % Training
 trainingProportion = TRAINING_PERCENTAGE;
@@ -54,16 +47,16 @@ for Nf = 1:nIterations
         end
         mkdir(debug_folder);       
         
-%         for stage=1:size(block(Nf).trainTS,1)
-%             stage_folder = strcat(debug_folder, filesep, stgLab{stage});
-%             mkdir(stage_folder);
-%             
-%             stage_data = block(Nf).trainTS(stage, :);
-%             for k=1:length(stage_data)
-%                 imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', stage_data(k)), '.png');
-%                 copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageFile));
-%             end
-%         end
+        for stage=1:size(block(Nf).trainTS,1)
+            stage_folder = strcat(debug_folder, filesep, stgLab{stage});
+            mkdir(stage_folder);
+            
+            stage_data = block(Nf).trainTS(stage, :);
+            for k=1:length(stage_data)
+                imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', stage_data(k)), '.png');
+                copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageFile));
+            end
+        end
 
     end
     
@@ -77,11 +70,15 @@ for Nf = 1:nIterations
             trainMat = hctsa_ops(trainTS',:);
             testMat = hctsa_ops(testTS',:);
         else
-            increment=(size(hctsa_ops,1)/total_channels)*(ch-1);
+            increment=(size(hctsa_ops,1)/3)*(ch-1);
             trainMat = [trainMat hctsa_ops((trainTS+increment)',:)];
             testMat = [testMat hctsa_ops((testTS+increment)',:)];
         end
     end
+    
+    % Only use the relevant features
+    trainMat = trainMat(:, selective_features);
+    testMat = testMat(:, selective_features);
     
     %% Clustering using training dataset
     % Record cluster ID and centre of each cluster

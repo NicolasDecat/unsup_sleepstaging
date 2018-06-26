@@ -5,7 +5,7 @@
 % Output: trainID, testID (actual ID of epochs to be used when selecting
 % data for cross-validation anaylsis)
 
-function [trainTS, testTS] = epochSelect(stgID,pTraining)
+function [trainTS, testTS] = epochSelect_unbalanced_unlabel(stgID,pTraining)
 % Stage labels
 stgLab = {'W','N1','N2','N3','R'};
 stgNum = length(unique(stgID.selectLabel));

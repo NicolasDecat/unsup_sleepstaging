@@ -1,4 +1,8 @@
-function plot_confusion_matrix(experiment, scoredTrain, predictTrain, scoredTest, predictTest, cm_save_dir)
+function plot_confusion_matrix(experiment, scoredTrain, predictTrain, scoredTest, predictTest, cm_save_dir, optional_title)
+    if ~exist('optional_title','var')
+          optional_title = "";
+    end
+ 
     %% Confusion matrix of train data
     % Reshape scored and predict matrix
     g_labelTrain = reshape(scoredTrain,1,[]);
@@ -16,8 +20,8 @@ function plot_confusion_matrix(experiment, scoredTrain, predictTrain, scoredTest
 
     % Visualise confusion matrix
     figure;
-    plotconfusion_custom(g_labelTrain, g_clustTrain, 'Confusion Matrix - Training');
-    saveas(gcf, strcat(cm_save_dir, filesep, 'CM_TRN_', int2str(experiment), '.png'));
+    plotconfusion_custom(g_labelTrain, g_clustTrain, strcat('Confusion Matrix - Training', optional_title));
+    saveas(gcf, strcat(cm_save_dir, filesep, 'CM_TRN_', experiment, '.png'));
 
     %% Confusion matrix of test data
     % Reshape scored and predict matrix
@@ -36,6 +40,6 @@ function plot_confusion_matrix(experiment, scoredTrain, predictTrain, scoredTest
 
     % Visualise confusion matrix
     figure;
-    plotconfusion_custom(g_labelTest, g_clustTest, 'Confusion Matrix - Testing');
-    saveas(gcf, strcat(cm_save_dir, filesep, 'CM_TST_', int2str(experiment), '.png'));
+    plotconfusion_custom(g_labelTest, g_clustTest, strcat('Confusion Matrix - Testing', optional_title));
+    saveas(gcf, strcat(cm_save_dir, filesep, 'CM_TST_', experiment, '.png'));
 end

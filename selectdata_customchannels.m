@@ -53,10 +53,7 @@ save_stats_columns = {'Type', 'Iteration', 'TrainingAccuracy', 'TestingAccuracy'
 save_stats = array2table(zeros(0,length(save_stats_columns)));
 save_stats.Properties.VariableNames = save_stats_columns;
     
-for c = NUM_CHANNELS_TO_RUN
-for configuration = 1:length(CONFIGURATIONS_TO_RUN)
-    conf = CONFIGURATIONS_TO_RUN(configuration);
-    
+for c = 3:3
 for l  = 1:length(exps) 
     k = exps(l); % k is the condition to select operation
     if k==0
@@ -70,7 +67,6 @@ for l  = 1:length(exps)
     elseif k==4
         hctsa_ops = datamat(:,feat_id(1:100));
     elseif k==5 % Top 198 features
-        disp(size(feat_id));
         hctsa_ops = datamat(:,feat_id);
         %hctsa_ops = datamat(:,feat_id(1:200));
     elseif k==6 % Random 500 features
@@ -89,19 +85,17 @@ for l  = 1:length(exps)
         hctsa_ops = datamat;
     end
     
-    % run('crossvalKR.m') 
-    if conf == 'BALANCED_LABELED'
-        epochSelectFunc = @epochSelect;
-    elseif conf == 'UNBALANCED_LABELED_A'
-        epochSelectFunc = @epochSelect_unbalanced;
-    elseif conf == 'UNBALANCED_LABELED_B'
-        epochSelectFunc = @epochSelect_unbalanced_b;
-    else
-        warning(strcat(conf, ' does not match any of the configuration, please check the code...'));
-        epochSelectFunc = @epochSelect;
-    end
+    % Verify the CUSTOM_CHANNELS is correct
+    t=load(hctsafile,'TimeSeries');
+    ts=struct2table(t.TimeSeries);
     
-    statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR, c, NUM_CHANNELS, epochSelectFunc);
+    keywords=ts(CUSTOM_CHANNELS, 2)
+    
+    % Slice the matrix with custom channels
+    hctsa_ops = hctsa_ops(CUSTOM_CHANNELS, :);
+    
+    % run('crossvalKR.m') 
+    statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR, c);
     [~, statsOut.complexity]=size(hctsa_ops);
     %statsOut.complexity = k;
     statsOut.id = k;
@@ -113,40 +107,39 @@ for l  = 1:length(exps)
     iteration_svm_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.svmPredictTrain)'))/size(statsOut.scoredTrain, 2))';
     iteration_svm_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.svmPredictTest)'))/size(statsOut.scoredTest, 2))';
     num_of_features=zeros(size(statsOut.scoredTrain, 1), 1);
-    num_of_features(:) = unique(statsOut.totalFeatures);
+    num_of_features(:) = size(hctsa_ops, 2);
     num_of_channels=zeros(size(statsOut.scoredTrain, 1), 1);
     num_of_channels(:) = c;
     
     types=strings(size(statsOut.scoredTrain, 1), 1);
-    types(:)=strcat('Unsupervised_', conf);
+    types(:)="Unsupervised_Balanced_Labeled";
     row = [types, iteration', iteration_training_accuracy, iteration_testing_accuracy, num_of_features, num_of_channels];
     save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
 
     types=strings(size(statsOut.scoredTrain, 1), 1);
-    types(:)=strcat('Supervised_', conf);
+    types(:)="Supervised_Balanced_Labeled";
     row = [types, iteration', iteration_svm_training_accuracy, iteration_svm_testing_accuracy, num_of_features, num_of_channels];
     save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
     
-    if PLOT_CONFUSION_MATRIX
-        plot_confusion_matrix(strcat('_chan_', num2str(c), '_', conf), statsOut.scoredTrain, statsOut.predictTrain, ...
-            statsOut.scoredTest, statsOut.predictTest, CM_SAVE_DIR)
-    end
-    
-end
 end
 end
 
 %% Draw the confusion matrix for the repeat that has maximum trainCorrect
-% if PLOT_CONFUSION_MATRIX
-%     for idx = 1:length(exps)
-%         plot_confusion_matrix(statistics(idx).id, statistics(idx).scoredTrain, statistics(idx).predictTrain, ...
-%             statistics(idx).scoredTest, statistics(idx).predictTest, CM_SAVE_DIR)
-%     end
-% end
+if PLOT_CONFUSION_MATRIX
+    for idx = 1:length(exps)
+        plot_confusion_matrix(statistics(idx).id, statistics(idx).scoredTrain, statistics(idx).predictTrain, ...
+            statistics(idx).scoredTest, statistics(idx).predictTest, CM_SAVE_DIR);
+        plot_confusion_matrix(statistics(idx).id * 10, statistics(idx).scoredTrain, statistics(idx).svmPredictTrain, ...
+            statistics(idx).scoredTest, statistics(idx).svmPredictTest, CM_SAVE_DIR);
+    end
+end
 
 set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
 save_stats
-save(strcat(CM_SAVE_DIR, filesep, OUTPUT_STATS_FILENAME), 'save_stats');
+disp("Average accuracy:");
+s=save_stats; [UA, ~, idx] = unique(s(:,[1]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A
+
+%save(strcat(CM_SAVE_DIR, filesep, 'UNBALANCE_UNLABEL.mat'), 'save_stats');
 
 %% Plot output accuracy
 accuracy_train = [];

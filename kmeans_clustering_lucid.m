@@ -3,7 +3,7 @@ clear feat_id feat_id_test;
 % %% CONFIGURATION
 
 % Global
-n_cluster_samples=0;
+n_cluster_samples=5;
 n_clust = 5;
 n_channels = 1;
 
@@ -23,7 +23,7 @@ test_hctsafile='/Volumes/Spaceship/Voss_Lucid/KJ_N1/30seconds/HCTSA_N.mat';
 % TEST_K = 10;
 
 kmeans_clustering_configuration;
-C4_COL=F4_COL;
+%C4_COL=F4_COL;
 
 %%
 all_op = load(hctsafile,'Operations');
@@ -132,7 +132,7 @@ end
     disp(potential_lucid_dreaming_stages);
     
     
-    %% Save HTCSA_N trimmed for HCTSA analysis
+    %% Save HTCSA_N trimmed for HCTSA analysis (assigned labels)
     t=load('/Volumes/Spaceship/Voss_Lucid/KJ_N1/HCTSA/HCTSA_N.mat');
     dm = t.TS_DataMat;
     quality = t.TS_Quality;
@@ -140,34 +140,35 @@ end
 
     single_channel_size = size(dm,1)/6;
 
-    startIndex=single_channel_size*2+1; % No trim
-    endIndex=single_channel_size*3;
+    startIndex=1; % No trim
+    endIndex=single_channel_size;
 
-    % 1 EEG channel
+    mkdir(output_folder);
+
+    %1 EEG channel
     t.TS_DataMat = [dm(startIndex:endIndex, feat_id)];
     t.TS_Quality = [quality(startIndex:endIndex, feat_id)];
     t.TimeSeries = [ts(startIndex:endIndex)];
 
-    
-    % 3 EEG channels
+    %3 EEG channels
 %     t.TS_DataMat = [dm(startIndex:single_channel_size, feat_id) dm(single_channel_size+startIndex:single_channel_size*2, feat_id) dm(single_channel_size*2+startIndex:single_channel_size*3, feat_id)];
 %     t.TS_Quality = [quality(startIndex:single_channel_size, feat_id) quality(single_channel_size+startIndex:single_channel_size*2, feat_id) quality(single_channel_size*2+startIndex:single_channel_size*3, feat_id)];
 %     t.TimeSeries = [ts(startIndex:single_channel_size);ts(single_channel_size+startIndex:single_channel_size*2);ts(single_channel_size*2+startIndex:single_channel_size*3)];
 
-    % 2 channels
-    % t.TS_DataMat = [dm(startIndex:single_channel_size, feat_id) dm(startIndex+single_channel_size:single_channel_size*2, feat_id)];
-    % t.TS_Quality = [quality(startIndex:single_channel_size, feat_id) quality(startIndex+single_channel_size:single_channel_size*2, feat_id)];
-    % t.TimeSeries = [ts(startIndex:single_channel_size);ts(startIndex+single_channel_size:single_channel_size*2)];
+    %2 channels
+%     t.TS_DataMat = [dm(startIndex:single_channel_size, feat_id) dm(startIndex+single_channel_size:single_channel_size*2, feat_id)];
+%     t.TS_Quality = [quality(startIndex:single_channel_size, feat_id) quality(startIndex+single_channel_size:single_channel_size*2, feat_id)];
+%     t.TimeSeries = [ts(startIndex:single_channel_size);ts(startIndex+single_channel_size:single_channel_size*2)];
 
-    % 3 channels
-    % t.TS_DataMat = [dm(startIndex:single_channel_size, feat_id) dm(single_channel_size+startIndex:single_channel_size*2, feat_id) dm(single_channel_size*2+startIndex:single_channel_size*3, feat_id)];
-    % t.TS_Quality = [quality(startIndex:single_channel_size, feat_id) quality(single_channel_size+startIndex:single_channel_size*2, feat_id) quality(single_channel_size*2+startIndex:single_channel_size*3, feat_id)];
-    % t.TimeSeries = [ts(startIndex:single_channel_size);ts(single_channel_size+startIndex:single_channel_size*2);ts(single_channel_size*2+startIndex:single_channel_size*3)];
+    %3 channels
+%     t.TS_DataMat = [dm(startIndex:single_channel_size, feat_id) dm(single_channel_size+startIndex:single_channel_size*2, feat_id) dm(single_channel_size*2+startIndex:single_channel_size*3, feat_id)];
+%     t.TS_Quality = [quality(startIndex:single_channel_size, feat_id) quality(single_channel_size+startIndex:single_channel_size*2, feat_id) quality(single_channel_size*2+startIndex:single_channel_size*3, feat_id)];
+%     t.TimeSeries = [ts(startIndex:single_channel_size);ts(single_channel_size+startIndex:single_channel_size*2);ts(single_channel_size*2+startIndex:single_channel_size*3)];
 
     ts = t.TimeSeries;
     td=struct2table(ts);
-%     td(:,2)=cellstr([string(idx); string(idx); string(idx)]);
-%     td(:,2)=cellstr([string(idx); string(idx); string(idx); string(idx); string(idx); string(idx)]);
+    %td(:,2)=cellstr([string(idx); string(idx); string(idx)]);
+    %td(:,2)=cellstr([string(idx); string(idx); string(idx); string(idx); string(idx); string(idx)]);
     td(:,2)=cellstr([string(idx)]);
     ts=table2struct(td);
     t.TimeSeries = ts;
@@ -187,9 +188,9 @@ end
     end
 
     t.Operations = [reduced_operations];
-    %t.Operations = [reduced_operations reduced_operations reduced_operations];
+    t.Operations = [reduced_operations reduced_operations reduced_operations];
 
-    save('/Volumes/Spaceship/Voss_Lucid/KJ_N1/ALL_EEG/HCTSA_N_1_EEG_Frontal_2_substage_Full.mat', '-struct', 't');
+    save('/Volumes/Spaceship/Voss_Lucid/KJ_N1/ALL_EEG/HCTSA_N_1_EEG_TEST.mat', '-struct', 't');
 
     
     %% Lucid dreaming substage
@@ -211,15 +212,16 @@ end
     dm = t.TS_DataMat;
     quality = t.TS_Quality;
     ts = t.TimeSeries;
+    original_ts = struct2table(t.TimeSeries);
 
     single_channel_size = size(dm,1)/6;
 
     startIndex=1; % No trim
 
     % 1 EEG channel
-    t.TS_DataMat = [dm((single_channel_size*2)+idx_rem_stage, feat_id)];
-    t.TS_Quality = [quality((single_channel_size*2)+idx_rem_stage, feat_id)];
-    t.TimeSeries = [ts((single_channel_size*2)+idx_rem_stage)];
+    t.TS_DataMat = [dm(idx_rem_stage, feat_id)];
+    t.TS_Quality = [quality(idx_rem_stage, feat_id)];
+    t.TimeSeries = [ts(idx_rem_stage)];
 
     ts = t.TimeSeries;
     td=struct2table(ts);
@@ -227,6 +229,63 @@ end
     ts=table2struct(td);
     
     t.TimeSeries = ts;
+    
+    selected_timeseries = original_ts(C4_COL, :);
+    EOG_timeseries = original_ts(EOG_COL,:);
+    EMG_timeseries = original_ts(EMG_COL, :);
+    
+    %% Plot substage epochs
+    for i = 1:n_clust
+        selected_eeg_cluster = selected_timeseries(idx==i,:);
+        selected_eog_cluster = EOG_timeseries(idx==i,:);
+        selected_emg_cluster = EMG_timeseries(idx==i,:);
+        random_cluster_ids = table2array(selected_eeg_cluster(:, 1));
+
+        for j = 1:length(random_cluster_ids)
+            random_cluster_id = random_cluster_ids(j);
+            index = find(table2array(selected_eeg_cluster(:, 1)) == string(random_cluster_id));
+
+            single_signal=cell2mat(table2array(selected_eeg_cluster(index, 4)));
+            signals{1}.signal=single_signal;
+            signals{1}.signal_type='EEG';
+            signals{1}.min = -1700;
+            signals{1}.max = 1700;
+            single_signal_length=length(single_signal);
+
+            single_signal=cell2mat(table2array(selected_eog_cluster(index, 4)));
+            signals{2}.signal=single_signal;
+            signals{2}.signal_type='EOG';
+            signals{2}.min = -3950;
+            signals{2}.max = 3950;
+
+            single_signal=cell2mat(table2array(selected_emg_cluster(index, 4)));
+            signals{3}.signal=single_signal;
+            signals{3}.signal_type='EMG';
+            signals{3}.min = 600;
+            signals{3}.max = -600;
+
+            tslabel = string(table2cell(selected_eeg_cluster(index, 2)));
+            labels = split(tslabel, ',');
+            timeseg = labels(2);
+            timeseg = strrep(timeseg, 'timeseg_', '');
+            tseg = str2double(timeseg);
+            timeseg_seconds_start = (tseg-1)*epoch_seconds;    
+            timeseg_seconds_end = tseg*epoch_seconds;
+
+            set(gcf,'Visible','off')
+            draw_figure(epoch_seconds, signals, timeseries_sampling_rate, epoch_seconds, (size(ts,1)/no_of_channels)*single_signal_length, ...
+                sprintf('Cluster: %d TS: %s Time: between %d secs and %d secs' , i, timeseg, timeseg_seconds_start, timeseg_seconds_end));
+
+            set(gcf,'Visible','off');
+
+            imagename = strcat('LD_Clust_',num2str(i,'%01d'),'_',num2str(j),'_',num2str(tseg,'%04d'),'.png');
+            saveas(gcf,[output_folder filesep imagename]) % saveas, imwrite or imsave? print(imagename,'-dpng')?
+            close
+        end
+    end
+
+
+    %%
 
     % 3 EEG channels
 %     t.TS_DataMat = [dm(idx_rem_stage, feat_id) dm(idx_rem_stage+single_channel_size, feat_id) dm(idx_rem_stage+(single_channel_size*2), feat_id)];
@@ -266,8 +325,7 @@ end
 
 %     t.Operations = [reduced_operations reduced_operations reduced_operations];
     t.Operations = [reduced_operations];
-
-    save('/Volumes/Spaceship/Voss_Lucid/KJ_N1/ALL_EEG/HCTSA_N_1_EEG_Frontal_2_substage_Sub.mat', '-struct', 't');
+    save('/Volumes/Spaceship/Voss_Lucid/KJ_N1/ALL_EEG/HCTSA_N_1_EEG_2_substage_TEST.mat', '-struct', 't');
 
     
 %%     
@@ -329,7 +387,6 @@ set(gcf,'Visible','off');
 % 
 % set(gcf,'Visible','off')
 % 
-mkdir(output_folder);
 % savefig([output_folder filesep 'sp_feature1_feature2.fig']);
 
 %% Load timeseries information
@@ -398,37 +455,39 @@ if n_cluster_samples > 0
         selected_eeg_cluster = selected_timeseries(idx==i,:);
         selected_eog_cluster = EOG_timeseries(idx==i,:);
         selected_emg_cluster = EMG_timeseries(idx==i,:);
-        random_cluster_ts_idx = randperm(size(selected_eeg_cluster, 1));
-
-        if (length(random_cluster_ts_idx) <= n_cluster_samples)
-            random_cluster_ids = random_cluster_ts_idx(1:length(random_cluster_ts_idx));
-        else
-            random_cluster_ids = random_cluster_ts_idx(1:n_cluster_samples);
-        end
+%         random_cluster_ts_idx = randperm(size(selected_eeg_cluster, 1));
+% 
+%         if (length(random_cluster_ts_idx) <= n_cluster_samples)
+%             random_cluster_ids = random_cluster_ts_idx(1:length(random_cluster_ts_idx));
+%         else
+%             random_cluster_ids = random_cluster_ts_idx(1:n_cluster_samples);
+%         end
+        random_cluster_ids = table2array(selected_eeg_cluster(:, 1));
 
         for j = 1:length(random_cluster_ids)
             random_cluster_id = random_cluster_ids(j);
+            index = find(table2array(selected_eeg_cluster(:, 1)) == string(random_cluster_id));
 
-            single_signal=cell2mat(table2array(selected_eeg_cluster(random_cluster_id, 4)));
+            single_signal=cell2mat(table2array(selected_eeg_cluster(index, 4)));
             signals{1}.signal=single_signal;
             signals{1}.signal_type='EEG';
             signals{1}.min = -1700;
             signals{1}.max = 1700;
             single_signal_length=length(single_signal);
 
-            single_signal=cell2mat(table2array(selected_eog_cluster(random_cluster_id, 4)));
+            single_signal=cell2mat(table2array(selected_eog_cluster(index, 4)));
             signals{2}.signal=single_signal;
             signals{2}.signal_type='EOG';
             signals{2}.min = -3950;
             signals{2}.max = 3950;
 
-            single_signal=cell2mat(table2array(selected_emg_cluster(random_cluster_id, 4)));
+            single_signal=cell2mat(table2array(selected_emg_cluster(index, 4)));
             signals{3}.signal=single_signal;
             signals{3}.signal_type='EMG';
             signals{3}.min = 600;
             signals{3}.max = -600;
 
-            tslabel = string(table2cell(selected_eeg_cluster(random_cluster_id, 2)));
+            tslabel = string(table2cell(selected_eeg_cluster(index, 2)));
             labels = split(tslabel, ',');
             timeseg = labels(2);
             timeseg = strrep(timeseg, 'timeseg_', '');

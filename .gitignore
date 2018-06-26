@@ -1,6 +1,9 @@
-
 .vscode/settings.json
 .DS_Store
 library/
 Exp_*_iteration_*
-TS_ccshs-trec-180000*.mat
+TS_ccshs-trec-180*.mat
+*.mat
+lastpara.config
+
+
