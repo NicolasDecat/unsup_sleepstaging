@@ -86,8 +86,28 @@ for l  = 1:length(exps)
         rand_id = randperm(features,5000);
         hctsa_ops = datamat(:,rand_id);
     else
-        hctsa_ops = datamat;
+        hctsa_ops = data
+        
+        p  
+    %% Evaluate the clustering as a whole
+    clust = zeros(size(datamat,1), 10);
+    for i = 1:10
+        clust(:, i) = kmeans(datamat, i,'Distance','sqeuclidean',...
+                            'Display','off','Replicates',50,'MaxIter',500);
     end
+
+    s=evalclusters(datamat, clust, 'silhouette');
+    c=evalclusters(datamat, clust, 'CalinskiHarabasz');
+    db=evalclusters(datamat, clust, 'DaviesBouldin');
+
+    fprintf("Full dataset all features: Silhouette: %.04f (%d) CalinskiHarabasz: %.04f (%d) DaviesBouldin: %.04f (%d)\n\n", ...
+        s.CriterionValues(s.OptimalK), ...
+        s.OptimalK, ...
+        c.CriterionValues(c.OptimalK), ...
+        c.OptimalK, ...
+        db.CriterionValues(db.OptimalK), ...
+        db.OptimalK);
+        
     
     % run('crossvalKR.m') 
     if conf == 'BALANCED_LABELED'
@@ -101,6 +121,7 @@ for l  = 1:length(exps)
         epochSelectFunc = @epochSelect;
     end
     
+    %%
     statsOut = cross_validation(k, hctsa_ops, CM_SAVE_DIR, c, NUM_CHANNELS, epochSelectFunc);
     [~, statsOut.complexity]=size(hctsa_ops);
     %statsOut.complexity = k;

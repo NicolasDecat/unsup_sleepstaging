@@ -105,7 +105,7 @@ stgID.nStg = n;
 % end
 
 %% Minimum samples
-stgID.nStg
+stgID.nStg;
 stgID.Nmin = min(stgID.nStg);
 
 %% \Randomise order of each stage/

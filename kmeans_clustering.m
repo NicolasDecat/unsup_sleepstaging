@@ -1,7 +1,7 @@
-hctsafile = '180001_HCTSA/HCTSA_N.mat';
+hctsafile = '/Volumes/Spaceship/SleepResearch/sleep_documentation_results/results/sleep_org_1800001_HCTSA/HCTSA_N.mat';
 all_op = load(hctsafile,'Operations');
 OPS_FILE='reduced_ops.txt';
-ANSWER_FILE='ccshs_1800001_annot.mat';
+ANSWER_FILE='/Volumes/Spaceship/ccshs_datasets/ccshs_1800001_annot.mat';
 %%
 annotation = load(ANSWER_FILE);
 label = annotation.sleepstage;
@@ -40,6 +40,22 @@ n_clust = 5;
 [idx,c, sse] = kmeans(datamat,n_clust,'Distance','sqeuclidean',...
                     'Display','off','Replicates',50,'MaxIter',500);
 
+%% Find the max cluster that has the highest silhouette values
+max_cluster = 0;
+max_s = 0;
+sscore = [];
+for i = 1:20
+    [idx,c, sse] = kmeans(datamat,i,'Distance','sqeuclidean',...
+                        'Display','off','Replicates',50,'MaxIter',500);
+    sscore = [sscore, mean(s)];
+    if (mean(s) > max_s)
+        max_s = mean(s);
+        max_cluster = i;
+    end
+end
+
+disp(['Max cluster is ' num2str(max_cluster) ' with ' num2str(max_s)]);                
+                
 %% Plot
 markersize=12;                
 figure;

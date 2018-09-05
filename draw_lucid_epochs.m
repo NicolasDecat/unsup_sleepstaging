@@ -1,8 +1,13 @@
 clc;
 
 % %% CONFIGURATION
-EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/KJ_N1_data.mat';
+% EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/KJ_N1_data.mat';
+% EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/ME_N1_data.mat';
 % EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/KJ_N2_data.mat';
+%EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/ME_N1_data.mat';
+EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/ME_N2_data.mat';
+% EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/ME_N3_data.mat';
+% EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/LI_N2_data.mat';
 %EDF_FILE='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging_master/Voss_Pilot/SK_N1_F1_data.mat';
 %EDF_FILE='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging_master/Voss_Pilot/SK_N1_F1_data.mat';
 
@@ -31,24 +36,56 @@ channel_info=[(1:length(header.channelname))',string(header.channelname)]
 
 %% 
 % KJ_N1
-dataset_names=["KJ_N1", "KJ_N2"];
-dataset=find(strcmp(dataset_names,"KJ_N1"));
-data(6,:)=data(5,:)-data(6,:);
-data(3,:)=data(3,:)-data(24,:);
-data(4,:)=data(4,:)-data(24,:);
+dataset_names=["KJ_N1", "KJ_N2", "LI_N2", "ME_N1", "ME_N2", "ME_N3"];
+% dataset=find(strcmp(dataset_names,"KJ_N1"));
+% data(6,:)=data(5,:)-data(6,:);
+% data(3,:)=data(3,:)-data(24,:);
+% data(4,:)=data(4,:)-data(24,:);
 
-channels{1}.EEG = [11, 12];
-channels{1}.EOG = [9,10];
-channels{1}.EMG = [6];
+channels{find(strcmp(dataset_names,"KJ_N1"))}.EEG = [11, 12];
+channels{find(strcmp(dataset_names,"KJ_N1"))}.EOG = [9,10];
+channels{find(strcmp(dataset_names,"KJ_N1"))}.EMG = [6];
     
 % KJ_N2
 % dataset=find(strcmp(dataset_names,"KJ_N2"));
 % data(9,:)=data(9,:)-data(24,:);
 % data(10,:)=data(10,:)-data(25,:);
 % data(3,:)=data(3,:)-data(4,:);
-channels{2}.EEG = [9,10];
-channels{2}.EOG = [7,8];
-channels{2}.EMG = [3];
+channels{find(strcmp(dataset_names,"KJ_N2"))}.EEG = [9,10];
+channels{find(strcmp(dataset_names,"KJ_N2"))}.EOG = [7,8];
+channels{find(strcmp(dataset_names,"KJ_N2"))}.EMG = [3];
+
+% % LI_N2
+% dataset=find(strcmp(dataset_names,"LI_N2"));
+% data(3,:)=data(3,:)-data(4,:);
+channels{find(strcmp(dataset_names,"LI_N2"))}.EEG = [9,10];
+channels{find(strcmp(dataset_names,"LI_N2"))}.EOG = [1,2];
+channels{find(strcmp(dataset_names,"LI_N2"))}.EMG = [3];
+
+
+% % ME_N1
+% dataset=find(strcmp(dataset_names,"ME_N1"));
+% data(3,:)=data(3,:)-data(4,:);
+% data(9,:)=data(9,:)-data(24,:);
+% data(10,:)=data(10,:)-data(25,:);
+channels{find(strcmp(dataset_names,"ME_N1"))}.EEG = [9,10];
+channels{find(strcmp(dataset_names,"ME_N1"))}.EOG = [1,2];
+channels{find(strcmp(dataset_names,"ME_N1"))}.EMG = [3];
+
+% % ME_N2
+dataset=find(strcmp(dataset_names,"ME_N2"));
+data(3,:)=data(3,:)-data(4,:);
+channels{find(strcmp(dataset_names,"ME_N2"))}.EEG = [7,8];
+channels{find(strcmp(dataset_names,"ME_N2"))}.EOG = [1,2];
+channels{find(strcmp(dataset_names,"ME_N2"))}.EMG = [3];
+
+% % ME_N3
+% dataset=find(strcmp(dataset_names,"ME_N3"));
+% data(3,:)=data(3,:)-data(4,:);
+channels{find(strcmp(dataset_names,"ME_N3"))}.EEG = [9,10];
+channels{find(strcmp(dataset_names,"ME_N3"))}.EOG = [1,2];
+channels{find(strcmp(dataset_names,"ME_N3"))}.EMG = [3];
+
 
 chans=channels{dataset};
 
@@ -92,10 +129,10 @@ sub_ts=data(chans.EEG,:)';
 sub_ts=filtfilt(b,a,sub_ts);
 data(chans.EEG,:) = sub_ts';
 
-[b,a]=butter(2,[0.5,15]/(fs/2),'bandpass');
-sub_ts=data(chans.EOG,:)';
-sub_ts=filtfilt(b,a,sub_ts);
-data(chans.EOG,:) = sub_ts';
+% [b,a]=butter(2,[0.5,15]/(fs/2),'bandpass');
+% sub_ts=data(chans.EOG,:)';
+% sub_ts=filtfilt(b,a,sub_ts);
+% data(chans.EOG,:) = sub_ts';
 
 % [b,a]=butter(6,[0.5,30]/(fs/2),'bandpass');
 % sub_ts=data(chans.EOG,:)';
@@ -118,26 +155,33 @@ es = 30;
 % Analyse consecutive high amplitude
 
 last_for_seconds=2;
-eog_max_threshold=15;
-eog_boundlimit = 20;
-eog_min_threshold=-15;
+eog_max_threshold=150;
+eog_boundlimit = 200;
+eog_min_threshold=-150;
 
-low_eog_max_threshold=5;
-low_eog_min_threshold=-5;
+low_eog_max_threshold=50;
+low_eog_min_threshold=-50;
 consecutive_low = fs*0.8;
 
-low_emg_max_threshold=2.5;
-low_emg_min_threshold=-2.5;
+low_emg_max_threshold=5.5;
+low_emg_min_threshold=-5.5;
 consecutive_emg_per_unit=fs*0.95;
 total_percentage_low_emg_per_epoch=0.90;
 
 seconds_splitting=1;
 
+%% Prepare for the data to be reshape
+
+trailing_epochs = size(data, 2) - (floor(size(data, 2)/(fs*es)))*(fs*es);
+data=data(:, 1:(size(data, 2)-trailing_epochs));
+
+%%
 eog_epochs=[];
 % for i=1:length(chans.EOG)
     eog_chan_id=chans.EOG(1);
 %     fprintf('\nAnalysing channel %s...\n', channel_info(chan_id, 2));
-    timeframe = reshape(data(eog_chan_id, :)', es*fs, size(data(eog_chan_id, :), 2)/es/fs)';
+    
+    timeframe = reshape(data(eog_chan_id, :)', es*fs, floor(size(data(eog_chan_id, :), 2)/es/fs))';
     
     [epochs, total_unit_value] = size(timeframe);
     for j=1:epochs
@@ -232,7 +276,7 @@ function draw(f, channel_info, data, num_seconds, fs, es, chans)
     draw_subplot(ax, data, "EEG", EEG_CHN, cellstr(channel_info(EEG_CHN, 2))', no_of_epochs, [-200 200], fs, es, chans);
 
     ax=subplot(3, 1, 2);
-    draw_subplot(ax, data, "EOG", EOG_CHN, cellstr(channel_info(EOG_CHN, 2))', no_of_epochs, [-40, 40], fs, es, chans);
+    draw_subplot(ax, data, "EOG", EOG_CHN, cellstr(channel_info(EOG_CHN, 2))', no_of_epochs, [-200, 200], fs, es, chans);
 
     ax=subplot(3, 1, 3);
     draw_subplot(ax, data, "EMG", EMG_CHN, cellstr(channel_info(EMG_CHN, 2))', no_of_epochs, [-10, 10], fs, es, chans);

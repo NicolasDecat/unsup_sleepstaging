@@ -1,12 +1,8 @@
 kmeans_clustering_configuration;
 
-n_clust = 2;
-
 ts = load('/Volumes/Spaceship/Voss_Lucid/KJ_N1/30seconds/HCTSA_N.mat','TimeSeries');
 ts = ts.TimeSeries;
 tst = struct2table(ts);
-
-C4_COL=F4_COL;
 
 selected_timeseries = tst(C4_COL, :);
 eeg_mat = cell2mat(table2array(selected_timeseries(:,4)));
@@ -19,7 +15,7 @@ emg_mat = cell2mat(table2array(selected_timeseries(:,4)));
 
 
 % Load the split substage clusters
-ts2 = load('/Volumes/Spaceship/Voss_Lucid/KJ_N1/ALL_EEG/HCTSA_N_1_EEG_Frontal_2_substage_Sub.mat','TimeSeries');
+ts2 = load('/Volumes/Spaceship/Voss_Lucid/KJ_N1/ALL_EEG/HCTSA_N_KJ_N1_Cluster_2_1_EEG_3_REM_substages.mat','TimeSeries');
 ts2 = ts2.TimeSeries;
 tst2 = struct2table(ts2);
 
@@ -30,7 +26,7 @@ for i = 1:size(tst2, 1)
     
     idx = find(string(tst.Name) == string(cell2mat(row.Name)));
     
-    idx=idx-(channel_size*2);
+    %idx=idx-(channel_size*2);
     selected_eeg_cluster = selected_timeseries(idx,:);
     selected_eog_cluster = EOG_timeseries(idx,:);
     selected_emg_cluster = EMG_timeseries(idx,:);
@@ -68,7 +64,7 @@ for i = 1:size(tst2, 1)
     set(gcf,'Visible','off');
 
     imagename = strcat('LD_Clust_',string(row.Keywords),'_',num2str(tseg,'%04d'),'.png');
-    saveas(gcf,strcat('/Volumes/Spaceship/Voss_Lucid/KJ_N1/ALL_EEG/HCTSA_N_1_EEG_Frontal_2_substage',filesep,string(row.Keywords),filesep,imagename)); % saveas, imwrite or imsave? print(imagename,'-dpng')?
+    saveas(gcf,strcat('/Volumes/Spaceship/Voss_Lucid/KJ_N1/ALL_EEG/HCTSA_N_KJ_N1_Cluster_2_1_EEG_3_REM_substages_Lucid',filesep,string(row.Keywords),filesep,imagename)); % saveas, imwrite or imsave? print(imagename,'-dpng')?
     %close;
     
 end
