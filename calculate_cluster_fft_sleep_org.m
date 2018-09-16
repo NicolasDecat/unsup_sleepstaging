@@ -53,7 +53,9 @@ unique_groups1=unique(ts1_algo_groups);
 %%
 % [faxis, pow] = get_PowerSpec(data(chans.EEG(1), :), 200, 1, 1); 
 %figure;
-colors=num2cell(jet(length(unique_groups1)* 5), 2);
+%colors=num2cell(jet(length(unique_groups1)* 5), 2);
+colors=GiveMeColors(length(unique_groups1));
+
 legends = [];
 legend_labels = {};
 figure;
@@ -102,7 +104,7 @@ for i = 1:length(unique_groups1)
     %%
     %p(faxis>48)=0;
     %p=10*log10(p);
-    h = plot(f, smooth(p*1000), 'Color', colors{i*4}, 'LineWidth', 2)
+    h = plot(f, smooth(p*1000), 'Color', colors{i}, 'LineWidth', 2)
     
 %     legends = [legends h];
 %     legend_labels{i} = sprintf('Cluster %d\n', i);

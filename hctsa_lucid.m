@@ -1,8 +1,10 @@
 %% Configuration
+set(0,'DefaultFigureVisible', 'on');
 
 SBJ_ID='KJ_N1';
+SBJ_SECONDARY_ID='_bipolar';
 HCTSA_DIR='/Users/Zhao/SleepPsychoPhysics/Source/hctsa';
-TARGET_FOLDER=strcat('/Volumes/Spaceship/Voss_Lucid/', SBJ_ID, '/ALL_EEG');
+TARGET_FOLDER=strcat('/Volumes/Spaceship/Voss_Lucid/', SBJ_ID, SBJ_SECONDARY_ID, '/1_CHANS');
 NUM_SECONDS=30;
 
 MODE='MAIN_CLUSTER';
@@ -14,13 +16,13 @@ PLOT_SUB_CLUSTER_MAX_SAMPLE=10;
 PLOT_RANDOM=1;
 PLOT_ONLY_CLUSTER=[1];
 
-TARGET_FILE=strcat('HCTSA_N_', SBJ_ID, '_1_EEG_Main_5_Clusters.mat');
+TARGET_FILE=strcat('HCTSA_N_', SBJ_ID, SBJ_SECONDARY_ID, '_1_EEG_Main_4_Clusters.mat');
 
 % SUB_TARGET_FILE='HCTSA_N_1_EEG_6_REM_substages.mat';
 % SUB_TARGET_FILE='HCTSA_N_1_EEG_6_REM_second_level_substages.mat';
 % SUB_TARGET_FILE='HCTSA_N_ME_N2_1_EEG_5_REM_substages.mat';
 % SUB_TARGET_FILE='HCTSA_N_ME_N2_1_EEG_Main.mat';
-SUB_TARGET_FILE = strcat('HCTSA_N_', SBJ_ID, '_Cluster_4_1_EEG_2_REM_substages.mat');
+SUB_TARGET_FILE = strcat('HCTSA_N_', SBJ_ID, SBJ_SECONDARY_ID, '_TotalMain_5_Cluster_4_1_EEG_2_substages.mat');
 %SUB_TARGET_FILE = strcat('HCTSA_N_', SBJ_ID, '_1_EEG_7_REM_second_level_substages.mat');
 
 BASE_PLOT_FOLDER=strcat(TARGET_FOLDER, filesep, extractBefore(SUB_TARGET_FILE, '.'));
@@ -195,7 +197,24 @@ if (strcmp(MODE, 'MAIN_CLUSTER'))
     dcm.UpdateFcn = {@custom_cursor_text, reorder_sleepstages, feat, reorder_ts_labels};
     plot_lucid_dreaming_candidates(potential_lucid_dreaming_epoch_start, feat_id, reorder_ts_labels);
 
-
+    %% 
+    annotateParams = struct;
+    annotateParams.n = 8;
+    annotateParams.maxL = 150;
+    annotateParams.userInput = 0;
+    annotateParams.textAnnotation = 0;
+    showDistributions = 0;
+    
+    TS_plot_pca('norm', 'ts', showDistributions, annotateParams);
+    
+    %%
+    TS_TopFeatures();
+    
+    %%
+%     annotateParams = struct('maxL', 5000);
+%     TS_FeatureSummary(1909, 'raw', 1, annotateParams);
+    
+    
 elseif strcmp(MODE, 'SUB_CLUSTER')
     
     copyfile(SUB_TARGET_FILE, 'HCTSA.mat');

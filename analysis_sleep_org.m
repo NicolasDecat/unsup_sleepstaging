@@ -1,6 +1,6 @@
 clc;
 
-basedir = '/Volumes/Spaceship/SleepResearch/sleep_documentation_results/results';
+basedir = '/Volumes/Spaceship/SleepResearch/sleep_documentation_results/results/selected_CCSHS';
 all_dataset = [ ...
   % Male = 1 (First 5) Male = 0 (Rest)
   "1800439", ...
@@ -81,7 +81,7 @@ bar_data = bar_data.*100;
 standard_errors = standard_errors.*100;
 
 set(0,'DefaultTextInterpreter','none');
-standard_error_reshape = reshape(standard_errors, 3, 2)';
+standard_error_reshape = reshape(standard_errors, 3, size(unique_type, 1))';
 barplot = barwitherr(standard_error_reshape, bar_data);
 hold on;
 
@@ -90,22 +90,23 @@ l = cell(1,3);
 l{1} = 'EEG';
 l{2} = 'EEG + EOG';
 l{3} = 'EEG + EOG + EMG';
-legend(barplot, l);
+legend(barplot, l, 'FontSize', 22);
 
-title(strcat('Accuracy between supervised and unsupervised algorithms with different combination of channels (n=', num2str(size(all_dataset, 2)), ')'), 'FontSize', 16);
+title(strcat('Accuracy of clustering with \ithctsa\rm\bf features in different modalities (n=', num2str(size(all_dataset, 2)), ')'), 'FontSize', 25, 'Interpreter','tex');
 grid on;
-xlabel('Algorithm', 'FontSize', 15);
-ylabel('Accuracy (%)', 'FontSize', 15);
+xlabel('', 'FontSize', 22);
+ylabel('Accuracy (%)', 'FontSize', 22);
 set(gca, 'xticklabel', [ ...
- "Supervised (Balanced + Labeled)", ...
+ "SVM", ...
 %  "Supervised (Unbalanced + Labeled A)", ...
 %  "Supervised (Unbalanced + Labeled B)", ...
- "Unsupervised (Balanced + Labeled)", ...
+ "Clustering", ...
 %  "Unsupervised (Unbalanced + Labeled A)", ...
 %  "Unsupervised (Unbalanced + Labeled B)" 
 ]);
-fix_xticklabels(gca, 0.1, {'FontSize', 14});
+fix_xticklabels(gca, 0.1, {'FontSize', 22});
 set(gca,'TickLabelInterpreter','none');
+set(gca,'FontSize', 22);
 % xtickangle(25);
 
 % Chance level line
@@ -113,5 +114,6 @@ XL = xlim();
 plot( XL, [20, 20], '--', 'color', [0.2 0.2 0.2], 'HandleVisibility', 'off');
 hold off;
 
-text(0.25, 20, 'Chance level', 'FontSize', 14);
+text(1.4, 22, 'Chance', 'FontSize', 20);
+saveas(gcf, '/Users/Zhao/Downloads/test', 'png');
 

@@ -1,11 +1,11 @@
 clc;
 
 % %% CONFIGURATION
-% EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/KJ_N1_data.mat';
+EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/KJ_N1_data.mat';
 % EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/ME_N1_data.mat';
 % EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/KJ_N2_data.mat';
 %EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/ME_N1_data.mat';
-EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/ME_N2_data.mat';
+%EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/ME_N2_data.mat';
 % EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/ME_N3_data.mat';
 % EDF_FILE='/Volumes/Spaceship/Voss_Lucid/edf_init_mat_files/LI_N2_data.mat';
 %EDF_FILE='/Users/Zhao/SleepPsychoPhysics/Source/unsup_sleepstaging_master/Voss_Pilot/SK_N1_F1_data.mat';
@@ -37,12 +37,12 @@ channel_info=[(1:length(header.channelname))',string(header.channelname)]
 %% 
 % KJ_N1
 dataset_names=["KJ_N1", "KJ_N2", "LI_N2", "ME_N1", "ME_N2", "ME_N3"];
-% dataset=find(strcmp(dataset_names,"KJ_N1"));
-% data(6,:)=data(5,:)-data(6,:);
+dataset=find(strcmp(dataset_names,"KJ_N1"));
+data(6,:)=data(5,:)-data(6,:);
 % data(3,:)=data(3,:)-data(24,:);
 % data(4,:)=data(4,:)-data(24,:);
 
-channels{find(strcmp(dataset_names,"KJ_N1"))}.EEG = [11, 12];
+channels{find(strcmp(dataset_names,"KJ_N1"))}.EEG = [11];
 channels{find(strcmp(dataset_names,"KJ_N1"))}.EOG = [9,10];
 channels{find(strcmp(dataset_names,"KJ_N1"))}.EMG = [6];
     
@@ -73,8 +73,8 @@ channels{find(strcmp(dataset_names,"ME_N1"))}.EOG = [1,2];
 channels{find(strcmp(dataset_names,"ME_N1"))}.EMG = [3];
 
 % % ME_N2
-dataset=find(strcmp(dataset_names,"ME_N2"));
-data(3,:)=data(3,:)-data(4,:);
+% dataset=find(strcmp(dataset_names,"ME_N2"));
+% data(3,:)=data(3,:)-data(4,:);
 channels{find(strcmp(dataset_names,"ME_N2"))}.EEG = [7,8];
 channels{find(strcmp(dataset_names,"ME_N2"))}.EOG = [1,2];
 channels{find(strcmp(dataset_names,"ME_N2"))}.EMG = [3];

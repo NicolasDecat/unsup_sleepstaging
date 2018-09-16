@@ -9,13 +9,13 @@ for SBJ_ID = config.subject_ids
         % Comment the following two loops for single main clusters
         for TARGET_MAIN_CLUSTER=1:MAX_TARGET_MAIN_CLUSTER
             for NUM_OF_SUB_CLUSTERS=2:MAX_SUB_CLUSTERS
-
+        
             kmeans_clustering_configuration;
 
             %% Configuration
             TARGET_FOLDER=strcat(config.base_dir, SBJ_ID, config.subject_secondary_id, config.run_base_folder);
 
-            if strcmp(MODE, 'MAIN')
+            if strcmp(MODE, 'MAIN_CLUSTER')
                 fig_filename = sprintf('tsne_Main_%d_Clusters', NUM_OF_MAIN_CLUSTERS);
             else
                 fig_filename = sprintf('tsne_TotalMain_%d_Cluster_%d_SubCluster_%d', ...
@@ -29,7 +29,7 @@ for SBJ_ID = config.subject_ids
                     '_Cluster_',num2str(TARGET_MAIN_CLUSTER), '_1_EEG_', num2str(NUM_OF_SUB_CLUSTERS), ...
                     '_substages');
             end
-
+            
             [feat_id, feat] = load_hctsa_reduced_ops(config.hctsa_reduced_ops_file, ...
                 strcat(TARGET_FOLDER, filesep, TARGET_FILE));
 
@@ -38,18 +38,20 @@ for SBJ_ID = config.subject_ids
             orig_datamat = data.TS_DataMat;
             ts = struct2table(data.TimeSeries);
 
+            if size(ts, 1) > size(orig_datamat, 1)
+               ts = ts(1:size(orig_datamat, 1), :);
+            end
+
+            if config.no_of_channels_used == 1
+                feat_id = [feat_id];
+            elseif config.no_of_channels_used == 3
+                feat_id = [feat_id, length(feat_id)+feat_id, (length(feat_id)*2)+feat_id];
+            end
+
             if (strcmp(MODE, "SUB_CLUSTER"))
                 datamat = orig_datamat;
             else
                 datamat = orig_datamat(C4_COL, feat_id);
-            end
-
-            if config.no_of_channels_used == 1
-                datamat = datamat;
-            elseif config.no_of_channels_used == 2
-                datamat = [datamat orig_datamat(EOG_COL,feat_id)];
-            elseif config.no_of_channels_used == 3
-                datamat = [datamat orig_datamat(EOG_COL,feat_id) orig_datamat(EMG_COL,feat_id)];        
             end
 
             ts_labels = table2array(ts(:,1))';
@@ -65,6 +67,12 @@ for SBJ_ID = config.subject_ids
 
             %% Loop through each clusters to gather standard deviation of each features
             num_of_clusters = size(cluster_indices, 2);
+            % clusters_summary = struct([]);
+            % feature_table = struct2table(feat);
+            % 
+            % for g = 1:num_of_clusters
+            %     clusters_summary{g}.feature_std = std(datamat(cluster_indices{g}, :));
+            % end
 
             %% Perform anova test among clusters
             % features_diff = struct([]);
@@ -112,12 +120,11 @@ for SBJ_ID = config.subject_ids
             % end
 
             %% Plot two-dimensional analogues to 2D
-            
-            Y = tsne(datamat, 'Algorithm', 'exact', 'Standardize', true, 'NumPCAComponents', 50);
-            
-            set(0,'DefaultFigureVisible', 'off');
 
-            
+            Y = tsne(datamat, 'Algorithm', 'exact', 'Standardize', true, 'NumPCAComponents', 50);
+
+            set(0,'DefaultFigureVisible', 'off');              
+
             %%
             figure;
             %colors=num2cell(jet(length(unique_groups)* 5), 2);
@@ -136,12 +143,13 @@ for SBJ_ID = config.subject_ids
             legend_labels = arrayfun(@(x) sprintf('Cluster %d', x), [1:num_of_clusters], 'UniformOutput', false);
             legend(legend_labels);
             set(gca, 'FontSize', 16);
-            
+
             set(gca,'xtick',[])
             set(gca,'ytick',[])
             %grid on;
 
             %% Plot grouping of data using the top features
+
             saveas(gcf, strcat(TARGET_FOLDER, filesep, 'images', filesep, fig_filename), 'png');
 
             % figure;
@@ -170,11 +178,11 @@ for SBJ_ID = config.subject_ids
             %     indices = cluster_indices{k};
             %     %plot3(datamat(indices, 120), datamat
             % end
-            % x = datamat(cluster_indices{1}, 120);
+            % x = datamat(cluster_indices{1}, 120); 
             end
         end
-
-        clearvars -except SBJ_ID MODE config;
+        
+    clearvars -except SBJ_ID MODE config;
     end
     end
 end

@@ -2,6 +2,8 @@ output_folder=datestr(now,30);
 
 addpath('library/distinguishable_colors');
 
+if strcmp(SBJ_ID, "KJ_N1")
+
 % KJ_N1
 % hctsafile = '/Volumes/Spaceship/Voss_Lucid/KJ_N1/30seconds/HCTSA_N.mat';
 % C4_COL=1:789;
@@ -15,14 +17,15 @@ addpath('library/distinguishable_colors');
 % timeseries_sampling_rate=200;
 
 % KJ_N1_bipolar
-% hctsafile = '/Volumes/Spaceship/Voss_Lucid/KJ_N1_bipolar/HCTSA_N.mat';
-% C4_COL=1:789;
-% EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
-% EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
-% epoch_seconds=30;
-% no_of_channels=3;
-% timeseries_sampling_rate=200;
+    hctsafile = strcat(config.base_dir, 'KJ_N1_bipolar/HCTSA_N.mat');
+    C4_COL=1:789;
+    EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
+    EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
+    epoch_seconds=30;
+    no_of_channels=3;
+    timeseries_sampling_rate=200;
 
+elseif strcmp(SBJ_ID, "KJ_N2") 
 
 % % KJ_N2
 % hctsafile = '/Volumes/Spaceship/Voss_Lucid/KJ_N2/HCTSA_N.mat';
@@ -35,14 +38,16 @@ addpath('library/distinguishable_colors');
 % no_of_channels=6;
 % timeseries_sampling_rate=200;
 
-% % KJ_N2_bipolar
-% hctsafile = '/Volumes/Spaceship/Voss_Lucid/KJ_N2_bipolar/HCTSA_N.mat';
-% C4_COL=1:1322;
-% EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
-% EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
-% epoch_seconds=30;
-% no_of_channels=3;
-% timeseries_sampling_rate=200;
+    % KJ_N2_bipolar
+    hctsafile = strcat(config.base_dir, 'KJ_N2_bipolar/HCTSA_N.mat');
+    C4_COL=1:1322;
+    EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
+    EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
+    epoch_seconds=30;
+    no_of_channels=3;
+    timeseries_sampling_rate=200;
+
+elseif strcmp(SBJ_ID, "LI_N2") 
 
 % LI_N2
 % hctsafile = '/Volumes/Spaceship/Voss_Lucid/LI_N2/HCTSA_N.mat';
@@ -55,14 +60,14 @@ addpath('library/distinguishable_colors');
 % no_of_channels=6;
 % timeseries_sampling_rate=200;
 
-% LI_N2_bipolar
-% hctsafile = '/Volumes/Spaceship/Voss_Lucid/LI_N2_bipolar/HCTSA_N.mat';
-% C4_COL=1:1375;
-% EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
-% EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
-% epoch_seconds=30;
-% no_of_channels=3;
-% timeseries_sampling_rate=200;
+    % LI_N2_bipolar
+    hctsafile = strcat(config.base_dir, 'LI_N2_bipolar/HCTSA_N.mat');
+    C4_COL=1:1375;
+    EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
+    EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
+    epoch_seconds=30;
+    no_of_channels=3;
+    timeseries_sampling_rate=200;
 
 % LI_N2_C4_C3
 % hctsafile = '/Volumes/Spaceship/Voss_Lucid/LI_N2_C4_C3/HCTSA_N.mat';
@@ -74,6 +79,8 @@ addpath('library/distinguishable_colors');
 % epoch_seconds=30;
 % no_of_channels=1;
 % timeseries_sampling_rate=200;
+
+elseif strcmp(SBJ_ID, "ME_N1") 
 
 % % ME_N1
 % hctsafile = '/Volumes/Spaceship/Voss_Lucid/ME_N1/HCTSA_N.mat';
@@ -87,13 +94,13 @@ addpath('library/distinguishable_colors');
 % timeseries_sampling_rate=200;
 
 % % ME_N1_bipolar
-% hctsafile = '/Volumes/Spaceship/Voss_Lucid/ME_N1_bipolar/HCTSA_N.mat';
-% C4_COL=1:1120;
-% EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
-% EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
-% epoch_seconds=30;
-% no_of_channels=3;
-% timeseries_sampling_rate=200;
+hctsafile = strcat(config.base_dir, 'ME_N1_bipolar/HCTSA_N.mat');
+C4_COL=1:1120;
+EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
+EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
+epoch_seconds=30;
+no_of_channels=3;
+timeseries_sampling_rate=200;
 
 % % ME_N1_C4_C3
 % hctsafile = '/Volumes/Spaceship/Voss_Lucid/ME_N1_C4_C3/HCTSA_N.mat';
@@ -106,6 +113,7 @@ addpath('library/distinguishable_colors');
 % no_of_channels=1;
 % timeseries_sampling_rate=200;
 
+elseif strcmp(SBJ_ID, "ME_N2") 
 % ME_N2
 % hctsafile = '/Volumes/Spaceship/Voss_Lucid/ME_N2/HCTSA_N.mat';
 % C4_COL=1:1192;
@@ -118,13 +126,15 @@ addpath('library/distinguishable_colors');
 % timeseries_sampling_rate=200;
 
 % % ME_N2_bipolar
-% hctsafile = '/Volumes/Spaceship/Voss_Lucid/ME_N2_bipolar/HCTSA_N.mat';
-% C4_COL=1:1192;
-% EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
-% EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
-% epoch_seconds=30;
-% no_of_channels=3;
-% timeseries_sampling_rate=200;
+hctsafile = strcat(config.base_dir, 'ME_N2_bipolar/HCTSA_N.mat');
+C4_COL=1:1192;
+EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
+EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
+epoch_seconds=30;
+no_of_channels=3;
+timeseries_sampling_rate=200;
+
+elseif strcmp(SBJ_ID, "ME_N3") 
 
 % % ME_N3
 % hctsafile = '/Volumes/Spaceship/Voss_Lucid/ME_N3/HCTSA_N.mat';
@@ -138,11 +148,13 @@ addpath('library/distinguishable_colors');
 % timeseries_sampling_rate=200;
 
 % % ME_N3_bipolar
-hctsafile = '/Volumes/Spaceship/Voss_Lucid/ME_N3_bipolar/HCTSA_N.mat';
+hctsafile = strcat(config.base_dir, 'ME_N3_bipolar/HCTSA_N.mat');
 C4_COL=1:957;
 EOG_COL=(length(C4_COL)+1):((length(C4_COL)+1)+length(C4_COL)-1);
 EMG_COL=(length(C4_COL)*2+1):((length(C4_COL)*2+1)+length(C4_COL)-1);
 epoch_seconds=30;
 no_of_channels=3;
 timeseries_sampling_rate=200;
+
+end
 

@@ -12,7 +12,7 @@ for SBJ_ID = config.subject_ids
 
             for TARGET_MAIN_CLUSTER=1:MAX_TARGET_MAIN_CLUSTER
                 for NUM_OF_SUB_CLUSTERS=2:MAX_SUB_CLUSTERS
-
+    
                 kmeans_clustering_configuration;
 
                 if strcmp(MODE, "MAIN")
@@ -21,7 +21,7 @@ for SBJ_ID = config.subject_ids
                     fig_filename = sprintf('TotalMain_%d_Cluster_%d_SubCluster_%d', ...
                         NUM_OF_MAIN_CLUSTERS, TARGET_MAIN_CLUSTER, NUM_OF_SUB_CLUSTERS);
                 end
-
+                
                 BASE_PATH=strcat(config.base_dir, SBJ_ID, config.subject_secondary_id, config.run_base_folder);
 
                 if (strcmp(MODE, "MAIN"))
@@ -42,12 +42,13 @@ for SBJ_ID = config.subject_ids
                 plot_power_spectrum(STAGE_LOAD_FILENAME, header, data, epoch_seconds, ...
                     timeseries_sampling_rate, chans, STAGE_LOAD_CSV, 0);
                 saveas(gcf, strcat(BASE_PATH, filesep, 'images', filesep, fig_filename), 'png');
+
+                end
             end
         end
-    end
-    %%
-    clearvars -except SBJ_ID config MODE data header;
-
+        
+        clearvars -except SBJ_ID config MODE data header;
+        
     end
 end
 
@@ -60,4 +61,3 @@ function [MAX_TARGET_MAIN_CLUSTER, MAX_SUB_CLUSTERS] = determine_max_clusters(mo
         MAX_SUB_CLUSTERS = 7;
     end
 end
-

@@ -1,8 +1,8 @@
 clc;
 
 % %% CONFIGURATION
-EDF_FILE='/Volumes/Spaceship/TS_ccshs-trec-1800821_7chan.mat';
-ANSWER_FILE = '/Volumes/Spaceship/ccshs_datasets/ccshs_1800821_annot.mat';
+EDF_FILE='/Volumes/Spaceship/TS_ccshs-trec-1800749_7chan.mat';
+ANSWER_FILE = '/Volumes/Spaceship/ccshs_datasets/ccshs_1800749_annot.mat';
 % Global
 
 load(EDF_FILE);

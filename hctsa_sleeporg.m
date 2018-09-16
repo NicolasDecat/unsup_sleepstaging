@@ -36,13 +36,13 @@ datasets = [ ...
   870, 282, 1286; ...
 ];
 
-DATASET=870;
+DATASET=749;
 HCTSA_DIR='/Users/Zhao/SleepPsychoPhysics/Source/hctsa';
-TARGET_FOLDER=strcat('/Volumes/Spaceship/SleepResearch/sleep_documentation_results/results/sleep_org_1800', num2str(DATASET), '_HCTSA_Analysis');
+TARGET_FOLDER=strcat('/Volumes/Spaceship/SleepResearch/sleep_documentation_results/results/selected_CCSHS/sleep_org_1800', num2str(DATASET), '_HCTSA_Analysis');
 TARGET_FILE=strcat('HCTSA_1800', num2str(DATASET), '_N.mat');
 ANSWER_FILE=strcat('/Volumes/Spaceship/ccshs_datasets/ccshs_1800', num2str(DATASET), '_annot.mat');
 NUM_OF_CHANNELS=7;
-TARGET_HCTSA_FILE='HCTSA_EEG_EOG_N.mat';
+TARGET_HCTSA_FILE='HCTSA_C3-A2_N.mat';
 MODE=1; % Mode = 0 (Split file), Mode = 1 (Ran specific plot)
 DRAW_PLOT=1;
 

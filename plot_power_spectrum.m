@@ -1,10 +1,10 @@
-function plot_cluster_fft(header, data, hctsafile, epoch_seconds, timeseries_sampling_rate, epoch_indices, epoch_labels, title_suffix)
-
+function plot_power_spectrum(hctsafile, header, data, epoch_seconds, ...
+    timeseries_sampling_rate, chans, STAGE_LOAD_CSV, plot_smooth)
     %% Extract channel names, sampling frequency from header struct
     channel = cellstr(header.channelname);  % Channel names + converted into cell array
-    fs = header.samplerate(1);      % Assume sampling rate are the same for all channels
-    recordtime = header.records;    % aaTotal recorded time (seconds)
-    nchannels = header.channels;    % Number of channels
+    %fs = header.samplerate(1);      % Assume sampling rate are the same for all channels
+    %recordtime = header.records;    % aaTotal recorded time (seconds)
+    %nchannels = header.channels;    % Number of channels
 
     % Amplitude calibration
     phys_range = header.physmax - header.physmin;
@@ -12,14 +12,12 @@ function plot_cluster_fft(header, data, hctsafile, epoch_seconds, timeseries_sam
 
     gain = phys_range ./ dig_range;
 
-    for i = 1:size(data, 1)
-       data(i, :) = (data(i, :) - header.digimin(i)) * gain(i) + header.physmin(i);
+    calibrate_data=data;
+    for i = 1:size(calibrate_data, 1)
+       calibrate_data(i, :) = (calibrate_data(i, :) - header.digimin(i)) * gain(i) + header.physmin(i);
     end
-
-    channel_info=[(1:length(header.channelname))',string(header.channelname)];
-
-    kmeans_clustering_configuration_channels;
-
+ 
+    % channel_info=[(1:length(header.channelname))',string(header.channelname)];
     %% Pre-processing
 
     % Wo = 50/(fs/2);  BW = Wo/35;
@@ -40,44 +38,44 @@ function plot_cluster_fft(header, data, hctsafile, epoch_seconds, timeseries_sam
     %%
     t=load(hctsafile);
     ts1=struct2table(t.TimeSeries);
-    ts1=ts1(epoch_indices, :);
-    
-    unique_groups1=unique(epoch_labels);  
+    ts1_algo_groups = str2num(char(table2array(ts1(:,2))));
+    unique_groups1=unique(ts1_algo_groups);  
 
-    % [faxis, pow] = get_PowerSpec(data(chans.EEG(1), :), 200, 1, 1); 
-    %figure;
-%     colors=num2cell(jet(length(unique_groups1)* 5), 2);
+    set(0,'DefaultFigureVisible', 'off');
+
+    %colors=num2cell(jet(length(unique_groups1)* 5), 2);
     colors=GiveMeColors(length(unique_groups1));
-
     legends = [];
     legend_labels = {};
     figure;
 
+    sub_clusters=[];
+
     for i = 1:length(unique_groups1)
 
-        sub_ts1 = ts1(find(epoch_labels==i), :);
+        indices = find(ts1_algo_groups==i);
+        fprintf("Cluster %d has %d epochs\n", i, size(indices, 1));
 
-        legend_labels{i} = strcat('Cluster ', num2str(i));
+        sub_ts1 = ts1(indices, :);
+
+        legend_labels{i} = sprintf('Cluster %d (%d epochs)', i, size(sub_ts1, 1));
 
         f=[];
         p=[];
-        p_ld = [];
         non_lp_count = 0;
-        lp_count = 0;
 
         for j = 1:size(sub_ts1, 1)
             s = split(table2array(sub_ts1(j, 1)), '_');
             epoch_no = str2double(string(s(3, 1)));
+
+            sub_clusters = [sub_clusters; i, epoch_no, (epoch_no-1)*epoch_seconds];
 
             startIndex = ((epoch_no - 1) * epoch_seconds * timeseries_sampling_rate) + 1;
             endIndex = (epoch_no * epoch_seconds * timeseries_sampling_rate);
 
             for cc = 1:length(chans.EEG)
 
-                [faxis, pow] = get_PowerSpec(data(chans.EEG(cc), (startIndex:endIndex)), 200, 0, 0); 
-
-    %             faxis = faxis(faxis >= 0.5 & faxis <= 70);
-    %             pow = pow(find(faxis >= 0.5 & faxis <= 70));
+                [faxis, pow] = get_PowerSpec(calibrate_data(chans.EEG(cc), (startIndex:endIndex)), 200, 0, 0); 
 
                 f = [f; faxis];
 
@@ -89,39 +87,34 @@ function plot_cluster_fft(header, data, hctsafile, epoch_seconds, timeseries_sam
         f = mean(f);
         p = mean(p);
 
-        %f=f(f<=48);
-    %     p(f>48) = 0;
-    %     p=(100*p)/sum(p);
-
-        %%
-        %p(faxis>48)=0;
-        %p=10*log10(p);
-        h = plot(f, smooth(p*1000), 'Color', colors{i}, 'LineWidth', 2)
-
-    %     legends = [legends h];
-    %     legend_labels{i} = sprintf('Cluster %d\n', i);
-    %     xlabel('Frequency [Hz]')
-    %     ylabel('Power [dB]')
-    %     title(sprintf('Power Spectrum for Cluster %d\n', i));
+        if (plot_smooth == 0)
+            h = plot(f, smooth(p*1000), 'Color', colors{i}, 'LineWidth', 2);
+        else
+            h = plot(f, smooth(p*1000, PLOT_SMOOTH), 'Color', colors{i}, 'LineWidth', 2);
+        end
         hold on;
     end
 
+    %% Output CSV subclusters
+    if size(sub_clusters, 1) > 0
+        sub_clusters_table = array2table(sub_clusters, 'VariableNames', {'Cluster', 'Epoch_No', 'Epoch_Start_Seconds'});
+        writetable(sub_clusters_table, STAGE_LOAD_CSV);
+    end
 
+    set(gca, 'FontSize', 18);
     xlabel('Frequency (Hz)')
     ylabel('Relative Power (%)')
     xlim([0.5 48]);
     xticks([0:8:48]);
     set(gca, 'YScale', 'log');
     %ylim([0 60]);
-    title(sprintf('Power Spectrum (Channels C3 and C4), %s', size(epoch_indices, 1), title_suffix));
+    title(sprintf('Power Spectrum (Channels %s)', join(string(channel(chans.EEG))', ',')));
     ax = gca;
-    ax.TitleFontSizeMultiplier = 2;
+    %ax.TitleFontSizeMultiplier = 2;
 
-    legend(legends, legend_labels);
+    legend(legends, legend_labels, 'FontSize', 18);
     grid on;
-
     hold off;
-%%
 end
 
 function [faxis, pow] = get_PowerSpec(signal, SamplingRate, DecibelsFlag ,plotFlag)
