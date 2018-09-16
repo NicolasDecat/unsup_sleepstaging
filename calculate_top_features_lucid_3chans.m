@@ -15,7 +15,7 @@ for SBJ_ID = config.subject_ids
             %% Configuration
             TARGET_FOLDER=strcat(config.base_dir, SBJ_ID, config.subject_secondary_id, config.run_base_folder);
 
-            if strcmp(MODE, 'MAIN_CLUSTER')
+            if strcmp(MODE, 'MAIN')
                 fig_filename = sprintf('tsne_Main_%d_Clusters', NUM_OF_MAIN_CLUSTERS);
             else
                 fig_filename = sprintf('tsne_TotalMain_%d_Cluster_%d_SubCluster_%d', ...
