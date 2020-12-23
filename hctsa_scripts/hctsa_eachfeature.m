@@ -38,7 +38,7 @@ for D = 1:length(Subs)   % For each dataset
     datam = load(hctsafile,'TS_DataMat');   % Load TS_DataMat (epochsxfeatures)
 
     
-    for FF = 1:size(all_op.Operations,1) 
+    for FF = 1:size(all_op.Operations,1)   % For each feature
         
         datamat = datam;
         datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
