@@ -1,8 +1,3 @@
-% Changes from original script
-% - Changed configuration settings
-% - Changed feat_ID (to include all f0,664 find_top_X_features (not necessary)
-% - Changed SELECT_TOP_200_FEATURES definition (to include all features)
-% - epochSelectFunc (instead of epochSelectFunction, in statsout)
 
 if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat') == 1
     disp('Delete the iterdata.mat file in AUC folder')
