@@ -1,9 +1,23 @@
 % Select features from reduced_ops.txt, make another .mat file to work on
 % cross-validation.
+% configuration_settings;
+
+TrainingAcc = zeros(20,1);
+TestingAcc = zeros(20,1);
+mAUC = zeros(20,1);
+origlabels = [];
+clusterdecision = [];
+
 configuration_settings;
 
+homedir = pwd;
+
+% for v = 1:20
 
 %% Start HCTSA tools
+% cd(HCTSA_DIR)
+% startup
+% cd(homedir)
 
 %% Read text file
 fileID = fopen(OPS_FILE);
@@ -16,13 +30,17 @@ feat_name = features{1,2};
 %% All operation names
 hctsafile = HCTSA_FILE;
 all_op = load(hctsafile,'Operations');
+Ops = table2cell(all_op.Operations(:,2));
+
 
 %% Check operation name, get feat_id
 nn=0;
 for n = 1:length(feat_name)
     op_name = char(feat_name(n));
-    for i = 1:size(all_op.Operations,1)
-        name = all_op.Operations(i).Name;
+    % for i = 1:length(all_op.Operations)
+    for i = 1:size(Ops,1)
+        % name = all_op.Operations(i).Name;
+        name = Ops{i,1};
         if strcmp(op_name,name)
             nn=nn+1;
             feat_id(nn) = i;
@@ -36,6 +54,7 @@ clear i n nn op_name name
 %% Use feat_id to select data from full op
 datamat = load(hctsafile,'TS_DataMat');
 datamat = datamat.TS_DataMat;
+% feat_id = 1:size(datamat,2);  %To include all features
 
 [timeseries,features]=size(datamat);
 hctsa_ops = datamat(:,feat_id);
@@ -61,7 +80,7 @@ for l  = 1:length(exps)
     % run('crossvalKR.m') 
     if conf == 'BALANCED_LABELED'
         epochSelectFunc = @epochSelect;
-    elseif conf == 'UNLABELED_LABELED_A'
+    elseif conf == 'UNBALANCED_LABELED_A'
         epochSelectFunc = @epochSelect_unbalanced;
     elseif conf == 'UNLABELED_LABELED_B'
         epochSelectFunc = @epochSelect_unbalanced_b;
@@ -78,16 +97,16 @@ eeg_ops=hctsa_ops(1:single_channel_size,:);
 eog_ops=hctsa_ops(single_channel_size+1:single_channel_size*2,:);
 emg_ops=hctsa_ops(single_channel_size*2+1:single_channel_size*3,:);
 % Select only the start and end
-endW = [335,381,392,376,175];
-endS = [1373,1441,1337,1530,1491];
-START = endW(WHICH_DATA);
-END = endS(WHICH_DATA);
-
-N=size(hctsa_ops,2);
-
-eeg_ops=eeg_ops(START:END, :);
-eog_ops=eog_ops(START:END, :);
-emg_ops=emg_ops(START:END, :);
+% endW = [335,381,392,376,175];
+% endS = [1373,1441,1337,1530,1491];
+% START = endW(WHICH_DATA);
+% END = endS(WHICH_DATA); 
+% 
+% N=size(hctsa_ops,2);
+% 
+% eeg_ops=eeg_ops(START:END, :);
+% eog_ops=eog_ops(START:END, :);
+% emg_ops=emg_ops(START:END, :);
 
 % Generate all combinations of three channels
 m = [];
@@ -115,18 +134,18 @@ end
 
 curr_m = [60 110 30];
 
-eeg_values=find_top_X_features(eeg_ops, curr_m(1));
-eog_values=find_top_X_features(eeg_ops, curr_m(2))+N;
-emg_values=find_top_X_features(eeg_ops, curr_m(3))+(N*2);
-
-all_values=find_top_X_features([eeg_ops eog_ops emg_ops], 200);
-t=sprintf('Performance of algorithm using top %d (EEG) %d (EOG) %d (EMG) from lowest pairwise-correlation features', length(eeg_values), ...
-    length(eog_values), length(emg_values));
+% eeg_values=find_top_X_features(eeg_ops, curr_m(1));
+% eog_values=find_top_X_features(eeg_ops, curr_m(2))+N;
+% emg_values=find_top_X_features(eeg_ops, curr_m(3))+(N*2);
+% % 
+% all_values=find_top_X_features([eeg_ops eog_ops emg_ops], 200);
+% t=sprintf('Performance of algorithm using top %d (EEG) %d (EOG) %d (EMG) from lowest pairwise-correlation features', length(eeg_values), ...
+%     length(eog_values), length(emg_values));
     
 %SELECT_TOP_200_FEATURES=[eeg_values eog_values emg_values];
-SELECT_TOP_200_FEATURES=all_values;
-
-    statsOut = cross_validation_selectivefeatures(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES);
+% SELECT_TOP_200_FEATURES=all_values;
+SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
+    [statsOut testMat scoredTest predictTest] = cross_validation_selectivefeatures(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES);
     [~, statsOut.complexity]=size(hctsa_ops);
     %statsOut.complexity = k;
     statsOut.id = k;
@@ -187,17 +206,17 @@ set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure display
 s=save_stats; [UA, ~, idx] = unique(s(:,[1 6]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A
 
 %%
-figure
-x=categorical(cellstr(char(strrep(table2array(NEW_A(:,1)), '_', ' '))));
-y=table2array(NEW_A(:,3))*100;
-bar(x, y);
-title(t);
-grid on;
-ylim([0 100]);
-labels = arrayfun(@(value) num2str(value,'%2.1f'), y,'UniformOutput',false);
-text(x,y,labels,...
-  'HorizontalAlignment','center',...
-  'VerticalAlignment','bottom') 
+% figure
+% x=categorical(cellstr(char(strrep(table2array(NEW_A(:,1)), '_', ' '))));
+% y=table2array(NEW_A(:,3))*100;
+% bar(x, y);
+% title('Testing accuracy')
+% grid on;
+% ylim([0 100]);
+% labels = arrayfun(@(value) num2str(value,'%2.1f'), y,'UniformOutput',false);
+% text(x,y,labels,...
+%   'HorizontalAlignment','center',...
+%   'VerticalAlignment','bottom') 
 
 %save(strcat(CM_SAVE_DIR, filesep, 'SUP_UNSUP_HCTSA_200_DS1.mat'), 'save_stats');
 
@@ -223,37 +242,54 @@ if PLOT_ACCURACY_REPORT
     saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'ACCURACY_REPORT.png'));
 end
 
+TrainingAcc(v,1) = table2array(NEW_A(1,3));
+TestingAcc(v,1) = table2array(NEW_A(2,3));
+
+% run('type1auc.m')
+% mAUC(v,1) = AUC;
+v
+
+origlabels = [origlabels scoredTest(1,:)];
+clusterdecision = [clusterdecision predictTest(1,:)]; 
 
 
+run('type1auc.m')
+% mAUC(v,1) = AUC;
+% v
 
-function  [ values ] = find_top_X_features(MAT, SUBSET)
+MeanTR = mean(TrainingAcc);
+MeanTE = mean(TestingAcc);
+MeanAUC = mean(mAUC);
 
-    c=corr(MAT);
-    N=size(c,1);
 
-    c_r2=c.^2;
-    ccols=c(:);
-    ccols2=c_r2(:);
-    [sc,idx]=sort(abs(ccols));
-    m=[floor(idx./N)+1 mod(idx,N)];
-
-    mod_0=find(m(:,2)==0);
-    m(mod_0, 2) = N;
-
-    m=m(1:2:end, :);
-
-    % for i = 1:size(m,1)
-    unique_features = [];
-    total = 0;
-    i = 1;
-    while length(unique(unique_features)) < SUBSET
-        unique_features = [unique_features, m(i,1)];
-        unique_features = [unique_features, m(i,2)];
-
-        total = total + abs(c(m(i,1), m(i,2)));
-        i = i+1;
-    end
-
-    values=unique_features(1:SUBSET);
-
-end
+% function  [ values ] = find_top_X_features(MAT, SUBSET)
+% 
+%     c=corr(MAT);
+%     N=size(c,1);
+% 
+%     c_r2=c.^2;
+%     ccols=c(:);
+%     ccols2=c_r2(:);
+%     [sc,idx]=sort(abs(ccols));
+%     m=[floor(idx./N)+1 mod(idx,N)];
+% 
+%     mod_0=find(m(:,2)==0);
+%     m(mod_0, 2) = N;
+% 
+%     m=m(1:2:end, :);
+% 
+%     % for i = 1:size(m,1)
+%     unique_features = [];
+%     total = 0;
+%     i = 1;
+%     while length(unique(unique_features)) < SUBSET
+%         unique_features = [unique_features, m(i,1)];
+%         unique_features = [unique_features, m(i,2)];
+% 
+%         total = total + abs(c(m(i,1), m(i,2)));
+%         i = i+1;
+%     end
+% 
+%     values=unique_features(1:SUBSET);
+% 
+% end

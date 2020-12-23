@@ -9,7 +9,7 @@
 %        - LabeledStage // labelled sleep stage from annotation
 % Output : stgID // randomised order of epoch IDs
 
-function [statsOut testMat scoredTest predictTest Iteration] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,v,sub)
+function [statsOut testMat scoredTest predictTest] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,v,sub)
 
 %% Cross-validation code
 % Classification algorithm: K-means clustering + Nearest centroid

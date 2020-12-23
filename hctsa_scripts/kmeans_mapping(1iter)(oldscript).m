@@ -1,41 +1,39 @@
-% Select features from reduced_ops.txt, make another .mat file to work on
-% cross-validation.
+% Changes from original script
+% - Changed configuration settings
+% - Changed feat_ID (to include all f0,664 find_top_X_features (not necessary)
+% - Changed SELECT_TOP_200_FEATURES definition (to include all features)
+% - epochSelectFunc (instead of epochSelectFunction, in statsout)
+
+
+origlabels = [];
+clusterdecision = [];
+Testing_accuracy = [];
+TestingAcc = [];
+AUC = [];
+NumIteration = [];
+stgAUC = [];
+Dataset = [];
+NumChannels = [];
+col = 1;
+
+
+% at some point, change dataset: change current folder first: cd('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_001')   
+
+
+% Configuration
+addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
 configuration_settings;
-
-
-%% Start HCTSA tools
-
-%% Read text file
-fileID = fopen(OPS_FILE);
-features = textscan(fileID,'%s %s %s');
-fclose(fileID);
-
-%% Wanted operation names
-feat_name = features{1,2};
 
 %% All operation names
 hctsafile = HCTSA_FILE;
 all_op = load(hctsafile,'Operations');
 
-%% Check operation name, get feat_id
-nn=0;
-for n = 1:length(feat_name)
-    op_name = char(feat_name(n));
-    for i = 1:size(all_op.Operations,1)
-        name = all_op.Operations(i).Name;
-        if strcmp(op_name,name)
-            nn=nn+1;
-            feat_id(nn) = i;
-            feat(nn).id = i; % all_op.Operations(i).ID % Actual operation ID
-            feat(nn).name = cellstr(name);
-        end
-    end
-end
-
 clear i n nn op_name name
+
 %% Use feat_id to select data from full op
 datamat = load(hctsafile,'TS_DataMat');
 datamat = datamat.TS_DataMat;
+feat_id = 1:size(datamat,2);  %To include all features
 
 [timeseries,features]=size(datamat);
 hctsa_ops = datamat(:,feat_id);
@@ -49,7 +47,8 @@ statistics = [];
 save_stats_columns = {'Type', 'Iteration', 'TrainingAccuracy', 'TestingAccuracy', 'NumberOfFeatures','NumberOfChannels'};
 save_stats = array2table(zeros(0,length(save_stats_columns)));
 save_stats.Properties.VariableNames = save_stats_columns;
-    
+   
+
 for c = NUM_CHANNELS_TO_RUN
 for configuration = 1:length(CONFIGURATIONS_TO_RUN)
     conf = CONFIGURATIONS_TO_RUN(configuration);
@@ -78,16 +77,16 @@ eeg_ops=hctsa_ops(1:single_channel_size,:);
 eog_ops=hctsa_ops(single_channel_size+1:single_channel_size*2,:);
 emg_ops=hctsa_ops(single_channel_size*2+1:single_channel_size*3,:);
 % Select only the start and end
-endW = [335,381,392,376,175];
-endS = [1373,1441,1337,1530,1491];
-START = endW(WHICH_DATA);
-END = endS(WHICH_DATA);
-
-N=size(hctsa_ops,2);
-
-eeg_ops=eeg_ops(START:END, :);
-eog_ops=eog_ops(START:END, :);
-emg_ops=emg_ops(START:END, :);
+% endW = [335,381,392,376,175];
+% endS = [1373,1441,1337,1530,1491];
+% START = endW(WHICH_DATA);
+% END = endS(WHICH_DATA); 
+% 
+% N=size(hctsa_ops,2);
+% 
+% eeg_ops=eeg_ops(START:END, :);
+% eog_ops=eog_ops(START:END, :);
+% emg_ops=emg_ops(START:END, :);
 
 % Generate all combinations of three channels
 m = [];
@@ -115,18 +114,19 @@ end
 
 curr_m = [60 110 30];
 
-eeg_values=find_top_X_features(eeg_ops, curr_m(1));
-eog_values=find_top_X_features(eeg_ops, curr_m(2))+N;
-emg_values=find_top_X_features(eeg_ops, curr_m(3))+(N*2);
-
-all_values=find_top_X_features([eeg_ops eog_ops emg_ops], 200);
-t=sprintf('Performance of algorithm using top %d (EEG) %d (EOG) %d (EMG) from lowest pairwise-correlation features', length(eeg_values), ...
-    length(eog_values), length(emg_values));
+% eeg_values=find_top_X_features(eeg_ops, curr_m(1));
+% eog_values=find_top_X_features(eeg_ops, curr_m(2))+N;
+% emg_values=find_top_X_features(eeg_ops, curr_m(3))+(N*2);
+% % 
+% all_values=find_top_X_features([eeg_ops eog_ops emg_ops], 200);
+% t=sprintf('Performance of algorithm using top %d (EEG) %d (EOG) %d (EMG) from lowest pairwise-correlation features', length(eeg_values), ...
+%     length(eog_values), length(emg_values));
     
 %SELECT_TOP_200_FEATURES=[eeg_values eog_values emg_values];
-SELECT_TOP_200_FEATURES=all_values;
+% SELECT_TOP_200_FEATURES=all_values;
+SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
 
-    statsOut = cross_validation_selectivefeatures(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES);
+    [statsOut testMat scoredTest predictTest] = cross_validation_selectivefeatures(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES);
     [~, statsOut.complexity]=size(hctsa_ops);
     %statsOut.complexity = k;
     statsOut.id = k;
@@ -148,16 +148,15 @@ SELECT_TOP_200_FEATURES=all_values;
 %        best_m = curr_m;
 %     end
     
-    if (conf=="BALANCED_LABELED")
-        %max_test_performance = mean(iteration_testing_accuracy);
-        disp(mean(iteration_testing_accuracy));
-        
-        plot_confusion_matrix(c, statsOut.scoredTrain, statsOut.predictTrain, ...
-            statsOut.scoredTest, statsOut.predictTest, CM_SAVE_DIR, strcat(conf, num2str(c)));
-%         plot_confusion_matrix(statistics(idx).id, statistics(idx).scoredTrain, statistics(idx).svmPredictTrain, ...
-%             statistics(idx).scoredTest, statistics(idx).svmPredictTest, CM_SAVE_DIR)
-
-    end
+%     if (conf=="BALANCED_LABELED")
+%         %max_test_performance = mean(iteration_testing_accuracy);
+%         disp(mean(iteration_testing_accuracy));
+%         plot_confusion_matrix(c, statsOut.scoredTrain, statsOut.predictTrain, ...
+%             statsOut.scoredTest, statsOut.predictTest, CM_SAVE_DIR, strcat(conf, num2str(c)));
+% %         plot_confusion_matrix(statistics(idx).id, statistics(idx).scoredTrain, statistics(idx).svmPredictTrain, ...
+% %              statistics(idx).scoredTest, statistics(idx).svmPredictTest, CM_SAVE_DIR)
+% 
+%     end
     
     types=strings(size(statsOut.scoredTrain, 1), 1);
     types(:)=strcat('Unsupervised_', conf);
@@ -184,14 +183,15 @@ if PLOT_CONFUSION_MATRIX
 end
 
 set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
-s=save_stats; [UA, ~, idx] = unique(s(:,[1 6]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A
+s=save_stats; [UA, ~, idx] = unique(s(:,[1 6]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A;
 
-%%
+%
 figure
 x=categorical(cellstr(char(strrep(table2array(NEW_A(:,1)), '_', ' '))));
 y=table2array(NEW_A(:,3))*100;
 bar(x, y);
-title(t);
+% title(t);
+title('Testing accuracy')
 grid on;
 ylim([0 100]);
 labels = arrayfun(@(value) num2str(value,'%2.1f'), y,'UniformOutput',false);
@@ -199,7 +199,7 @@ text(x,y,labels,...
   'HorizontalAlignment','center',...
   'VerticalAlignment','bottom') 
 
-%save(strcat(CM_SAVE_DIR, filesep, 'SUP_UNSUP_HCTSA_200_DS1.mat'), 'save_stats');
+% save(strcat(CM_SAVE_DIR, filesep, 'SUP_UNSUP_HCTSA_200_DS1.mat'), 'save_stats');
 
 %% Plot output accuracy
 accuracy_train = [];
@@ -213,47 +213,11 @@ for l=1:length(exps)
     complexity = [complexity, statistics(l).complexity];
 end
 
-if PLOT_ACCURACY_REPORT
-    figure;
-    semilogx(complexity,accuracy_train,complexity,accuracy_test)
-    legend('Training','Test')
-    ylabel('Accuracy [0-1]')
-    xlabel('Number of features')
+% Testing_accuracy = table2array(NEW_A(2,3))         
 
-    saveas(gcf, strcat(CM_SAVE_DIR, filesep, 'ACCURACY_REPORT.png'));
-end
+run('type1auc.m')
 
 
 
 
-function  [ values ] = find_top_X_features(MAT, SUBSET)
-
-    c=corr(MAT);
-    N=size(c,1);
-
-    c_r2=c.^2;
-    ccols=c(:);
-    ccols2=c_r2(:);
-    [sc,idx]=sort(abs(ccols));
-    m=[floor(idx./N)+1 mod(idx,N)];
-
-    mod_0=find(m(:,2)==0);
-    m(mod_0, 2) = N;
-
-    m=m(1:2:end, :);
-
-    % for i = 1:size(m,1)
-    unique_features = [];
-    total = 0;
-    i = 1;
-    while length(unique(unique_features)) < SUBSET
-        unique_features = [unique_features, m(i,1)];
-        unique_features = [unique_features, m(i,2)];
-
-        total = total + abs(c(m(i,1), m(i,2)));
-        i = i+1;
-    end
-
-    values=unique_features(1:SUBSET);
-
-end
+       

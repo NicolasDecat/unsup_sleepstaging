@@ -3,7 +3,7 @@
 %        - LabeledStage // labelled sleep stage from annotation
 % Output : stgID // randomised order of epoch IDs
 
-function stgID = epochCounter(whichData,LabeledStage)
+function stgID = epochCounter(whichData,label)
 %% Check if data set exists
 % Use ccshs1800001 as default (avoid error)
 
@@ -59,10 +59,10 @@ endW = datasets(2, :);
 endS = datasets(3, :);
 endID = find(whichData==validData); % Determine which ending/beginning to use
 
-selectID = endW(endID)+1:endS(endID)-1;
+selectID = (endW(endID)+1:endS(endID)-1)';
 
 % Selected ID and their labels
-selectLabel = LabeledStage(selectID);
+selectLabel = label(selectID);
 
 % Record in struct
 stgID.selectID = selectID;
@@ -70,7 +70,7 @@ stgID.selectLabel = selectLabel;
 
 %% Counting number of stages
 % Proportion of each sleep stage (0 - wake, 1-4 NREM, 5 - REM)
-stgNum = length(unique(LabeledStage));
+stgNum = length(unique(label));
 stgLab = {'W','N1','N2','N3','R'};
 
 % Record number of epochs in each stage and the ID of the epoch 
@@ -114,8 +114,8 @@ stgID.Nmin = min(stgID.nStg);
 % If different sets of epochs are used in each iteration of the loop use
 % code in epochSelect.m *******************
 
-% % Randomised epochID of each class is in stgID.actualID
-% % these epochIDs will be used for training and testing
+% Randomised epochID of each class is in stgID.actualID
+% these epochIDs will be used for training and testing
 % stgID.useID =[];
 % 
 % for m=1:stgNum

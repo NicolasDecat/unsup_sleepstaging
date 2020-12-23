@@ -5,12 +5,12 @@
 % Output: trainID, testID (actual ID of epochs to be used when selecting
 % data for cross-validation anaylsis)
 
-function [trainTS, testTS] = epochSelect_unbalanced(stgID,pTraining)
+function [trainTS, testTS] = epochSelect_unbalanced(stgID,trainingProportion)
 % Stage labels
 stgLab = {'W','N1','N2','N3','R'};
 stgNum = length(unique(stgID.selectLabel));
 
-trainPP = round(pTraining*stgID.Nmin); 
+trainPP = round(trainingProportion*stgID.Nmin); 
 %% Randomly sample from each class
 for m=1:stgNum
     %% \Randomise order of each stage/

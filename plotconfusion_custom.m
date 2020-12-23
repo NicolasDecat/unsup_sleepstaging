@@ -1,4 +1,9 @@
-function plotconfusion_custom(answer, predict, ttl)
+function [perResponse] = plotconfusion_custom(answer, predict, ttl)
+
+%    answer = g_labelTest;
+%    predict = g_clustTest;
+%    ttl = strcat('Confusion Matrix - Testing', optional_title);
+    
     [~, cols] = size(answer);
     
     max_elem = max(answer);
@@ -12,12 +17,10 @@ function plotconfusion_custom(answer, predict, ttl)
     
     totalTarget = sum(confmat, 2);
     perResponse = confmat./repmat(totalTarget, 1, max_elem)*100;
-    
     t = cell(max_elem, max_elem);
     for i=1:max_elem
         for j=1:max_elem
-            t(i, j) = cellstr([num2str(confmat(i,j)), 10, ...
-                num2str(round(perResponse(i,j), 2)), '%']);
+            t(i, j) = cellstr([num2str(round(perResponse(i,j), 2)), '%']);
         end
     end
     

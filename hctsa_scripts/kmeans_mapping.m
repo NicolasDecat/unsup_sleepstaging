@@ -5,20 +5,22 @@
 % - clear max (because was used as a variable beforehand)
 
 %% Function: Count the number of epochs in each stages and recore the epochIDs
-% Input: - whichData // which dataset to be used ([1,5,7,13,14] for now)
-%        - LabeledStage // labelled sleep stage from annotation
-% Output : stgID // randomised order of epoch IDs
 
-function [statsOut testMat scoredTest predictTest Iteration] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,v,sub)
+function [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC testTS] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col)
 
 %% Cross-validation code
-% Classification algorithm: K-means clustering + Nearest centroid
-% classifier (similat to k-NN classifer)
-% #####################################################################
-% Store output of each trial(Nf loop) into a struct containing all
-% information
 
 configuration_settings;
+
+% AUC parameters
+origlabels = [];
+clusterdecision = [];
+TestingAcc = [];
+AUC = [];
+NumIteration = [];
+stgAUC = [];
+Dataset = [];
+NumChannels = [];
 
 
 %% Obtain epochID using epochCounter() function
@@ -30,7 +32,7 @@ stgLab = {'W','N1','N2','N3','R'};
 
 % Training
 trainingProportion = TRAINING_PERCENTAGE;
-nIterations = CROSSVAL_ITERATION;
+nIterations = 1;
 
 %% Multiple iteration of randomisation and cross-validation
 % Initialise result struct
@@ -38,11 +40,11 @@ block(nIterations) = struct();
 stats = struct();
 
 for Nf = 1:nIterations
-    % Sample epoch ID from each stage and divide into training and test
+    
+    Nf
+    
     [block(Nf).trainTS,block(Nf).testTS]=epochSelect(stgID,trainingProportion);
-    % [block(Nf).trainTS,block(Nf).testTS]=epochSelectFunction(stgID,trainingProportion);
-    % trainTS and testTS are the time segment ID for training set and test set respectively.
-
+    
     % The following turn the nxm matrix to 1x(n*m) matrix
     trainTS = block(Nf).trainTS.';
     trainTS = trainTS(:).';
@@ -69,21 +71,19 @@ for Nf = 1:nIterations
 
     end
   
-if v<=10
-    NUM_CHANNELS_TO_RUN = [1];
-elseif v > 10 && v <=20
-    NUM_CHANNELS_TO_RUN = [2];
-elseif v > 20 && v <=30
-    NUM_CHANNELS_TO_RUN = [3];
-end
-     
     
     %% Select data of wanted time ID
-    % Features used for clustering are specified in selectdata.m (passing
-    % on hctsa_ops variable)
-    % Timeseries used for crossval are specified here.
+   
+    if v==1
+            NUM_CHANNELS_TO_RUN = [1];
+        elseif v == 2
+            NUM_CHANNELS_TO_RUN = [2];
+        elseif v== 3
+            NUM_CHANNELS_TO_RUN = [3];
+    end
+    
+    
     for ch=1:NUM_CHANNELS_TO_RUN
-    % for ch=1:number_of_channels_used
 
         if ch==1
             trainMat = hctsa_ops(trainTS',:);
@@ -96,9 +96,6 @@ end
         end
     end
     
-%     % Only use the relevant features
-%     trainMat = trainMat(:, selective_features);
-%     testMat = testMat(:, selective_features);
     
     %% Clustering using training dataset
     % Record cluster ID and centre of each cluster
@@ -106,54 +103,6 @@ end
     %% UNSUPERVISED
     [clustID,block(Nf).Kcentre,sse] = kmeans(trainMat,NUM_CLUSTERS,'Distance','sqeuclidean',...
                         'Display','off','Replicates',50,'MaxIter',500);
-       
-
-  
-% % Draw cluster and centroids
-% 
-% markersize=12;                
-% figure;
-% plot(trainMat(clustID==1,1),trainMat(clustID==1,2),'r.','MarkerSize',markersize)
-% hold on;
-% plot(trainMat(clustID==2,1),trainMat(clustID==2,2),'b.','MarkerSize',markersize)
-% plot(trainMat(clustID==3,1),trainMat(clustID==3,2),'y.','MarkerSize',markersize)
-% plot(trainMat(clustID==4,1),trainMat(clustID==4,2),'g.','MarkerSize',markersize)
-% plot(trainMat(clustID==5,1),trainMat(clustID==5,2),'c.','MarkerSize',markersize)                    
-%                     
-% title("KMeans Clustering");
-% plot(block(Nf).Kcentre(:,1),block(Nf).Kcentre(:,2),'kx','MarkerSize',markersize,'LineWidth',2)
-% %plot(c(:,1),c(:,2),'ko','MarkerSize',12,'LineWidth',2)
-% 
-% legend(['Cluster 1 (SSE: ' num2str(sse(1))],...
-%        ['Cluster 2 (SSE: ' num2str(sse(2))],...
-%        ['Cluster 3 (SSE: ' num2str(sse(3))],...
-%        ['Cluster 4 (SSE: ' num2str(sse(4))],...
-%        ['Cluster 5 (SSE: ' num2str(sse(5))],...
-%        'Centroids', 'Location','NW')
-% 
-% label=label+1;
-% label(label==6)=5;                   
-  
-%% PCA
-% TS_Normalize('scaledRobustSigmoid',[0.8,1.0]);
-% load annot.mat
-
-% TimeSeries.Group = zeros(0);
-% load('HCTSA_N.mat');
-% TimeSeries.Data = trainMat;
-% TimeSeries.Group = [sleepstage;sleepstage;sleepstage;sleepstage;sleepstage;sleepstage;sleepstage];
-% TimeSeries.Group = num2str(TimeSeries.Group);
-% TimeSeries.Group = cellstr(TimeSeries.Group);
-% TimeSeries.Keywords = TimeSeries.Group;
-% save('HCTSA_N.mat')
-
-% TS_LabelGroups('norm',{'0','1','2','3','5'},'ts');
-% annotateParams = struct('n',6); % annotate 6 time series
-% showDistributions = true; % plot marginal distributions
-% TS_PlotLowDim('norm','pca',showDistributions,'',annotateParams);
-
-% coeff, score, latent, tsd, variance]  = pca((testMat'))
-
 
 
     %% SUPERVISED (same data)
@@ -174,8 +123,9 @@ end
     
     for n=1:length(testTS)
         % Calculate Euclidean distance from datapoint to each centre
-        distance = sqrt(sum((bsxfun(@minus,block(Nf).Kcentre,testMat(n,:))).^2,2));
-        % Find the cluster of minimum distance
+        distance = sqrt(sum((bsxfun(@minus,block(Nf).Kcentre,testMat(n,:))).^2,2)); %%%% Calculate distance between each stage data point (Test mat) 
+                                                                                    %%%% and center of cluster from kmeans. Data point with least distance from a center goes to cluster of that center. ClustTest = predictTest, = the cluster decisions
+        % Find the cluster of minimum distance              
         [~,clustTest(n)] = min(distance);
     end
       
@@ -188,16 +138,14 @@ end
     % Initialise cluster-stage counter
     pro_no = zeros(length(stgID.nStg),length(unique(clustID)));
     for m = 1:length(unique(clustID))
-        % epochID that belongs to this cluster
-        % pro_id = ismember(stgID.selectID,block(Nf).trainTS(clustID==m));
-        pro_id = find(clustID == m); %?
+       
+        pro_id = find(clustID == m); 
         % Actual labelled stage
         actualStg = label(trainTS(pro_id));
         %actualStg =  stgID.selectLabel(pro_id);
         for n = 1:length(stgID.nStg)
             pro_no(m,n) = sum(actualStg==stgLabel(n));
         end
-        %[~,equi_class(m)]=max(pro_no(m,:));
     end
     
     % Now we give the stage that has the highest sum choose first.
@@ -241,38 +189,9 @@ end
         for l=1:length(print_stage_name)
            fprintf(fileID, 'Cluster %d => %s\n ', l, print_stage_name{l});
         end
-        
-        %% Find the top X closest neighbours to each state.
-%         for m = 1:length(unique(clustID))
-%             stage_name = print_stage_name{m};
-%             clust_point = block(Nf).Kcentre(m,:);
-%             idx = knnsearch(trainMat, clust_point, 'k', 5)';
-%             ts_idx = trainTS(idx);
-%             
-%             stage_folder = strcat(debug_folder, filesep, stage_name);
-%             
-%             ll=label(ts_idx);
-%             ll = ll+1;
-%             ll(ll == 6) = 5;
-%             
-%             for s = 1:length(ts_idx)
-%                 imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', ts_idx(s)), '.png');
-%                 
-%                 suffix = '_CORRECT';
-%                 if (stgLab{ll(s)} ~= stage_name)
-%                     suffix = strcat('_INCORRECT_', stgLab{ll(s)});
-%                 end
-%                 
-%                 imageToFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', ts_idx(s)), '_CLOSEST', suffix, '.png');
-%                 copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageToFile));
-%             end
-%         end
     end
     
-    %% Case: Counts are equal -> repeating equivalent class
-    % if unique(equi_class)~=[1:5]  
-    % pro_no?
-    % end
+    
     %% Convert cluster ID into equivalent stage
     % Training
     for i=1:length(clustID)
@@ -300,8 +219,6 @@ end
     testCorrect = sum(block(Nf).equi_test==label(testTS)');
     block(Nf).P_trainCorrect = trainCorrect/(length(trainTS));
     block(Nf).P_testCorrect = testCorrect/(length(testTS));
-
-    %fprintf('trainCorrect: %0.2f testCorrect: %0.2f\n', block(Nf).P_trainCorrect, block(Nf).P_testCorrect);
     
     %% Confusion matrix input
     stats.scoredTrain(Nf,:) = label(trainTS)';
@@ -330,5 +247,9 @@ predictTest = stats.predictTest;
 
 %% Clear variables for the next run
 %clearvars -except Output datamat feat_id features k complexity CM_SAVE_DIR exps statsOut
+
+%% Run AUC
+   run('type1auc.m')
+
 
 end
