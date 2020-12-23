@@ -1,54 +1,49 @@
-% Changes from original script
-% - Changed configuration settings
-% - Changed feat_ID (to include all f0,664 find_top_X_features (not necessary)
-% - Changed SELECT_TOP_200_FEATURES definition (to include all features)
-% - epochSelectFunc (instead of epochSelectFunction, in statsout)
 
+%% Computing kmeans clustering and type1 auc for each feature
+
+% Making sure no file remains in folder
 if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat') == 1
     disp('Delete the iterdata.mat file in AUC folder')
     return
 end
 
-Subs = {'001'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
-Channels = {'1ch' '2ch' '3ch'};  % used for save
-NumIter = compose('%diter',(1:100)); % used for save
+Subs = {'001'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Channels = {'1ch' '2ch' '3ch'};  % used for saveas
+NumIter = compose('%diter',(1:100)); % used for saveas
 
 
-for D = 1:length(Subs)
-    
+for D = 1:length(Subs)   % For each dataset
     
     sub = Subs{D};
 
     % File selection
-    WHICH_DATA = str2num(sprintf('%s',sub)); 
+    WHICH_DATA = str2num(sprintf('%s',sub));   
 
-    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) % get new pwd (current folder)
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))   % get new pwd (current folder)
     HCTSA_DIR = sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub);  % get directory
 
-    ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_001/ccshs_1800%s_annot.mat',sub));
+    ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_001/ccshs_1800%s_annot.mat',sub));   % annotation file
 
     
-
     % Configuration
     addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
     configuration_settings;
+    clear i n nn op_name name
 
+    
     %% All operation names
     hctsafile = HCTSA_FILE;
     all_op = load(hctsafile,'Operations');
-
-    clear i n nn op_name name
     
-    datam = load(hctsafile,'TS_DataMat');
+    datam = load(hctsafile,'TS_DataMat');   % Load TS_DataMat (epochsxfeatures)
 
-    % for F = 1:size(all_op.Operations,1) 
-    for F = 1:10
+    
+    for FF = 1:size(all_op.Operations,1) 
         
-        % Use feat_id to select data from full op
         datamat = datam;
-        datamat = datamat.TS_DataMat(:,F);
+        datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
 
-        feat_id = 1:size(datamat,2);  %To include all features
+        feat_id = 1:size(datamat,2);  
 
         [timeseries,features]=size(datamat);
         hctsa_ops = datamat(:,feat_id);
@@ -57,9 +52,9 @@ for D = 1:length(Subs)
 
         
             %% Run cross-validation code
-            % Change the number of operations
-            set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying (sometimes it could be lots of figures!)
-            exps = EXPS_TO_RUN; % This allow us to selectively choose which experiment to run
+            
+            set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying 
+            exps = EXPS_TO_RUN; 
             statistics = [];
 
             save_stats_columns = {'Type', 'Iteration', 'TrainingAccuracy', 'TestingAccuracy', 'NumberOfFeatures','NumberOfChannels'};
@@ -75,12 +70,12 @@ for D = 1:length(Subs)
                 NUM_CHANNELS_TO_RUN = [3];
             end
 
-            chan = Channels{NUM_CHANNELS_TO_RUN};  % used for save
+            chan = Channels{NUM_CHANNELS_TO_RUN};  % used for saveas
 
-
+            
             c = NUM_CHANNELS_TO_RUN;
             l = 1:length(exps);
-            k = exps(l); % k is the condition to select operation
+            k = exps(l); 
             hctsa_ops = datamat(:,feat_id);
 
             conf = 'BALANCED_LABELED';
@@ -116,7 +111,7 @@ for D = 1:length(Subs)
             SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
 
 
-            [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC] = kmeans_mapping_eachfeature(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v);
+            [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC] = kmeans_mapping_eachfeature(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
             [~, statsOut.complexity]=size(hctsa_ops);
             %statsOut.complexity = k;
             statsOut.id = k;
@@ -179,25 +174,23 @@ for D = 1:length(Subs)
                 complexity = [complexity, statistics(l).complexity];
             end
 
-
-            D
-            v
+            FF
 
        end
             
     end
+   
     
-    % Get the ID of epochs that were  labeled wrong by the cluster 
+    
+%% Get the ID of epochs that were  labeled wrong by the cluster 
 %     agr = find(statsOut.scoredTest == statsOut.predictTest);
 %     EpochIDagr = testTS(agr);
 %     disagr = find(statsOut.scoredTest ~= statsOut.predictTest);
 %     EpochIDdisagr = testTS(disagr);
 
-    
-
    
 
-%%% Plot average confusion matricees (CF)
+%% Plot average confusion matricees (CF)
 % 
 % % To use for v2 figures
 % Y = cat(3,Percent_cf{:});   % 2nd index = Num channels
@@ -231,6 +224,7 @@ for D = 1:length(Subs)
 %     NUM_CHANNELS_TO_RUN = 3; 
 %     MEAN_percent_cf = mean(Y(:,:,21:v),3);  % Take iterations 21-v (CF for EEG+EOG+EMG)
 %     run('Plot_CF_mean.m')
+
 
 end
 

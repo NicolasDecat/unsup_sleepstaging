@@ -41,8 +41,6 @@ stats = struct();
 
 for Nf = 1:nIterations
     
-    Nf
-    
     [block(Nf).trainTS,block(Nf).testTS]=epochSelect(stgID,trainingProportion);
     
     % The following turn the nxm matrix to 1x(n*m) matrix
@@ -123,7 +121,7 @@ for Nf = 1:nIterations
     
     for n=1:length(testTS)
         % Calculate Euclidean distance from datapoint to each centre
-        distance = sqrt(sum((bsxfun(@minus,block(Nf).Kcentre,testMat(n,:))).^2,2)); %%%% Calculate distance between each stage data point (Test mat) 
+        distance = sqrt(sum((bsxfun(@minus,block(Nf).Kcentre,testMat(n,:))).^2,2)); %%%% Calculates distance between each stage data point (Test mat) 
                                                                                     %%%% and center of cluster from kmeans. Data point with least distance from a center goes to cluster of that center. ClustTest = predictTest, = the cluster decisions
         % Find the cluster of minimum distance              
         [~,clustTest(n)] = min(distance);
@@ -248,9 +246,8 @@ predictTest = stats.predictTest;
 %% Clear variables for the next run
 %clearvars -except Output datamat feat_id features k complexity CM_SAVE_DIR exps statsOut
 
-%% Run AUC
-   Nf
+%% Compute type1AUC
    run('type1auc_eachfeature.m')
-
+   
 
 end
