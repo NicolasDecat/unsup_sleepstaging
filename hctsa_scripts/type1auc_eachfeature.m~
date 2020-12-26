@@ -14,7 +14,7 @@ for Nit = 1:size(scoredTest,1)   % For each iteration Nf
 
       
     ORIGlabels = scoredTest(Nit,:);  
-    CLUSTERdecision = predictTest(Nit,:)
+    CLUSTERdecision = predictTest(Nit,:);
 
     % Number of epochs for each sleep stage
     stgL = size(testMat,1);
@@ -96,10 +96,9 @@ for rowAUC = 1:10  % For all rows of AUC (all 10 classifiers)
 end
 
 % Save
-AUC_per_feature = [AUC_per_feature Mean_AUC(:,FF)];    % Rows = 
+AUC_per_feature = [AUC_per_feature Mean_AUC(:,FF)];    % Rows = binary classifiers in order listed above (row 1 = 0vs1, row 2 = 0vs2, etc)
 fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC';
 save(fullfile(fpath,'AUC_per_feature.mat'),'Mean_AUC','AUC_per_feature')  % Save all columns in AUC folder
-
 
 
 
