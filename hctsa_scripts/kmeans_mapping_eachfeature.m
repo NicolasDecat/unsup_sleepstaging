@@ -6,7 +6,7 @@
 
 %% Function: Count the number of epochs in each stages and recore the epochIDs
 
-function [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col,FF)
+function [statsOut testMat scoredTest predictTest Nf testTS AUC_per_feature] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col,FF)
 
 %% Cross-validation code
 
@@ -32,7 +32,7 @@ stgLab = {'W','N1','N2','N3','R'};
 
 % Training
 trainingProportion = TRAINING_PERCENTAGE;
-nIterations = 1;
+nIterations = 10;
 
 %% Multiple iteration of randomisation and cross-validation
 % Initialise result struct
@@ -247,7 +247,8 @@ predictTest = stats.predictTest;
 %clearvars -except Output datamat feat_id features k complexity CM_SAVE_DIR exps statsOut
 
 %% Compute type1AUC
+
    run('type1auc_eachfeature.m')
-   
+
 
 end

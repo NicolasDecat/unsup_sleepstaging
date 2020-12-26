@@ -2,13 +2,15 @@
 %% Computing kmeans clustering and type1 auc for each feature
 
 % Making sure no file remains in folder
-if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat') == 1
-    delete '/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat'
+if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat') == 1
+    delete '/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat'
 end
 
 Subs = {'001'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
+
+
 
 
 for D = 1:length(Subs)   % For each dataset
@@ -39,19 +41,17 @@ for D = 1:length(Subs)   % For each dataset
 
     load('HCTSA_N.mat')
     % for FF = 1:size(all_op.Operations,1)   % For each feature
-    
-    for v = 1  % For each channel condition
-    
-        for FF = 1:10
-            
-            % Load data matrix for one feature
-            datamat = datam;
-            datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
+    for FF = 1
+        
+        datamat = datam;
+        datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
 
-            feat_id = 1:size(datamat,2);  
+        feat_id = 1:size(datamat,2);  
 
-            [timeseries,features]=size(datamat);
-            hctsa_ops = datamat(:,feat_id);
+        [timeseries,features]=size(datamat);
+        hctsa_ops = datamat(:,feat_id);
+        
+        for v = 1  % For each channel condition
             
         
             %% Run cross-validation code
@@ -114,7 +114,7 @@ for D = 1:length(Subs)   % For each dataset
             SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
 
 
-            [statsOut testMat scoredTest predictTest Nf testTS AUC_per_feature] = kmeans_mapping_eachfeature(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
+            [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC testTS] = kmeans_mapping_eachfeature(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
 
             [~, statsOut.complexity]=size(hctsa_ops);
             %statsOut.complexity = k;
@@ -180,12 +180,11 @@ for D = 1:length(Subs)   % For each dataset
 
             FF
 
-          
-            
-            
+        
         end
      
        
+        
     end
 
    
@@ -286,7 +285,7 @@ for D = 1:length(Subs)   % For each dataset
 end
 
 
-% SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,AUC);
+SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,AUC);
 % save('Summary_table_v3.mat','SummaryTable')
 % save('CF_data','Percent_cf')
 

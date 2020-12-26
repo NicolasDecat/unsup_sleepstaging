@@ -1,7 +1,6 @@
 
 if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat') == 1
-    disp('Delete the iterdata.mat file in AUC folder')
-    return
+    delete '/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat'
 end
 
 Subs = {'001'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
@@ -168,30 +167,8 @@ for D = 1:length(Subs)
 
     D
     v
- 
-    % Get the ID of epochs that were labeled wrong by the cluster 
-    agr = find(statsOut.scoredTest == statsOut.predictTest);
-    disagr = find(statsOut.scoredTest ~= statsOut.predictTest);
-
-    EpochIDagr = testTS(agr);
-    EpochIDdisagr = testTS(disagr);
 
     
-    % signal of epoch labelled right
-    if v == 1
-        Data = TimeSeries.Data(1:size(eeg_ops,1),:);
-    elseif v == 2
-        Data = TimeSeries.Data((size(eeg_ops,1)+1):(size(eeg_ops,1)*2),:);
-    elseif v == 3
-        Data = TimeSeries.Data((((size(eeg_ops,1)*2)+1):(size(eeg_ops,1)*3)),:);
-    end
-   
-    % Signal of epochs labelled right / wrong
-    Signalagr = Data(EpochIDagr,:);
-    Signaldisagr = TimeSeries.Data(EpochIDdisagr,:);
-
-    
-
 
    end
 
