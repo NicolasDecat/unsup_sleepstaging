@@ -4,7 +4,8 @@
 
 if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat') == 1
     load('/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat')
-else AUC_per_feature = [];
+else
+    AUC_per_feature = zeros(10,1,2);  % 10 classifiers x 2 features (1 all) x 2 channel conditions
 end
 
 AUC = zeros(10,1);
@@ -91,15 +92,17 @@ end
 
 
 % Get mean AUC for each classifier
-for rowAUC = 1:10  % For all rows of AUC (all 10 classifiers)
-    Mean_AUC(rowAUC,FF) = mean(AUC(rowAUC,:));
+for rowAUC = 1:10                        % For all rows of AUC (all 10 classifiers)
+    Mean_AUC(rowAUC,1) = mean(AUC(rowAUC,:));
 end
 
 % Save
-AUC_per_feature = [AUC_per_feature Mean_AUC(:,FF)];    % Rows = binary classifiers in order listed above (row 1 = 0vs1, row 2 = 0vs2, etc)
+
+AUC_per_feature(1:10,1,v) = Mean_AUC(:,1); % Rows = binary classifiers in order listed above (row 1 = 0vs1, row 2 = 0vs2, etc)
 fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC';
 save(fullfile(fpath,'AUC_per_feature.mat'),'Mean_AUC','AUC_per_feature')  % Save all columns in AUC folder
 
+% See A(:,:,v), and know that {AUC_per_feature} gives what you want
 
 
 

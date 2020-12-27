@@ -6,7 +6,7 @@
 
 %% Function: Count the number of epochs in each stages and recore the epochIDs
 
-function [statsOut testMat scoredTest predictTest Nf testTS Mean_AUC AUC_per_feature] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col,FF)
+function [statsOut testMat scoredTest predictTest Nf testTS Mean_AUC AUC_per_feature] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col)
 
 %% Cross-validation code
 
@@ -248,7 +248,7 @@ predictTest = stats.predictTest;
 
 %% Compute type1AUC
 
-   run('type1auc_eachfeature.m')
+   run('type1auc_eachall.m')
 
 
 end

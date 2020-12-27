@@ -2,8 +2,8 @@
 %% Computing kmeans clustering and type1 auc for each feature
 
 % Making sure no file remains in folder
-if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat') == 1
-    delete '/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat'
+if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat') == 1
+    delete '/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat'
 end
 
 Subs = {'001'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
@@ -11,49 +11,39 @@ Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
 
-
-
-for D = 1:length(Subs)   % For each dataset
+for D = 1:length(Subs)
     
     sub = Subs{D};
 
     % File selection
-    WHICH_DATA = str2num(sprintf('%s',sub));   
+    WHICH_DATA = str2num(sprintf('%s',sub)); 
 
-    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))   % get new pwd (current folder)
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) % get new pwd (current folder)
     HCTSA_DIR = sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub);  % get directory
 
-    ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_001/ccshs_1800%s_annot.mat',sub));   % annotation file
-
-
-    
-    % Configuration
-    addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
-    configuration_settings;
-    clear i n nn op_name name
+    ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_001/ccshs_1800%s_annot.mat',sub));
 
     
-    %% All operation names
-    hctsafile = HCTSA_FILE;
-    all_op = load(hctsafile,'Operations');
-    
-    datam = load(hctsafile,'TS_DataMat');   % Load TS_DataMat (epochsxfeatures)
+    for v = 1:2   % For each channel condition
 
-    load('HCTSA_N.mat')
-    % for FF = 1:size(all_op.Operations,1)   % For each feature
-    for FF = 1
-        
-        datamat = datam;
-        datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
+        % Configuration
+        addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
+        configuration_settings;
 
-        feat_id = 1:size(datamat,2);  
+        %% All operation names
+        hctsafile = HCTSA_FILE;
+        all_op = load(hctsafile,'Operations');
+
+        clear i n nn op_name name
+
+        %% Use feat_id to select data from full op
+        datamat = load(hctsafile,'TS_DataMat');
+        datamat = datamat.TS_DataMat;
+        feat_id = 1:size(datamat,2);  %To include all features
 
         [timeseries,features]=size(datamat);
         hctsa_ops = datamat(:,feat_id);
-        
-        for v = 1  % For each channel condition
-            
-        
+
             %% Run cross-validation code
             
             set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying 
@@ -114,7 +104,7 @@ for D = 1:length(Subs)   % For each dataset
             SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
 
 
-            [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC testTS] = kmeans_mapping_eachfeature(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
+            [statsOut testMat scoredTest predictTest Nf testTS Mean_AUC AUC_per_feature] = kmeans_eachall(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v);
 
             [~, statsOut.complexity]=size(hctsa_ops);
             %statsOut.complexity = k;
@@ -178,13 +168,14 @@ for D = 1:length(Subs)   % For each dataset
                 complexity = [complexity, statistics(l).complexity];
             end
 
-            FF
-
         
-        end
+
+          
+            
+            
+
      
        
-        
     end
 
    
@@ -285,7 +276,7 @@ for D = 1:length(Subs)   % For each dataset
 end
 
 
-SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,AUC);
+% SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,AUC);
 % save('Summary_table_v3.mat','SummaryTable')
 % save('CF_data','Percent_cf')
 
