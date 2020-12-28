@@ -41,6 +41,7 @@ stats = struct();
 
 for Nf = 1:nIterations
     
+    
     [block(Nf).trainTS,block(Nf).testTS]=epochSelect(stgID,trainingProportion);
     
     % The following turn the nxm matrix to 1x(n*m) matrix
@@ -99,22 +100,22 @@ for Nf = 1:nIterations
     % Record cluster ID and centre of each cluster
 
     %% UNSUPERVISED
+
     [clustID,block(Nf).Kcentre,sse] = kmeans(trainMat,NUM_CLUSTERS,'Distance','sqeuclidean',...
                         'Display','off','Replicates',50,'MaxIter',500);
 
-
     %% SUPERVISED (same data)
-    template = templateSVM(...
-    'KernelFunction', 'linear', ...
-    'PolynomialOrder', [], ...
-    'KernelScale', 'auto', ...
-    'BoxConstraint', 1, ...
-    'Standardize', true);
-
-     SVMModel = fitcecoc(trainMat, label(trainTS),'Learners', template, ...
-         'Coding', 'onevsone', 'ClassNames', [0; 1; 2; 3; 5]);
-     svmTrain = predict(SVMModel, trainMat);
-     svmTest = predict(SVMModel, testMat);
+%     template = templateSVM(...
+%     'KernelFunction', 'linear', ...
+%     'PolynomialOrder', [], ...
+%     'KernelScale', 'auto', ...
+%     'BoxConstraint', 1, ...
+%     'Standardize', true);
+% 
+%      SVMModel = fitcecoc(trainMat, label(trainTS),'Learners', template, ...
+%          'Coding', 'onevsone', 'ClassNames', [0; 1; 2; 3; 5]);
+%      svmTrain = predict(SVMModel, trainMat);
+%      svmTest = predict(SVMModel, testMat);
      
     %% Classification of test dataset(Nearest centroid classifier)
     % Minimum Euclidean distance from centre/mean features of the cluster
@@ -223,8 +224,8 @@ for Nf = 1:nIterations
     stats.scoredTest(Nf,:) = label(testTS)';
     stats.predictTrain(Nf,:) = block(Nf).equi_train;
     stats.predictTest(Nf,:) = block(Nf).equi_test;
-    stats.svmPredictTrain(Nf, :) = svmTrain';
-    stats.svmPredictTest(Nf, :) = svmTest';
+%     stats.svmPredictTrain(Nf, :) = svmTrain';
+%     stats.svmPredictTest(Nf, :) = svmTest';
     
     assert(size(trainMat, 2) == size(testMat, 2));
     stats.totalFeatures(Nf, :) = size(trainMat, 2);
