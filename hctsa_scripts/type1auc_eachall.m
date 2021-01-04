@@ -5,7 +5,7 @@
 if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat') == 1
     load('/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat')
 else
-    AUC_per_feature = zeros(10,1,2);  % 10 classifiers x 2 features (1 all) x 2 channel conditions
+    AUC_per_feature = zeros(10,1,1);  % 10 classifiers x 2 features (1 all) x 2 channel conditions
 end
 
 AUC = zeros(10,1);

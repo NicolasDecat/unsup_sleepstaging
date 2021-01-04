@@ -1,4 +1,5 @@
 
+
 %% Type 1 AUC hctsa for each feature: one-vs-one paired classification
 
 
@@ -85,7 +86,7 @@ for Nit = 1:size(scoredTest,1)   % For each iteration Nf
     % 3 vs rem
     origlabels = ORIGlabels(1,[N3,rem]);
     clusterdecision = CLUSTERdecision(1,[N3,rem]);
-    posclass = 5;    
+    posclass = 3;    
     [X,Y,T,AUC(10,Nit)] = perfcurve(origlabels,clusterdecision,posclass);
     
 end

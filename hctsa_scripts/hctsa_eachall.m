@@ -24,7 +24,7 @@ for D = 1:length(Subs)
     ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_001/ccshs_1800%s_annot.mat',sub));
 
     
-    for v = 1:2   % For each channel condition
+    for v = 1:1   % For each channel condition
 
         % Configuration
         addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
@@ -280,3 +280,6 @@ end
 % save('Summary_table_v3.mat','SummaryTable')
 % save('CF_data','Percent_cf')
 
+Mean_across_classif = mean(AUC_per_feature);
+[~,I] = sort(Mean_across_classif,'descend');
+AUC_per_feature = AUC_per_feature(:,I)

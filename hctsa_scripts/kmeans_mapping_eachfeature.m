@@ -12,16 +12,6 @@ function [statsOut testMat scoredTest predictTest Nf testTS Mean_AUC AUC_per_fea
 
 configuration_settings;
 
-% AUC parameters
-origlabels = [];
-clusterdecision = [];
-TestingAcc = [];
-AUC = [];
-NumIteration = [];
-stgAUC = [];
-Dataset = [];
-NumChannels = [];
-
 
 %% Obtain epochID using epochCounter() function
 whichData = WHICH_DATA;
@@ -49,37 +39,12 @@ for Nf = 1:nIterations
     trainTS = trainTS(:).';
     testTS = block(Nf).testTS.';
     testTS = testTS(:).';
-
-    if DEBUG_CROSSVALIDATION
-        debug_folder =  strcat('Exp_', sprintf('%d', experiment), '_iteration_', num2str(Nf), '_channel_', num2str(number_of_channels_used));
-        if exist(debug_folder)==7
-           rmdir(debug_folder, 's');
-        end
-        mkdir(debug_folder);       
-        
-        for stage=1:size(block(Nf).trainTS,1)
-            stage_folder = strcat(debug_folder, filesep, stgLab{stage});
-            mkdir(stage_folder);
-            
-            stage_data = block(Nf).trainTS(stage, :);
-            for k=1:length(stage_data)
-                imageFile = strcat('ccshs_', sprintf('%03d', whichData), '_', sprintf('%04d', stage_data(k)), '.png');
-                copyfile(strcat(DEBUG_CROSSVALIDATION_IMAGEDIR, filesep, imageFile), strcat(stage_folder, filesep, imageFile));
-            end
-        end
-
-    end
   
     
     %% Select data of wanted time ID
    
-    if v==1
-            NUM_CHANNELS_TO_RUN = [1];
-        elseif v == 2
-            NUM_CHANNELS_TO_RUN = [2];
-        elseif v== 3
-            NUM_CHANNELS_TO_RUN = [3];
-    end
+  
+    NUM_CHANNELS_TO_RUN = v;
     
     
     for ch=1:NUM_CHANNELS_TO_RUN
@@ -174,22 +139,6 @@ for Nf = 1:nIterations
     
     equi_stage = stgLabel(equi_class);
 
-    if DEBUG_CROSSVALIDATION
-        print_stage = equi_stage+1;
-        print_stage(print_stage == 6) = 5;
-
-        print_stage_name = stgLab(print_stage);
-
-        fileID = fopen(strcat(debug_folder, filesep, 'results.txt'),'w');
-        fmt = [repmat('%4d ', 1, size(pro_no,2)-1), '%4d\n'];
-        fprintf(fileID, fmt, pro_no.');   %transpose is important!
-        fprintf(fileID, '\n');
-        
-        for l=1:length(print_stage_name)
-           fprintf(fileID, 'Cluster %d => %s\n ', l, print_stage_name{l});
-        end
-    end
-    
     
     %% Convert cluster ID into equivalent stage
     % Training
@@ -201,18 +150,6 @@ for Nf = 1:nIterations
         block(Nf).equi_test(j) = equi_stage(clustTest(j));
     end
 
-    if DEBUG_CROSSVALIDATION
-        Index = trainTS';
-        Answers = label(trainTS);
-        Predicts = block(Nf).equi_train';
-
-        csvTable = table(Index,Answers,Predicts);
-        writetable(csvTable, strcat(debug_folder, filesep, 'summary.csv'));
-        
-        plot_confusion_matrix(experiment, label(trainTS)', block(Nf).equi_train, ...
-            label(testTS)', block(Nf).equi_test, debug_folder)
-    end
-    
     %% Percentage correct
     trainCorrect = sum(block(Nf).equi_train==label(trainTS)');
     testCorrect = sum(block(Nf).equi_test==label(testTS)');
@@ -230,6 +167,7 @@ for Nf = 1:nIterations
     assert(size(trainMat, 2) == size(testMat, 2));
     stats.totalFeatures(Nf, :) = size(trainMat, 2);
 end % End Nf-th randomisation
+
 
 %% Average output
 % For comparing different k (changing features used as a condition)

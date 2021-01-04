@@ -21,7 +21,7 @@ for D = 1:length(Subs)
     ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_001/ccshs_1800%s_annot.mat',sub));
 
     
-    for v = 2   % For each channel condition
+    for v = 1:1   % For each channel condition
 
         % Configuration
         addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
@@ -61,7 +61,6 @@ for D = 1:length(Subs)
         end
 
         chan = Channels{NUM_CHANNELS_TO_RUN};  % used for save
-
 
         c = NUM_CHANNELS_TO_RUN;
         l = 1:length(exps);
