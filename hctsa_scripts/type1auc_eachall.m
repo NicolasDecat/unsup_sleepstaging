@@ -10,7 +10,6 @@ end
 
 AUC = zeros(10,1);
 
-
 for Nit = 1:size(scoredTest,1)   % For each iteration Nf
 
       

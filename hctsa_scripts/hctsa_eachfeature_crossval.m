@@ -6,7 +6,7 @@ if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat') == 1
     delete '/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat'
 end
 
-Subs = {'005'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
@@ -30,8 +30,8 @@ for D = 1:length(Subs)   % For each dataset
     
     for v = 1:1  % For each channel condition
 
-        for FF = 1:size(Operations,1)    % For each feature
-        % for FF = 1:10
+        % for FF = 1:size(Operations,1)    % For each feature
+        for FF = 1:7
        
             % Load data matrix for one feature
             datamat = datam;
@@ -75,7 +75,7 @@ for D = 1:length(Subs)   % For each dataset
             SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
 
 
-            [statsOut testMat scoredTest predictTest Nf testTS Mean_AUC AUC_per_feature] = kmeans_mapping_eachfeature(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
+            [statsOut testMat scoredTest predictTest Nf testTS] = kmeans_mapping_eachfeature_crossval(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
 
             [~, statsOut.complexity]=size(hctsa_ops);
             %statsOut.complexity = k;
@@ -202,23 +202,23 @@ end
 
 %% Plot Data matrix
 
-figure;
-imagesc(AUC_per_feature)
-title(sprintf('Classification performance per feature (Dataset %s)',sub));
-% title(sprintf('Classification performance per feature (Dataset 001)'));
-
-ax = gca;
-ax.XTick = 0:500:size(Operations,1)  ;
-ax.YTick = 1:10;
-% ax.XTickLabels = strseq('f',1:100)';
-ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1)  ,'uni',0);
-ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
-ylabel('Binary classifiers');
-xlabel('features');
-ax.XAxisLocation = 'bottom';
-
-colormap 'default'
-colorbar
+% figure;
+% imagesc(AUC_per_feature)
+% title(sprintf('Classification performance per feature (Dataset %s)',sub));
+% % title(sprintf('Classification performance per feature (Dataset 001)'));
+% 
+% ax = gca;
+% ax.XTick:500:size(Operations,1)  ;
+% ax.YTick = 1:10;
+% % ax.XTickLabels = strseq('f',1:100)';
+% ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1)  ,'uni',0);
+% ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+% ylabel('Binary classifiers');
+% xlabel('features');
+% ax.XAxisLocation = 'bottom';
+% 
+% colormap 'default'
+% colorbar
     
 %% Plot average data matrix
 
@@ -278,14 +278,11 @@ colorbar
 % end
 % y = y'
 %  
-for cl = 1:10
-    meann(cl) = mean(AUC_per_feature(cl,:))
-end
-
-% Features reordering;
-means = mean(AUC_per_feature);
-[~,I] = sort((means)','descend');
-AUC_per_feature = AUC_per_feature(:,I)
 
 
-mean(AUC_per_feature(10,1:3000))
+% % Features reordering;
+% means = mean(AUC_per_feature);
+% [~,I] = sort((means)','descend');
+% AUC_per_feature = AUC_per_feature(:,I)
+
+

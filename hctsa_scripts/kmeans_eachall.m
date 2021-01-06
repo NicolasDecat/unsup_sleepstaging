@@ -118,15 +118,16 @@ for Nf = 1:nIterations
      
     %% Classification of test dataset(Nearest centroid classifier)
     % Minimum Euclidean distance from centre/mean features of the cluster
-    
+        
     for n=1:length(testTS)
         % Calculate Euclidean distance from datapoint to each centre
-        distance = sqrt(sum((bsxfun(@minus,block(Nf).Kcentre,testMat(n,:))).^2,2)); %%%% Calculates distance between each stage data point (Test mat) 
+        distance(1:5,n) = sqrt(sum((bsxfun(@minus,block(Nf).Kcentre,testMat(n,:))).^2,2)); %%%% Calculates distance between each stage data point (Test mat) 
                                                                                     %%%% and center of cluster from kmeans. Data point with least distance from a center goes to cluster of that center. ClustTest = predictTest, = the cluster decisions
         % Find the cluster of minimum distance              
-        [~,clustTest(n)] = min(distance);
+        [~,clustTest(n)] = min(distance(:,n));
     end
-      
+    
+    
 %% Test set are classified into 5 classes(clusters) obtained from
     % clustering of training set.
     %% Find equivalent cluster-sleep stage pair

@@ -6,7 +6,7 @@
 
 %% Function: Count the number of epochs in each stages and recore the epochIDs
 
-function [statsOut testMat scoredTest predictTest Nf testTS Mean_AUC AUC_per_feature] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col,FF)
+function [statsOut testMat scoredTest predictTest Nf testTS] = cross_validation_selectivefeatures_crossval(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col,FF)
 
 %% Cross-validation code
 
@@ -48,12 +48,12 @@ for Nf = 1:nIterations
 
         if ch==1
             trainMat = hctsa_ops(trainTS',:);
-            testMat = hctsa_ops(testTS',:);
+            testMat(:,Nf) = hctsa_ops(testTS',:);
         else
             % increment=(size(hctsa_ops,1)/3)*(ch-1);
             increment=round((size(hctsa_ops,1)/7))*(ch-1);
             trainMat = [trainMat hctsa_ops((trainTS+increment)',:)];
-            testMat = [testMat hctsa_ops((testTS+increment)',:)];
+            testMat(:,Nf) = [testMat hctsa_ops((testTS+increment)',:)];
         end
     end
     
@@ -87,7 +87,7 @@ for Nf = 1:nIterations
         distance = sqrt(sum((bsxfun(@minus,block(Nf).Kcentre,testMat(n,:))).^2,2)); %%%% Calculates distance between each stage data point (Test mat) 
                                                                                     %%%% and center of cluster from kmeans. Data point with least distance from a center goes to cluster of that center. ClustTest = predictTest, = the cluster decisions
         % Find the cluster of minimum distance              
-        [~,clustTest(n)] = min(distance);
+        [m,clustTest(n)] = min(distance);
     end
       
 %% Test set are classified into 5 classes(clusters) obtained from
@@ -161,7 +161,7 @@ for Nf = 1:nIterations
 %     stats.svmPredictTrain(Nf, :) = svmTrain';
 %     stats.svmPredictTest(Nf, :) = svmTest';
     
-    assert(size(trainMat, 2) == size(testMat, 2));
+    % assert(size(trainMat, 2) == size(testMat, 2));
     stats.totalFeatures(Nf, :) = size(trainMat, 2);
 end % End Nf-th randomisation
 
@@ -184,7 +184,7 @@ predictTest = stats.predictTest;
 
 %% Compute type1AUC
 
-   run('type1auc_eachfeature.m')
+   run('type1auc_eachfeature_crossval.m')
 
 
 end
