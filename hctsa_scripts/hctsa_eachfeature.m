@@ -201,14 +201,14 @@ for D = 1:length(Subs)   % For each dataset
 end
 
 %% Plot Data matrix
+load('/Users/nico/Documents/HCTSA/Analysis/AUC/Matrices/AUC_per_feature_001.mat')
 
 figure;
 imagesc(AUC_per_feature)
 title(sprintf('Classification performance per feature (Dataset %s)',sub));
-% title(sprintf('Classification performance per feature (Dataset 001)'));
 
 ax = gca;
-ax.XTick:500:size(Operations,1)  ;
+ax.XTick:500:size(Operations,1);
 ax.YTick = 1:10;
 % ax.XTickLabels = strseq('f',1:100)';
 ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1)  ,'uni',0);

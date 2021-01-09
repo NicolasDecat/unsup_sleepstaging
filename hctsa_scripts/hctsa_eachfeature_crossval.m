@@ -2,11 +2,11 @@
 %% Computing kmeans clustering and type1 auc for each feature
 
 % Making sure no file remains in folder
-if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat') == 1
-    delete '/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_per_feature.mat'
+if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat') == 1
+    delete '/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat'
 end
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'749'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
@@ -30,8 +30,8 @@ for D = 1:length(Subs)   % For each dataset
     
     for v = 1:1  % For each channel condition
 
-        % for FF = 1:size(Operations,1)    % For each feature
-        for FF = 1:7
+        for FF = 1:size(Operations,1)    % For each feature
+        % for FF = 1:100
        
             % Load data matrix for one feature
             datamat = datam;
@@ -45,7 +45,7 @@ for D = 1:length(Subs)   % For each dataset
         
             %% Run cross-validation code
             
-            set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying 
+            set(0,'DefaultFigureVisible','on') % Remove this to disable the figure displaying 
             exps = EXPS_TO_RUN; 
             statistics = [];
 
@@ -75,22 +75,24 @@ for D = 1:length(Subs)   % For each dataset
             SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
 
 
-            [statsOut testMat scoredTest predictTest Nf testTS] = kmeans_mapping_eachfeature_crossval(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
+            [testMat Nf testTS] = kmeans_mapping_eachfeature_crossval(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
 
-            [~, statsOut.complexity]=size(hctsa_ops);
-            %statsOut.complexity = k;
+            % [~, statsOut.complexity]=size(hctsa_ops);
+            
+            %%%%% statsOut.complexity = k;
+            
             statsOut.id = k;
             statistics = [statistics, statsOut];
 
-            iteration=1:size(statsOut.scoredTrain, 1);
-            iteration_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.predictTrain)'))/size(statsOut.scoredTrain, 2))';
-            iteration_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.predictTest)'))/size(statsOut.scoredTest, 2))';
-%             iteration_svm_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.svmPredictTrain)'))/size(statsOut.scoredTrain, 2))';
-%             iteration_svm_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.svmPredictTest)'))/size(statsOut.scoredTest, 2))';
-            num_of_features=zeros(size(statsOut.scoredTrain, 1), 1);
-            num_of_features(:) = unique(statsOut.totalFeatures);
-            num_of_channels=zeros(size(statsOut.scoredTrain, 1), 1);
-            num_of_channels(:) = c;
+%             iteration=1:size(statsOut.scoredTrain, 1);
+%             iteration_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.predictTrain)'))/size(statsOut.scoredTrain, 2))';
+%             iteration_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.predictTest)'))/size(statsOut.scoredTest, 2))';
+% %%%%%             iteration_svm_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.svmPredictTrain)'))/size(statsOut.scoredTrain, 2))';
+% %%%%%             iteration_svm_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.svmPredictTest)'))/size(statsOut.scoredTest, 2))';
+%             num_of_features=zeros(size(statsOut.scoredTrain, 1), 1);
+%             num_of_features(:) = unique(statsOut.totalFeatures);
+%             num_of_channels=zeros(size(statsOut.scoredTrain, 1), 1);
+%             num_of_channels(:) = c;
 
 
 %             types=strings(size(statsOut.scoredTrain, 1), 1);
@@ -121,23 +123,23 @@ for D = 1:length(Subs)   % For each dataset
             % run('Plot_CF_mean')
 
              set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
-             s=save_stats; [UA, ~, idx] = unique(s(:,[1 6]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A;
+             % s=save_stats; [UA, ~, idx] = unique(s(:,[1 6]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A;
 
             % Average percentages of confusion matrices (perResponse)
 %             Percent_cf(D,v) = {perResponse};   % Row = 1 dataset, col = all iterations 
 
 
             %% Plot output accuracy
-            accuracy_train = [];
-            accuracy_test = [];
-            complexity = [];
-
-            for l=1:length(exps)
-                k = exps(l);
-                accuracy_train = [accuracy_train, statistics(l).output.trainCorrect];
-                accuracy_test = [accuracy_test, statistics(l).output.testCorrect];
-                complexity = [complexity, statistics(l).complexity];
-            end
+%             accuracy_train = [];
+%             accuracy_test = [];
+%             complexity = [];
+% 
+%             for l=1:length(exps)
+%                 k = exps(l);
+%                 accuracy_train = [accuracy_train, statistics(l).output.trainCorrect];
+%                 accuracy_test = [accuracy_test, statistics(l).output.testCorrect];
+%                 complexity = [complexity, statistics(l).complexity];
+%             end
 
             FF
 
@@ -200,25 +202,29 @@ for D = 1:length(Subs)   % For each dataset
 
 end
 
+load('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat')
+% load('/Users/nico/Documents/HCTSA/Analysis/AUC/Matrices/crossvalAUC/Per_correct_mean(Dataset 001)')
+
+
 %% Plot Data matrix
 
-% figure;
-% imagesc(AUC_per_feature)
-% title(sprintf('Classification performance per feature (Dataset %s)',sub));
-% % title(sprintf('Classification performance per feature (Dataset 001)'));
-% 
-% ax = gca;
-% ax.XTick:500:size(Operations,1)  ;
-% ax.YTick = 1:10;
-% % ax.XTickLabels = strseq('f',1:100)';
-% ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1)  ,'uni',0);
-% ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
-% ylabel('Binary classifiers');
-% xlabel('features');
-% ax.XAxisLocation = 'bottom';
-% 
-% colormap 'default'
-% colorbar
+figure;
+imagesc(Per_correct_mean)
+title(sprintf('Classification performance per feature (Dataset %s)',sub));
+% title('Classification performance per feature (Dataset 596)');
+
+ax = gca;
+ax.XTick = 1:500:size(Operations,1);
+ax.YTick = 1:10;
+% ax.XTickLabels = strseq('f',1:100)';
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1),'uni',0);
+ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+ylabel('Binary classifiers');
+xlabel('features');
+ax.XAxisLocation = 'bottom';
+
+colormap 'default'
+colorbar
     
 %% Plot average data matrix
 
@@ -258,31 +264,31 @@ end
 % legend('W vs N1','W vs N2','W vs N3','W vs REM','N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM','Location','eastoutside')
 % xticklabels({'0','1000','2000','3000','4000','5000','6000'})
 % xlabel('features')
-% ylabel('AUC')
+% ylabel('accuracy')
 
 % % One classifier only
-% figure; plot(AUC_per_feature(10,:)')
+% figure; plot(Per_correct_mean(1,:))
 % xlim([0 6006])
-% ylim([0 1])
-% legend('N3 vs REM');   % W vs N1','W vs N2','W vs N3','W vs REM','N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM')
+% ylim([0 100])
+% legend('Wake vs N1');   % W vs N1','W vs N2','W vs N3','W vs REM','N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM')
 % xlabel('features');
-% ylabel('AUC');
-% 
+% ylabel('accuracy');
+
 % % Average every 100 features
 % for classifier = 1:10
-%     x = AUC_per_feature(classifier,:)';
+%     x = Per_correct_mean(classifier,:)';
 %     S = numel(x);
 %     xx = reshape(x(1:S - mod(S, 100)), 100, []);
 %     y(:,classifier)  = sum(xx, 1).' / 100;
 %     
 % end
 % y = y'
-%  
+ 
 
 
-% % Features reordering;
-% means = mean(AUC_per_feature);
+% Features reordering;
+% means = mean(Per_correct_mean);
 % [~,I] = sort((means)','descend');
-% AUC_per_feature = AUC_per_feature(:,I)
+% Per_correct_mean = Per_correct_mean(:,I);
 
 

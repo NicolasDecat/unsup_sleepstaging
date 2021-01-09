@@ -150,20 +150,20 @@ for Nf = 1:nIterations
     
     % Now we give the stage that has the highest sum choose first.
     clear max
-    [~, row_index] = sort(max(pro_no'), 'd');
-    remaining_cluster_to_allocate=unique(clustID)';
-    for s = 1:length(row_index)
-        row = row_index(s);
-        a_row = pro_no(row, :);
+    [~, row_index] = sort(max(pro_no'), 'd');    % From clust ID that has the highest number of epochs of the most frequent stage, to least epoch
+    remaining_cluster_to_allocate=unique(clustID)';   % all 5 cluster IDs
+    for s = 1:length(row_index)    % For each of the 5 cluster IDs
+        row = row_index(s);         % --> Start with the cluster ID that has the highest number of epoch of the most frequent stage 
+        a_row = pro_no(row, :);   % Show their number of epochs for each stage
         
         while sum(a_row) > -5
-            max_value = max(a_row);
-            max_index = find(a_row == max_value);
-            max_index = max_index(randperm(length(max_index), 1));
-            cluster_allocate_index = find(ismember(remaining_cluster_to_allocate, max_index));
+            max_value = max(a_row);    % Number of epoch of the most frequent stage
+            max_index = find(a_row == max_value);  % Most frequent stage (1 2 3 4 5), 4 being N3
+            max_index = max_index(randperm(length(max_index), 1));  % If 2 have same high number, take rand
+            cluster_allocate_index = find(ismember(remaining_cluster_to_allocate, max_index));  % cluster to allocate is a cluster that has not been allocated yet 
             if cluster_allocate_index > 0
                 % The cluster ID has not been allocated yet.
-                equi_class(row) = max_index;
+                equi_class(row) = max_index;   % row =  each cluster ID is given the name of the most frequent stage (1 2 3 4 5)
                 remaining_cluster_to_allocate(cluster_allocate_index) = [];
                 break;
             else
@@ -173,7 +173,7 @@ for Nf = 1:nIterations
         end
     end
     
-    equi_stage = stgLabel(equi_class);
+    equi_stage = stgLabel(equi_class);   % convert cluster ID into equivalent class. 
 
     if DEBUG_CROSSVALIDATION
         print_stage = equi_stage+1;

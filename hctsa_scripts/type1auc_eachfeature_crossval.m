@@ -3,6 +3,10 @@
 
 %% Type 1 AUC hctsa for each feature: one-vs-one paired classification
 
+if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat') == 1
+    load('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat')
+end
+
 IsStage1 = [];
 IsStage2 = [];
 
@@ -44,16 +48,19 @@ for Nit = 1:size(testMat,2)
             stage2 = setdiff(stage2,test_stage2);  
             
             % Get median of hctsa response for the two stages
-            hctsa_stage1 = median(testMatr(stage1,1));   
-            hctsa_stage2 = median(testMatr(stage2,1));
+            hctsa_resp1 = testMatr(stage1,1);
+            hctsa_resp2 = testMatr(stage2,1);
+         
+            hctsa_stage1 = median(hctsa_resp1);   
+            hctsa_stage2 = median(hctsa_resp2);
 
-            [~,index_max] = max([hctsa_stage1 hctsa_stage2]);   % Will be useful to set direction
+            [~,index_max] = max([hctsa_stage1 hctsa_stage2]);   % Will be useful later to set direction
             
             % Get the threshold: value between the 2 medians
             thresh = (hctsa_stage1 + hctsa_stage2)/2;   
 
             % Assign testing epoch of Stage 1 to Stage 1 or 2
-            if testMatr(test_stage1) > thresh && index_max == 1     % If hctsa response of testing epoch is above threshold and if mean hctsa response of trainning epochs from Stage 1 is higher than Stage 2                          % If hctsa response of training epoch is the highest value, then being above threshold means bleonging to stage1
+            if testMatr(test_stage1) > thresh && index_max == 1     % If hctsa response of testing epoch is above threshold and if mean hctsa response of training epochs from Stage 1 is higher than Stage 2                          % If hctsa response of training epoch is the highest value, then being above threshold means bleonging to stage1
                    IsStage1 = [IsStage1 test_stage1];
             elseif testMatr(test_stage1) > thresh && index_max == 2
                    IsStage2 = [IsStage2 test_stage1];
@@ -74,19 +81,20 @@ for Nit = 1:size(testMat,2)
                    IsStage1 = [IsStage1 test_stage2];
             end
 
-            % Store assigned stages (to double check later if needed)
-            hctsa_stage1_stored(C) = hctsa_stage1;
-            hctsa_stage2_stored(C) = hctsa_stage2;
-            thresh_stored(C) = thresh;
+            %%% Store assigned stages (to double check later if needed)
+%             hctsa_stage1_stored(C) = hctsa_stage1;
+%             hctsa_stage2_stored(C) = hctsa_stage2;
+%             thresh_stored(C) = thresh;
             
-            IsStage1_stored{C} = IsStage1;
-            IsStage2_stored{C} = IsStage2;
+%             IsStage1_stored{C} = IsStage1;
+%             IsStage2_stored{C} = IsStage2;
+            
             
         end
 
          % 1 binary classifier is done: calculate % correct
-         Perc_correct_stage1(Nit,C) = (length(find(ismember(IsStage1,classifier(1,:))))/stgL)*100;   % Percentage of epochs from stage 1 labeled right
-         Perc_correct_stage2(Nit,C) = (length(find(ismember(IsStage2,classifier(2,:))))/stgL)*100;   % Percentage of epochs from stage 1 labeled right 
+         Per_correct_stage1(Nit,C) = (length(find(ismember(IsStage1,classifier(1,:))))/stgL)*100;   % Percentage of epochs from stage 1 labeled right
+         Per_correct_stage2(Nit,C) = (length(find(ismember(IsStage2,classifier(2,:))))/stgL)*100;   % Percentage of epochs from stage 1 labeled right 
 
          IsStage1 = [];
          IsStage2 = [];
@@ -94,28 +102,39 @@ for Nit = 1:size(testMat,2)
     end
     
     % Mean across all iterations
-    Per_correct_stage1_mean = mean(Perc_correct_stage1);
-    Per_correct_stage2_mean = mean(Perc_correct_stage1);
+    Per_correct_stage1_mean = mean(Per_correct_stage1);
+    Per_correct_stage2_mean = mean(Per_correct_stage1);
     
-    % Mean across iterations across stage 1 and 2 (not sure if correct),
-    % for 1 feature
-    Per_correct_mean(:,FF) = mean([Per_correct_stage1_mean;Per_correct_stage2_mean]);
     
 end  
 
-   
-disp('ok')
-
-
-% 
+% Mean across iterations across stage 1 and 2 (not sure if correct), % for 1 feature
+Per_correct_mean(:,FF) = mean([Per_correct_stage1_mean;Per_correct_stage2_mean])';
+ 
 % % Save
-% 
-% AUC_per_feature(1:10,FF,v) = Mean_AUC(:,FF); % Rows = binary classifiers in order listed above (row 1 = 0vs1, row 2 = 0vs2, etc)
-% fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC';
-% save(fullfile(fpath,'AUC_per_feature.mat'),'Mean_AUC','AUC_per_feature')  % Save all columns in AUC folder
-% 
-% % See A(:,:,v), and know that {AUC_per_feature} gives what you want
-% 
-% 
-% 
+fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC';
+save(fullfile(fpath,'Per_correct_mean.mat'),'Per_correct_mean')  % Save all columns in AUC folder
 
+
+%% Plot distribution curves
+
+% figure; h = histfit(hctsa_resp1); hold on; j = histfit(hctsa_resp2);
+% 
+% hold on
+% median_stage_1 = hctsa_stage1;
+% xline(median_stage_1,'b--','LineWidth',2)
+% median_stage_2 = hctsa_stage2;
+% xline(median_stage_2,'g--','LineWidth',2)
+% threshold = thresh;
+% xline(threshold,'k--','LineWidth',2)
+% 
+% % Color stage 1
+% h(1).FaceColor = [.9 .9 1]; % histogram (light blue)
+% h(2).Color = [0 0 1];  % curve (blue)
+% % Color stage 2
+% j(1).FaceColor = [.9 1 .9]; % histogram (light green)
+% j(2).Color = [0 1 0];  % curve (green)
+% 
+% hold off
+% 
+% disp('ok')
