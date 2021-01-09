@@ -1,4 +1,8 @@
 
+%%%%%%%%% Different plots involves in computing the AUC:
+%%%%%%%%% 1) to compare OVA, OVO and OVO manual with boxplot and scatter plot (pointless now)
+%%%%%%%%% 2) to calculate correlation coefficients for all 3 approaches (pointless now)
+%%%%%%%%% 3) to plot testing accuracy for 200 and 7000 features (bar plot) (pointless now)
 
 %%  Barplot of perf across methods
 

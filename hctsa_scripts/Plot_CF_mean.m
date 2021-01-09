@@ -1,4 +1,8 @@
 
+%%%%%%% Plotting the mean confusion matrix across datasets and across EEG,
+%%%%%%% EEG+EOG and EEG+EOG+EMG
+
+
 %% Plot average percentage in confusion matrix
 
 

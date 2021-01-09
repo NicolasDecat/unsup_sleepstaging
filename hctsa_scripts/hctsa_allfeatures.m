@@ -1,4 +1,10 @@
 
+%%%%%%% Together with kmneans_mapping.m and type1auc.m: load all hctsa
+%%%%%%% operations, perform kmeans clustering and sequential matching, and
+%%%%%%% calculate the one-vs-all type 1 AUC
+
+
+
 if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat') == 1
     delete '/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat'
 end

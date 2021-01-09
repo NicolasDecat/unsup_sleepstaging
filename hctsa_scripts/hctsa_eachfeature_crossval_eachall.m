@@ -1,3 +1,11 @@
+
+%%%%%%%% Goes with the crossval script group: computing the accuracy using
+%%%%%%%% all features at once for each binary classifier (kmeans returning
+%%%%%%%% 2 clusters for each classifier), to compare the difference in
+%%%%%%%% accuracy when using all features at once and only 1 feature at a
+%%%%%%%% time (the latter being returned by crossval script group)
+
+
 %% Computing kmeans clustering and type1 auc for each feature
 
 

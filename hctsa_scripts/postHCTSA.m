@@ -1,3 +1,9 @@
+
+%%%%%%%% This script was only used to normalize hctsa.mat into hctsa_N.mat
+%%%%%%%% (line 19)
+
+
+
 % Changes from original script
 % - 'Keywords' definition
 

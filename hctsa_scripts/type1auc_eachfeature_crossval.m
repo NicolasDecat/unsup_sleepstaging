@@ -1,5 +1,4 @@
-%%%%%
-%%%%%
+
 
 %% Type 1 AUC hctsa for each feature: one-vs-one paired classification
 

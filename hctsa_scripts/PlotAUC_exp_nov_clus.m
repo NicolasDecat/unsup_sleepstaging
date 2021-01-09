@@ -1,3 +1,8 @@
+
+%%%%%%% Compute rainbow graphs to visualize the distribution of agreeement (type1auc)
+%%%%%%% across datasets, for both EEG and EEG+EOG+EMG and for expert,
+%%%%%%% novices and algorithm
+
 %%
 clear all
 close all

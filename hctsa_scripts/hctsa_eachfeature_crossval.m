@@ -1,4 +1,10 @@
 
+%%%%%%%% Here is the correct verion: Together with
+%%%%%%%% kmeans_mapping_eachfeature_crossval.m and
+%%%%%%%% type1auc_eachfeature_crossval.m: we compute accuracy for each
+%%%%%%%% feature (using leave-1-out strategy and threshold) and each binary classifier instead of using kmeans and AUC. 
+
+
 %% Computing kmeans clustering and type1 auc for each feature
 
 % Making sure no file remains in folder
@@ -6,7 +12,7 @@ if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat') == 1
     delete '/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat'
 end
 
-Subs = {'749'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
@@ -199,33 +205,46 @@ for D = 1:length(Subs)   % For each dataset
 % %     Signaldisagr = TimeSeries.Data(EpochIDdisagr,:);
 
 
+    load('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat')
+    % load('/Users/nico/Documents/HCTSA/Analysis/AUC/Matrices/crossvalAUC/Per_correct_mean(Dataset 001)')
+
+
+    %% Plot Data matrix
+
+    figure;
+    imagesc(Per_correct_mean)
+    % title(sprintf('Classification performance per feature (Dataset %s)',sub));
+    title('Classification performance per feature (Dataset 005 reordered)');
+
+    ax = gca;
+    ax.XTick = 1:500:size(Operations,1);
+    ax.YTick = 1:10;
+    % ax.XTickLabels = strseq('f',1:100)';
+    ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1),'uni',0);
+    ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+    ylabel('Binary classifiers');
+    xlabel('features');
+    ax.XAxisLocation = 'bottom';
+
+    colormap 'default'
+    colorbar
+
+%     % Save figure
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Figure_accuracy_per_feat';
+%     saveas(gca,fullfile(fpath,sprintf('Plot_AUCperFeature_%s_crossval',sub)),'fig')
+%     saveas(gca,fullfile(fpath,sprintf('Plot_AUCperFeature_%s_crossval',sub)),'jpg')
+% 
+%     % Save matrix
+%     gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat';
+%     save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean') 
+
+
 
 end
 
-load('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat')
-% load('/Users/nico/Documents/HCTSA/Analysis/AUC/Matrices/crossvalAUC/Per_correct_mean(Dataset 001)')
 
 
-%% Plot Data matrix
 
-figure;
-imagesc(Per_correct_mean)
-title(sprintf('Classification performance per feature (Dataset %s)',sub));
-% title('Classification performance per feature (Dataset 596)');
-
-ax = gca;
-ax.XTick = 1:500:size(Operations,1);
-ax.YTick = 1:10;
-% ax.XTickLabels = strseq('f',1:100)';
-ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1),'uni',0);
-ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
-ylabel('Binary classifiers');
-xlabel('features');
-ax.XAxisLocation = 'bottom';
-
-colormap 'default'
-colorbar
-    
 %% Plot average data matrix
 
 % load all AUC_per_feature_ and trim to length that is the lowest of all
@@ -286,9 +305,52 @@ colorbar
  
 
 
-% Features reordering;
+%%% Features reordering;
 % means = mean(Per_correct_mean);
 % [~,I] = sort((means)','descend');
 % Per_correct_mean = Per_correct_mean(:,I);
 
+%%% Features reordering based on TS_CLUSTER (op_clust)
+TS_Cluster
+Per_correct_mean = Per_correct_mean(:,(op_clust.ord)');
+
+
+
+% %% All datasets averaged
+% 
+% % All 12 datasets have the same length as the shortest dataset (752) 
+% Per_correct_mean001 = Per_correct_mean001(:,1:5858);
+% Per_correct_mean005 = Per_correct_mean005(:,1:5858);
+% Per_correct_mean439 = Per_correct_mean439(:,1:5858);
+% Per_correct_mean458 = Per_correct_mean458(:,1:5858);
+% Per_correct_mean596 = Per_correct_mean596(:,1:5858);
+% Per_correct_mean604 = Per_correct_mean604(:,1:5858);
+% Per_correct_mean748 = Per_correct_mean748(:,1:5858);
+% Per_correct_mean749 = Per_correct_mean749(:,1:5858);
+% Per_correct_mean752 = Per_correct_mean752(:,1:5858);
+% Per_correct_mean807 = Per_correct_mean807(:,1:5858);
+% Per_correct_mean821 = Per_correct_mean821(:,1:5858);
+% Per_correct_mean870 = Per_correct_mean870(:,1:5858);
+% 
+% % Stack all 12 matrices along 3rd dimension
+% StackedMatrix = cat(3,Per_correct_mean001,Per_correct_mean005,Per_correct_mean439,Per_correct_mean458,Per_correct_mean596,Per_correct_mean604,Per_correct_mean748,Per_correct_mean749,Per_correct_mean752,Per_correct_mean807,Per_correct_mean821,Per_correct_mean870);
+% AveragedMatrix = mean(StackedMatrix,3);
+% 
+% % Plot 
+% figure;
+% imagesc(AveragedMatrix)
+% title('Mean classification performance across datasets');
+% 
+% ax = gca;
+% ax.XTick = 1:500:5858;
+% ax.YTick = 1:10;
+% % ax.XTickLabels = strseq('f',1:100)';
+% ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5858,'uni',0);
+% ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+% ylabel('Binary classifiers');
+% xlabel('features');
+% ax.XAxisLocation = 'bottom';
+% 
+% colormap 'default'
+% colorbar
 

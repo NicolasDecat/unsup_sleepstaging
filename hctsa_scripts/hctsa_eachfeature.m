@@ -1,4 +1,13 @@
 
+%%%%%%% Together with kmneans_mapping_eachfeature.m and
+%%%%%%% type1auc_eachfeature.m: These scripts were not retained because the
+%%%%%%% type1auc script involves double dipping (take same epochs for training and testing). Anomalies observed in the data matrix plotted 
+%%%%%%% Refer to hctsa_eachfeature_crossval (together with
+%%%%%%% kmeans_mapping_eachfeature_crossval and
+%%%%%%% type1auc_eachfeature_crossval) for correct scripts to use (involves
+%%%%%%% cross-validation (leave-1-out) to compute accuracy (not AUC) 
+
+
 %% Computing kmeans clustering and type1 auc for each feature
 
 % Making sure no file remains in folder
