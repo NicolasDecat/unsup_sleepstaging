@@ -214,7 +214,7 @@ for D = 1:length(Subs)   % For each dataset
     figure;
     imagesc(Per_correct_mean)
     % title(sprintf('Classification performance per feature (Dataset %s)',sub));
-    title('Classification performance per feature (Dataset 005 reordered)');
+    title('Classification performance per feature (Dataset 001)');
 
     ax = gca;
     ax.XTick = 1:500:size(Operations,1);
@@ -242,115 +242,4 @@ for D = 1:length(Subs)   % For each dataset
 
 end
 
-
-
-
-%% Plot average data matrix
-
-% load all AUC_per_feature_ and trim to length that is the lowest of all
-% (to get same length for all datasets)
-
-% A(:,:,1) = AUC_per_feature_1
-% A(:,:,2) = AUC_per_feature_5
-% A(:,:,5) = AUC_per_feature_439
-% etc
-
-% MeanMatrices = mean(A,3);
-
-% figure;
-% imagesc(M);
-% title('Average classification performance per feature (Dataset 001,005,439)');
-% 
-% ax = gca;
-% ax.XTick = 0:500:5946;   
-% ax.YTick = 1:10;
-% % ax.XTickLabels = strseq('f',1:100)';
-% ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5946,'uni',0);
-% ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
-% ylabel('Binary classifiers');
-% xlabel('features');
-% ax.XAxisLocation = 'bottom';
-% 
-% colormap 'default'
-% colorbar
-
-
-%% Plot line plot
-
-% figure; plot(y(:,:)','LineWidth',1.3)
-% % figure; plot(AUC_per_feature(:,:)')
-% xlim([0 60])
-% legend('W vs N1','W vs N2','W vs N3','W vs REM','N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM','Location','eastoutside')
-% xticklabels({'0','1000','2000','3000','4000','5000','6000'})
-% xlabel('features')
-% ylabel('accuracy')
-
-% % One classifier only
-% figure; plot(Per_correct_mean(1,:))
-% xlim([0 6006])
-% ylim([0 100])
-% legend('Wake vs N1');   % W vs N1','W vs N2','W vs N3','W vs REM','N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM')
-% xlabel('features');
-% ylabel('accuracy');
-
-% % Average every 100 features
-% for classifier = 1:10
-%     x = Per_correct_mean(classifier,:)';
-%     S = numel(x);
-%     xx = reshape(x(1:S - mod(S, 100)), 100, []);
-%     y(:,classifier)  = sum(xx, 1).' / 100;
-%     
-% end
-% y = y'
- 
-
-
-%%% Features reordering;
-% means = mean(Per_correct_mean);
-% [~,I] = sort((means)','descend');
-% Per_correct_mean = Per_correct_mean(:,I);
-
-%%% Features reordering based on TS_CLUSTER (op_clust)
-TS_Cluster
-Per_correct_mean = Per_correct_mean(:,(op_clust.ord)');
-
-
-
-% %% All datasets averaged
-% 
-% % All 12 datasets have the same length as the shortest dataset (752) 
-% Per_correct_mean001 = Per_correct_mean001(:,1:5858);
-% Per_correct_mean005 = Per_correct_mean005(:,1:5858);
-% Per_correct_mean439 = Per_correct_mean439(:,1:5858);
-% Per_correct_mean458 = Per_correct_mean458(:,1:5858);
-% Per_correct_mean596 = Per_correct_mean596(:,1:5858);
-% Per_correct_mean604 = Per_correct_mean604(:,1:5858);
-% Per_correct_mean748 = Per_correct_mean748(:,1:5858);
-% Per_correct_mean749 = Per_correct_mean749(:,1:5858);
-% Per_correct_mean752 = Per_correct_mean752(:,1:5858);
-% Per_correct_mean807 = Per_correct_mean807(:,1:5858);
-% Per_correct_mean821 = Per_correct_mean821(:,1:5858);
-% Per_correct_mean870 = Per_correct_mean870(:,1:5858);
-% 
-% % Stack all 12 matrices along 3rd dimension
-% StackedMatrix = cat(3,Per_correct_mean001,Per_correct_mean005,Per_correct_mean439,Per_correct_mean458,Per_correct_mean596,Per_correct_mean604,Per_correct_mean748,Per_correct_mean749,Per_correct_mean752,Per_correct_mean807,Per_correct_mean821,Per_correct_mean870);
-% AveragedMatrix = mean(StackedMatrix,3);
-% 
-% % Plot 
-% figure;
-% imagesc(AveragedMatrix)
-% title('Mean classification performance across datasets');
-% 
-% ax = gca;
-% ax.XTick = 1:500:5858;
-% ax.YTick = 1:10;
-% % ax.XTickLabels = strseq('f',1:100)';
-% ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5858,'uni',0);
-% ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
-% ylabel('Binary classifiers');
-% xlabel('features');
-% ax.XAxisLocation = 'bottom';
-% 
-% colormap 'default'
-% colorbar
 

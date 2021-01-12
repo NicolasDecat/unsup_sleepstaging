@@ -1,0 +1,584 @@
+
+%%%%%%%% Here is the correct verion: Together with
+%%%%%%%% kmeans_mapping_eachfeature_crossval.m and
+%%%%%%%% type1auc_eachfeature_crossval.m: we compute accuracy for each
+%%%%%%%% feature (using leave-1-out strategy and threshold) and each binary classifier instead of using kmeans and AUC. 
+
+
+%% Computing kmeans clustering and type1 auc for each feature
+
+% Making sure no file remains in folder
+if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat') == 1
+    delete '/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat'
+end
+
+Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Channels = {'1ch' '2ch' '3ch'};  % used for saveas
+NumIter = compose('%diter',(1:100)); % used for saveas
+
+
+for D = 1:length(Subs)   % For each dataset
+    
+    sub = Subs{D};
+
+    % Configuration
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))   % get new pwd (current folder)
+    addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
+    configuration_settings;
+    clear i n nn op_name name
+
+    
+    %% Load all operations
+    hctsafile = HCTSA_FILE;
+    all_op = load(hctsafile,'Operations');
+    datam = load(hctsafile,'TS_DataMat');   % Load TS_DataMat (epochsxfeatures)
+    load('HCTSA_N.mat')
+    
+    for v = 1:1  % For each channel condition
+
+        for FF = 1:size(Operations,1)    % For each feature
+        % for FF = 1:100
+       
+            % Load data matrix for one feature
+            datamat = datam;
+            datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
+
+            feat_id = 1:size(datamat,2);  
+
+            [timeseries,features]=size(datamat);
+            hctsa_ops = datamat(:,feat_id);
+          
+        
+            %% Run cross-validation code
+            
+            set(0,'DefaultFigureVisible','on') % Remove this to disable the figure displaying 
+            exps = EXPS_TO_RUN; 
+            statistics = [];
+
+            save_stats_columns = {'Type', 'Iteration', 'TrainingAccuracy', 'TestingAccuracy', 'NumberOfFeatures','NumberOfChannels'};
+            save_stats = array2table(zeros(0,length(save_stats_columns)));
+            save_stats.Properties.VariableNames = save_stats_columns; 
+
+            % Channel(s) to use
+            NUM_CHANNELS_TO_RUN = v;
+            chan = Channels{NUM_CHANNELS_TO_RUN};  % used for saveas
+            c = NUM_CHANNELS_TO_RUN;
+            
+            l = 1:length(exps);
+            k = exps(l); 
+            hctsa_ops = datamat(:,feat_id);
+
+            conf = 'BALANCED_LABELED';
+            epochSelectFunc = @epochSelect;
+
+
+            single_channel_size=size(hctsa_ops,1)/NUM_CHANNELS;
+            eeg_ops=hctsa_ops(1:single_channel_size,:);
+            eog_ops=hctsa_ops(single_channel_size+1:single_channel_size*2,:);
+            emg_ops=hctsa_ops(single_channel_size*2+1:single_channel_size*3,:);
+
+
+            SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
+
+
+            [testMat Nf testTS] = kmeans_mapping_eachfeature_crossval(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
+
+            % [~, statsOut.complexity]=size(hctsa_ops);
+            
+            %%%%% statsOut.complexity = k;
+            
+            statsOut.id = k;
+            statistics = [statistics, statsOut];
+
+%             iteration=1:size(statsOut.scoredTrain, 1);
+%             iteration_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.predictTrain)'))/size(statsOut.scoredTrain, 2))';
+%             iteration_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.predictTest)'))/size(statsOut.scoredTest, 2))';
+% %%%%%             iteration_svm_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.svmPredictTrain)'))/size(statsOut.scoredTrain, 2))';
+% %%%%%             iteration_svm_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.svmPredictTest)'))/size(statsOut.scoredTest, 2))';
+%             num_of_features=zeros(size(statsOut.scoredTrain, 1), 1);
+%             num_of_features(:) = unique(statsOut.totalFeatures);
+%             num_of_channels=zeros(size(statsOut.scoredTrain, 1), 1);
+%             num_of_channels(:) = c;
+
+
+%             types=strings(size(statsOut.scoredTrain, 1), 1);
+%             types(:)=strcat('Unsupervised_', conf);
+%             row = [types, iteration', iteration_training_accuracy, iteration_testing_accuracy, num_of_features, num_of_channels];
+%             save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
+% 
+%             types=strings(size(statsOut.scoredTrain, 1), 1);
+%             types(:)=strcat('Supervised_', conf);
+%             row = [types, iteration', iteration_svm_training_accuracy, iteration_svm_testing_accuracy, num_of_features, num_of_channels];
+%             save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
+
+            % end
+
+
+
+%             %% Draw the confusion matrix for the repeat that has maximum trainCorrect
+%             if PLOT_CONFUSION_MATRIX
+%                    [perResponse] = plot_confusion_matrix(statistics.id, statistics.scoredTrain, statistics.predictTrain, ...
+%                         statistics.scoredTest, statistics.predictTest, CM_SAVE_DIR);
+%             end
+
+             chan = Channels{NUM_CHANNELS_TO_RUN}; 
+    %         fpath = '/Users/nico/Documents/HCTSA/Analysis/CF_v2(10iter)';
+    %         saveas(gca,fullfile(fpath,sprintf('CF_%s_%s', sub, chan)),'jpeg')
+
+            % Average percentages of confusion matrices (perResponse)
+            % run('Plot_CF_mean')
+
+             set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
+             % s=save_stats; [UA, ~, idx] = unique(s(:,[1 6]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A;
+
+            % Average percentages of confusion matrices (perResponse)
+%             Percent_cf(D,v) = {perResponse};   % Row = 1 dataset, col = all iterations 
+
+
+            %% Plot output accuracy
+%             accuracy_train = [];
+%             accuracy_test = [];
+%             complexity = [];
+% 
+%             for l=1:length(exps)
+%                 k = exps(l);
+%                 accuracy_train = [accuracy_train, statistics(l).output.trainCorrect];
+%                 accuracy_test = [accuracy_test, statistics(l).output.testCorrect];
+%                 complexity = [complexity, statistics(l).complexity];
+%             end
+
+            FF
+
+        end
+   
+       
+    end
+    
+
+    %% Spectral power analysis: Get the ID of epochs that were labeled wrong by the cluster 
+   
+%      TableEpochs = [];
+%      Stages = [0 1 2 3 5];
+%      
+%      for stg = 1:5
+%          
+%          idx = find(statsOut.scoredTest == Stages(stg));     % index of orig labels
+%          Cidx = find(statsOut.predictTest == Stages(stg));   % index of cluster decisions
+%          AGR = idx(find(ismember(idx,Cidx)));                % index of epochs (from TestTS) who were labelled right by cluster
+%          DISAGR = idx(find(~ismember(idx,Cidx)));            % index of epochs (from TestTS) who were labelled right by cluster
+%          ID_AGR = testTS(AGR);                               % Actual epochs ID labeled right
+%          ID_DISAGR = testTS(DISAGR);                         % Actual epochs ID labeled wrong
+%          
+%          TableEpochs{stg,1} = idx;   
+%          TableEpochs{stg,2} = Cidx;  
+%          TableEpochs{stg,3} = AGR;        
+%          TableEpochs{stg,4} = DISAGR;       
+%          TableEpochs{stg,5} = ID_AGR;                           
+%          TableEpochs{stg,6} = ID_DISAGR;  
+%                       
+%      end
+% 
+%      % Get the signal of all (dis)agreed epochs. For 2 / 3 channels, index
+%      % for TimeSeries.Data is incremented to reach rows for EOG and EMG
+%      
+%      if v == 1
+%         Data = TimeSeries.Data(1:size(eeg_ops,1),:);
+%     elseif v == 2
+%         Data = TimeSeries.Data((size(eeg_ops,1)+1):(size(eeg_ops,1)*2),:);
+%     elseif v == 3
+%         Data = TimeSeries.Data((((size(eeg_ops,1)*2)+1):(size(eeg_ops,1)*3)),:);
+%      end
+%      
+%      % 0vs1
+%      % 0vs2
+%      % 0vs3
+%      % 0vs5
+%      % 1vs2
+%      % 1vs3
+%      % 1vs5
+%      % 2vs3
+%      % 2vs5
+%      % 3vs5
+% 
+% %     % Signal of epochs labelled right / wrong
+% %     Signalagr = Data(EpochIDagr,:);
+% %     Signaldisagr = TimeSeries.Data(EpochIDdisagr,:);
+
+
+    load('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat')
+    % load('/Users/nico/Documents/HCTSA/Analysis/AUC/Matrices/crossvalAUC/Per_correct_mean(Dataset 001)')
+
+
+    %% Plot Data matrix
+
+    figure;
+    imagesc(Per_correct_mean)
+    % title(sprintf('Classification performance per feature (Dataset %s)',sub));
+    title('Classification performance per feature (Dataset 001)');
+
+    ax = gca;
+    ax.XTick = 1:500:size(Operations,1);
+    ax.YTick = 1:10;
+    % ax.XTickLabels = strseq('f',1:100)';
+    ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1),'uni',0);
+    ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+    ylabel('Binary classifiers');
+    xlabel('features');
+    ax.XAxisLocation = 'bottom';
+
+    colormap 'default'
+    colorbar
+
+%     % Save figure
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Figure_accuracy_per_feat';
+%     saveas(gca,fullfile(fpath,sprintf('Plot_AUCperFeature_%s_crossval',sub)),'fig')
+%     saveas(gca,fullfile(fpath,sprintf('Plot_AUCperFeature_%s_crossval',sub)),'jpg')
+% 
+%     % Save matrix
+%     gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat';
+%     save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean') 
+
+
+
+end
+
+
+
+
+%% Plot average data matrix
+
+% load all AUC_per_feature_ and trim to length that is the lowest of all
+% (to get same length for all datasets)
+
+% A(:,:,1) = AUC_per_feature_1
+% A(:,:,2) = AUC_per_feature_5
+% A(:,:,5) = AUC_per_feature_439
+% etc
+
+% MeanMatrices = mean(A,3);
+
+% figure;
+% imagesc(M);
+% title('Average classification performance per feature (Dataset 001,005,439)');
+% 
+% ax = gca;
+% ax.XTick = 0:500:5946;   
+% ax.YTick = 1:10;
+% % ax.XTickLabels = strseq('f',1:100)';
+% ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5946,'uni',0);
+% ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+% ylabel('Binary classifiers');
+% xlabel('features');
+% ax.XAxisLocation = 'bottom';
+% 
+% colormap 'default'
+% colorbar
+
+
+%% Plot line plot
+
+% figure; plot(y(:,:)','LineWidth',1.3)
+% % figure; plot(AUC_per_feature(:,:)')
+% xlim([0 60])
+% legend('W vs N1','W vs N2','W vs N3','W vs REM','N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM','Location','eastoutside')
+% xticklabels({'0','1000','2000','3000','4000','5000','6000'})
+% xlabel('features')
+% ylabel('accuracy')
+
+% % One classifier only
+% figure; plot(Per_correct_mean(1,:))
+% xlim([0 6006])
+% ylim([0 100])
+% legend('Wake vs N1');   % W vs N1','W vs N2','W vs N3','W vs REM','N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM')
+% xlabel('features');
+% ylabel('accuracy');
+
+% % Average every 100 features
+% for classifier = 1:10
+%     x = Per_correct_mean(classifier,:)';
+%     S = numel(x);
+%     xx = reshape(x(1:S - mod(S, 100)), 100, []);
+%     y(:,classifier)  = sum(xx, 1).' / 100;
+%     
+% end
+% y = y'
+ 
+
+
+%%% Features reordering;
+means = mean(Per_correct_mean);
+[~,I] = sort((means)','descend');
+Per_correct_mean = Per_correct_mean(:,I);
+
+%%% Features reordering based on TS_CLUSTER (op_clust)
+TS_Cluster
+Per_correct_mean = Per_correct_mean(:,(op_clust.ord)');
+
+%%% Best X features 
+Top_Feat = I(1:20)
+
+% %% All datasets averaged
+% 
+% % All 12 datasets have the same length as the shortest dataset (752) 
+% Per_correct_mean001 = Per_correct_mean001(:,1:5858);
+% Per_correct_mean005 = Per_correct_mean005(:,1:5858);
+% Per_correct_mean439 = Per_correct_mean439(:,1:5858);
+% Per_correct_mean458 = Per_correct_mean458(:,1:5858);
+% Per_correct_mean596 = Per_correct_mean596(:,1:5858);
+% Per_correct_mean604 = Per_correct_mean604(:,1:5858);
+% Per_correct_mean748 = Per_correct_mean748(:,1:5858);
+% Per_correct_mean749 = Per_correct_mean749(:,1:5858);
+% Per_correct_mean752 = Per_correct_mean752(:,1:5858);
+% Per_correct_mean807 = Per_correct_mean807(:,1:5858);
+% Per_correct_mean821 = Per_correct_mean821(:,1:5858);
+% Per_correct_mean870 = Per_correct_mean870(:,1:5858);
+% 
+% % Stack all 12 matrices along 3rd dimension
+% StackedMatrix = cat(3,Per_correct_mean001,Per_correct_mean005,Per_correct_mean439,Per_correct_mean458,Per_correct_mean596,Per_correct_mean604,Per_correct_mean748,Per_correct_mean749,Per_correct_mean752,Per_correct_mean807,Per_correct_mean821,Per_correct_mean870);
+% AveragedMatrix = mean(StackedMatrix,3);
+% 
+% % Plot 
+% figure;
+% imagesc(AveragedMatrix)
+% title('Mean classification performance across datasets');
+% 
+% ax = gca;
+% ax.XTick = 1:500:5858;
+% ax.YTick = 1:10;
+% % ax.XTickLabels = strseq('f',1:100)';
+% ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5858,'uni',0);
+% ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+% ylabel('Binary classifiers');
+% xlabel('features');
+% ax.XAxisLocation = 'bottom';
+% 
+% colormap 'default'
+% colorbar
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)   % For each dataset
+    
+    sub = Subs{D};
+    
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
+    
+    %%% Features reordering;
+    means = mean(Per_correct_mean);
+    [~,I] = sort((means)','descend');
+    Per_correct_mean = Per_correct_mean(:,I);
+
+    %%% Best X features 
+    Top_Feat(:,D) = I(1:200);
+    
+end
+
+%%% save
+gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Top_50_feat';
+save(fullfile(gpath,'Top_Feat.mat'))
+   
+
+%%% Identify top features that are found in several datasets
+
+[ii,jj,kk]=unique(Top_Feat);
+
+% Find the repeated values
+out=ii(histc(kk,1:numel(ii))>1);
+
+% Double-check: where the repeated values (out) are in Top_Feat
+for xx = 1:length(out)
+   a = out(xx)
+   [row,col] = find(Top_Feat == a) 
+end
+  
+% Count the number of instances of each of the unique vals  
+for iii = 1:length(out)   % for each repeated var
+   weight_feat(iii) = sum(sum(Top_Feat == out(iii)))   % get the number of time they are repeated
+end
+  
+% Get the top feature that is the most repeated across datasets
+[most_rep index] = max(weight_feat)
+most_common_top_feat = out(which_feat);
+
+% To get the name of the feature
+Name_Feat = Operations.Name(most_common_top_feat)
+Keyword_Feat = Operations.Keywords(most_common_top_feat)
+
+
+
+%% Get features removed by TS_Quality
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)   % For each dataset
+    
+    sub = Subs{D};
+
+    % Configuration
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))   % get new pwd (current folder)
+    all_op = load('HCTSA.mat','Operations');
+    all_op_name = {all_op.Operations.CodeString}.';
+    
+    retained_op = load('HCTSA_N.mat','Operations');
+    retained_op_name = retained_op.Operations.CodeString;
+
+    all_op_idx = retained_op.Operations{:,4};   % Operation index of retained feat
+    all_7749 = 1:7749;                          % all features
+    removed_feat_idx{D} =  all_7749(~ismember(all_7749,all_op_idx));   %features removed
+
+end
+
+% Get features that were removed in all datasets
+Z = removed_feat_idx
+[val]=intersect(intersect(intersect(intersect(intersect(intersect(intersect(intersect(intersect(intersect(intersect(Z{1},Z{2}),Z{3}),Z{4}),Z{5}),Z{6}),Z{7}),Z{8}),Z{9}),Z{10}),Z{11}),Z{12});
+
+% Mean number of features removed per dataset: 1775.8
+% 75% of removed features are common to all datasets. About 400 features were removed in each dataset and not in others. 
+
+
+%% For each dataset, include in figure only features removed specifically to them.
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/common_features_removed')
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)   % For each dataset
+    
+    sub = Subs{D};
+
+    % Configuration
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))   % get new pwd (current folder)
+    all_op = load('HCTSA.mat','Operations');
+    all_op_name = {all_op.Operations.CodeString}.';
+    
+    retained_op = load('HCTSA_N.mat','Operations');
+    retained_op_name = retained_op.Operations.CodeString;
+
+    all_op_idx = retained_op.Operations{:,4};   % Operation index of retained feat
+    all_7749 = 1:7749;                          % all features
+    removed_feat_idx{D} =  all_7749(~ismember(all_7749,all_op_idx));   %features removed
+    
+    specifically_removed{D} = setdiff(removed_feat_idx{1,D},val);
+
+end
+
+
+
+%% Reconstruct matrix, including features removed
+
+InsertCol = zeros(10,1);
+
+
+for x = 1:length(removed_feat_idx{:,:})
+    
+    Part1 = Per_correct_mean(:,1:removed_feat_idx{1,1}(x)-1);
+    Part2 = [InsertCol Per_correct_mean(:,removed_feat_idx{1,1}(x):end)];
+    Per_correct_mean = ([Part1 Part2]);
+    
+end
+
+
+%% Reconstruct matrix for all features 
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/common_features_removed')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/specifically_removed_features')
+
+InsertCol = zeros(10,1);
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)   % For each dataset
+    
+    sub = Subs{D};
+    
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
+
+    for x = 1:length(specifically_removed{1,D})
+
+        Part1 = Per_correct_mean(:,1:specifically_removed{1,D}(x)-1);
+        Part2 = [InsertCol Per_correct_mean(:,specifically_removed{1,D}(x):end)];
+        Per_correct_mean = ([Part1 Part2]);
+        specifically_removed{1,D} = specifically_removed{1,D};
+
+    end
+    
+    Per_correct_meanAA{D} = Per_correct_mean;
+    
+end
+
+
+%% ATTEMPT 2
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/allfeat_removed') % All features removed
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/common_features_removed')   % Only features commonly removed in all datasets
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/specifically_removed_features')  % Only features specifically removed in eachd dataset
+
+InsertCol = zeros(10,1);
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)   % For each dataset
+    
+    sub = Subs{D};
+    
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
+
+    for x = 1:length(removed_feat_idx{1,D})
+
+        Part1 = Per_correct_mean(:,1:removed_feat_idx{1,D}(x)-1);
+        Part2 = [InsertCol Per_correct_mean(:,removed_feat_idx{1,D}(x):end)];
+        Per_correct_mean = ([Part1 Part2]);
+        removed_feat_idx{1,D} = removed_feat_idx{1,D};
+
+    end
+    
+    Per_correct_mean(:,val) = [];   % data matrix displaying specifically removed features (commonly removed features are not displayed)
+    Per_correct_mean_D{D} = Per_correct_mean
+    
+end
+
+%% Plot average with showing specifically removed features
+
+% All 12 datasets have the same length as the shortest dataset (752) 
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Figure_incl_spec_removed_feat.mat')
+Per_correct_mean_D{1,11} = Per_correct_mean_D{1,11}(:,1:6417);   % Dataset 821 and 870 are longer, for some reason...
+Per_correct_mean_D{1,12} = Per_correct_mean_D{1,12}(:,1:6417);
+
+% Stack all 12 matrices along 3rd dimension
+StackedMatrix = cat(3,Per_correct_mean_D{1,1},Per_correct_mean_D{1,2},Per_correct_mean_D{1,3},Per_correct_mean_D{1,4},Per_correct_mean_D{1,5},Per_correct_mean_D{1,6},Per_correct_mean_D{1,6},Per_correct_mean_D{1,8},Per_correct_mean_D{1,9},Per_correct_mean_D{1,10},Per_correct_mean_D{1,11},Per_correct_mean_D{1,12});
+AveragedMatrix = mean(StackedMatrix,3);
+
+% Plot 
+figure;
+imagesc(AveragedMatrix)
+title('Mean classification performance across datasets');
+
+ax = gca;
+ax.XTick = 1:500:6417;
+ax.YTick = 1:10;
+% ax.XTickLabels = strseq('f',1:100)';
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:6417,'uni',0);
+ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+ylabel('Binary classifiers');
+xlabel('features');
+ax.XAxisLocation = 'bottom';
+
+colormap 'default'
+colorbar
+
+%% Remove specifically removed features shared by most datasets (probably, feature were removed in all but one dataset, so this feature was not stored in "common features removed" 
+
+for f = 1:size(AveragedMatrix,2)
+    if sum(AveragedMatrix(:,f)) < 100  
+        feature_to_sort(f) = f;
+    end
+end
+
+idxx = find(feature_to_sort > 1);
+AveragedMatrix(:,idxx) = [];
+
+%% Remove all specifically removed features
+
+All_spec_feat = unique([specifically_removed{1,1} specifically_removed{1,2} specifically_removed{1,3} specifically_removed{1,4} specifically_removed{1,5} specifically_removed{1,6} specifically_removed{1,7} specifically_removed{1,8} specifically_removed{1,9} specifically_removed{1,10} specifically_removed{1,11} specifically_removed{1,12}]);
+All_spec_feat = All_spec_feat(1:find(All_spec_feat == 6417));
+AveragedMatrix(:,All_spec_feat) = [];
+

@@ -162,16 +162,14 @@ for Nit = 1:length(testMat)
                predict_test(j,1:2) = equi_stage(j,CLUSTTEST(j,:));
            end
            
-           test_correct_stage1 = ((sum(predict_test(:,1)==1'))/stgL)*100;
-           test_correct_stage2 = ((sum(predict_test(:,2)==2'))/stgL)*100;
-           test_correct(Nit,C) = mean([test_correct_stage1 test_correct_stage2]);
+           test_correct_stage1 = sum(predict_test(:,1)==1');
+           test_correct_stage2 = sum(predict_test(:,2)==2');
           
     end
     
 end
 
 
-disp('ok')
 
   
 
