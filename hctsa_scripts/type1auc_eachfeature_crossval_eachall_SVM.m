@@ -1,32 +1,55 @@
 %%%%%
-%%%%%
+%%%%%   Unsupervised + supervised (SVM) clustering, to compare them in
+%%%%%   terms of AUC and testing_accuracy. 
 
 %% classification performance for each feature: kmeans for each binary classifier
 
-
-% Find how many epochs for each sleep stage
+% Find how many testing epochs for each sleep stage
 stgL = size(testMat{1},1);
 stgL = stgL/5;          
 
-% Get epochs indices for each stage
+% Get the indices of testing epochs for each sleep stage
 wake = (1:stgL);
 N1 = ((stgL+1):(stgL*2));
 N2 = ((stgL*2+1):(stgL*3));
 N3 = ((stgL*3+1):(stgL*4));
 rem = ((stgL*4+1):(stgL*5));
 
-% All binary classifiers
+% All binary classifiers for testing 
 allpairs = [{[wake;N1]} {[wake;N2]} {[wake;N3]} {[wake;rem]} {[N1;N2]} {[N1;N3]} {[N1;rem]} {[N2;N3]} {[N2;rem]} {[N3;rem]}];
 
-for Nit = 1:length(testMat)
 
-    for C = 1:10    % For each binary classifier
+% Parameters for supervised clustering: Find how many training epochs for each sleep stage
+stgL_train = size(trainMat{1},1);
+idx_train = 1:stgL_train;  
+stgL_train = stgL_train/5; 
 
-            % Choose one classifier
-            classifier = allpairs{C};     
+% Get the indices of training epochs for each sleep stage
+wakeT = (1:stgL_train);
+N1T = ((stgL_train+1):(stgL_train*2));
+N2T = ((stgL_train*2+1):(stgL_train*3));
+N3T = ((stgL_train*3+1):(stgL_train*4));
+remT = ((stgL_train*4+1):(stgL_train*5));
 
-            for test = 1:stgL           % each epoch will be taken out and used as testing epoch
+allpairs_training = [{[wakeT;N1T]} {[wakeT;N2T]} {[wakeT;N3T]} {[wakeT;remT]} {[N1T;N2T]} {[N1T;N3T]} {[N1T;remT]} {[N2T;N3T]} {[N2T;remT]} {[N3T;remT]}];
 
+%%%% For each iteration, for each classifier and for each 'test' iteration
+
+for Nit = 1:length(testMat)    % for each iteration
+
+    for C = 1:10               % For each binary classifier      
+            
+            % Choose one classifier with testing epochs
+            classifier = allpairs{C}; 
+            
+            % Choose one classifier with training eopchs (used for supervised clustering)
+            stages_SVMtrain = allpairs_training{C};
+
+            for test = 1:stgL           % for each test iteration, a different epoch is chosen as testing epoch
+                
+               
+            %% Unsupervised clustering
+             
             % Get epoch indices for both stages of the classifier
             stage1 = classifier(1,:);    
             stage2 = classifier(2,:); 
@@ -40,9 +63,7 @@ for Nit = 1:length(testMat)
             % Training data (N-1 epochs for each stage)
             stage1 = setdiff(stage1,test_stage1);   % Leave one epoch out ("test" epoch)
             stage2 = setdiff(stage2,test_stage2);  
-
-
-            %% kmeans
+  
             NUMCLUST = 2;
 
             % hctsa response of training
@@ -61,7 +82,8 @@ for Nit = 1:length(testMat)
                         'Display','off','Replicates',50,'MaxIter',500);
 
 
-            %% Classification of test dataset (Nearest centroid classifier)
+                    
+            %%% Classification of test dataset (Nearest centroid classifier)
 
             for n=1:size(hctsa_test,1)   % for both the testing epoch of stage 1 and of stage 2
                 distance = sqrt(sum((bsxfun(@minus,blokk(test).Kcentre,hctsa_test(n,:))).^2,2));
@@ -70,7 +92,8 @@ for Nit = 1:length(testMat)
 
             CLUSTTEST(test,1:2) = clusttest;
 
-            %% Find equivalent cluster-sleep stage pair
+            
+            %%% Find equivalent cluster-sleep stage pair
 
             stgLabel = [1,2];
             pro_no = zeros(length(stgLabel),length(unique(clustID)));  % length(stg.nStG) = number of stages (5, always)
@@ -93,7 +116,8 @@ for Nit = 1:length(testMat)
             % Element 4 = number of epochs from stage 2 attributed to clustID 2
 
 
-            % To know which of Clust ID 1 and 2 corresponds to stage 1 and 2
+            %%%  To know which of Clust ID 1 and 2 corresponds to stage 1 and 2
+            
             clear max
             [~, row_index] = sort(max(pro_no'), 'd');    % From clust ID that has the highest number of epochs of the most frequent stage, to least epoch
             remaining_cluster_to_allocate=unique(clustID)';   % all 2 cluster IDs
@@ -162,14 +186,77 @@ for Nit = 1:length(testMat)
                predict_test(j,1:2) = equi_stage(j,CLUSTTEST(j,:));
            end
            
-           test_correct_stage1 = sum(predict_test(:,1)==1');
-           test_correct_stage2 = sum(predict_test(:,2)==2');
+           test_correct_stage1 = ((sum(predict_test(:,1)==1'))/stgL)*100;
+           test_correct_stage2 = ((sum(predict_test(:,2)==2'))/stgL)*100;
+           test_correct(Nit,C) = mean([test_correct_stage1 test_correct_stage2]);
           
+           
+     
+         %% Supervised: SVM for each classifier (use the labels to create a prediction model that classifiers epochs)
+
+         % Get training epoch indices for both stages of the classifier
+         stagesSVM1_train = stages_SVMtrain(1,:);
+         stagesSVM2_train = stages_SVMtrain(2,:);
+         
+         stages_SVMtrain = [stagesSVM1_train stagesSVM2_train];
+         
+         % Get testing epoch indices for both stages of the classifier
+         stageSVM1 = classifier(1,:);    
+         stageSVM2 = classifier(2,:); 
+         
+         stagesSVM = [stageSVM1 stageSVM2];
+
+         % Generate the right labels (1s and 2s)
+         stages_train = [ones(1,stgL_train) 2*ones(1,stgL_train)];
+         
+         
+         % hctsa response of training epochs (will be used to train algo)
+         hctsa_SVMresp1 = trainMat{Nit}(stagesSVM1_train,:);  
+         hctsa_SVMresp2 = trainMat{Nit}(stagesSVM2_train,:);
+
+         hctsa_SVMresp = [hctsa_SVMresp1;hctsa_SVMresp2];   % 1:11: hctsa resp from stage1, then 11:22 from stage2
+
+         % SVM for binary classification: first half is hctsa responses
+         % associated with Stage1, second half is hctsa responses
+         % associated with Stage2. The model will then associate Stage1 and
+         % Stage2 to their specific hctsa responses
+         % 1 SVM model per classifier, because we take different training
+         % epochs (depending on which classifier is used)
+         SVMModel{C} = fitcsvm(hctsa_SVMresp,stages_train);  
+
+         % Get the decisions generated by SVM model for the training and
+         % testing data
+         svmTrain(:,C) = predict(SVMModel{C}, trainMat{Nit}(stages_SVMtrain,:));  % how SVM classifies training epochs used to create the model
+         svmTest(:,C) = predict(SVMModel{C}, testMat{Nit}(stagesSVM,:));       % how SVM classifies new epochs (testing epochs) based on training
+
+         % Re-store these variables
+         stats.svmPredictTrain(C, :) = svmTrain(:,C)';  
+         stats.svmPredictTest(C, :) = svmTest(:,C)';
+         
+         % Get the original labels (How the SVM is supposed to label if it is perfect)
+         stats.scoredTrain = stages_train;  
+         stats.scoredTest = stages;   
+
+         % Calculate the percentage of correctly labelled training and testing epochs
+         iteration_svm_training_accuracy(C,Nit) = (((sum((stats.scoredTrain == stats.svmPredictTrain(C,:))'))/size(stats.scoredTrain, 2))')*100;
+         iteration_svm_testing_accuracy(C,Nit) = (((sum((stats.scoredTest == stats.svmPredictTest(C,:))'))/size(stats.scoredTest, 2))')*100;
+
+  
+           
     end
     
+
 end
 
 
+% Get the mean SVM training and testing accuracy for each classifier
+for Cl = 1:10   % For each of the 10 classifiers
+    iteration_svm_training_accuracy_MEAN(Cl) = mean(iteration_svm_training_accuracy(Cl,:));  
+    iteration_svm_testing_accuracy_MEAN(Cl) = mean(iteration_svm_testing_accuracy(Cl,:));
+end
+    
+
+disp('ok')
 
   
 

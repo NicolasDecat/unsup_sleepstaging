@@ -21,7 +21,7 @@ for Nit = 1:size(scoredTest,1)   % For each iteration Nf
 
     col_idx = 1;
     
-    for i = idx(1:5)
+    for i = idx(1:5)   % For all 5 stages
   
         origlabels = scoredTest(Nit,:);  
         clusterdecision = predictTest(Nit,:);  

@@ -32,7 +32,7 @@ stgLab = {'W','N1','N2','N3','R'};
 
 % Training
 trainingProportion = TRAINING_PERCENTAGE;
-nIterations = 1;
+nIterations = 30;
 
 %% Multiple iteration of randomisation and cross-validation
 % Initialise result struct
@@ -244,6 +244,9 @@ statsOut = stats;
 
 scoredTest = stats.scoredTest;
 predictTest = stats.predictTest;
+% scoredTest = stats.scoredTest;   % If want to switch to supervised learning
+% predictTest = stats.svmPredictTest;
+
 
 %% Clear variables for the next run
 %clearvars -except Output datamat feat_id features k complexity CM_SAVE_DIR exps statsOut
