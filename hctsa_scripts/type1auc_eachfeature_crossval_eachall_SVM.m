@@ -44,17 +44,17 @@ for Nit = 1:length(testMat)    % for each iteration
             
             % Choose one classifier with training eopchs (used for supervised clustering)
             stages_SVMtrain = allpairs_training{C};
+    
+            
+            %% Unsupervised clustering
 
             for test = 1:stgL           % for each test iteration, a different epoch is chosen as testing epoch
                 
-               
-            %% Unsupervised clustering
-             
             % Get epoch indices for both stages of the classifier
             stage1 = classifier(1,:);    
             stage2 = classifier(2,:); 
 
-            stages = [ones(1,stgL) 2*ones(1,stgL)];  % vector of 1 and 2 (used later for kmeans)
+            stages = [ones(1,stgL) 2*ones(1,stgL)];  % vector of 1s and 2s (used later for kmeans)
 
             % Testing data (1 epoch for each stage is taken out: "leave-1-out" strategy for cross validation)
             test_stage1 = stage1(test);   % The only piece of information that we change for each 'test' iteration
@@ -67,7 +67,7 @@ for Nit = 1:length(testMat)    % for each iteration
             NUMCLUST = 2;
 
             % hctsa response of training
-            hctsa_resp1 = testMat{Nit}(stage1,:);   % hctsa resp for all 10 epochs of stage 1, including all features
+            hctsa_resp1 = testMat{Nit}(stage1,:);   % hctsa resp for all 10 training epochs of stage 1, including all features
             hctsa_resp2 = testMat{Nit}(stage2,:);
 
             hctsa_resp = [hctsa_resp1;hctsa_resp2];
@@ -192,9 +192,9 @@ for Nit = 1:length(testMat)    % for each iteration
           
            
      
-         %% Supervised: SVM for each classifier (use the labels to create a prediction model that classifiers epochs)
+         %% Supervised: SVM for each classifier (use the labels to create a prediction model that classifies epochs)
 
-         % Get training epoch indices for both stages of the classifier
+         % Get training epoch ID for both stages of the classifier
          stagesSVM1_train = stages_SVMtrain(1,:);
          stagesSVM2_train = stages_SVMtrain(2,:);
          
@@ -206,7 +206,7 @@ for Nit = 1:length(testMat)    % for each iteration
          
          stagesSVM = [stageSVM1 stageSVM2];
 
-         % Generate the right labels (1s and 2s)
+         % Generate the right labels for training (1s and 2s)
          stages_train = [ones(1,stgL_train) 2*ones(1,stgL_train)];
          
          
@@ -214,9 +214,9 @@ for Nit = 1:length(testMat)    % for each iteration
          hctsa_SVMresp1 = trainMat{Nit}(stagesSVM1_train,:);  
          hctsa_SVMresp2 = trainMat{Nit}(stagesSVM2_train,:);
 
-         hctsa_SVMresp = [hctsa_SVMresp1;hctsa_SVMresp2];   % 1:11: hctsa resp from stage1, then 11:22 from stage2
+         hctsa_SVMresp = [hctsa_SVMresp1;hctsa_SVMresp2];   % 1:11: hctsa resp from stage1, then 12:22 from stage2
 
-         % SVM for binary classification: first half is hctsa responses
+         % SVM for binary classification: first half of hctsa_SVMresp is hctsa responses
          % associated with Stage1, second half is hctsa responses
          % associated with Stage2. The model will then associate Stage1 and
          % Stage2 to their specific hctsa responses

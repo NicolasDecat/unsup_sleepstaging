@@ -118,6 +118,7 @@ for Nf = 1:nIterations
      svmTrain = predict(SVMModel, trainMat);
      svmTest = predict(SVMModel, testMat);
      
+     
     %% Classification of test dataset(Nearest centroid classifier)
     % Minimum Euclidean distance from centre/mean features of the cluster
     

@@ -727,7 +727,7 @@ Top_40 = [Top_40 num2cell(Top_mean')];
 
 %%%% Now get the hctsa values averaged over all datasets
 
-Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'596' '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once (use y)
 SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
@@ -744,20 +744,14 @@ for D = 1:length(Subs)
     load('HCTSA.mat', 'TS_DataMat')   % Simply to get the list of 7749 features 
     
     % Store
-    DataMat{D} = TS_DataMat;
+    DataMat{D} = TS_DataMat
     
 end
 
-
-% Trim the TS_DataMat of each file to have their length matched, before
-% averagaging (here, shortest file has 1088 time series (EEG only) 
-for x = 1:length(DataMat)
-    DataMat{1,x} = DataMat{1,x}(1:1088,:);
-end
-
 % Average the DataMat files
+
 StackedDataMat = cat(3,DataMat{1},DataMat{2},DataMat{3},DataMat{4},DataMat{5},DataMat{6},DataMat{7},DataMat{8},DataMat{9},DataMat{10},DataMat{11},DataMat{12});
-AveragedDataMat = mean(StackedDataMat,3);
+AveragedDataMat = mean(StackedMatrix,3);
 
 %%%%%%%% Plot the correlation matrix
 
@@ -768,8 +762,8 @@ op_ind = Top_ID'; % indices of top 40 features (among the 7k)
 op_ind = cell2mat(op_ind);
 
 % Compute correlations based on hctsa responses
-% EEGonly = size(AveragedDataMat,1)/7;
-Dij = BF_pdist(AveragedDataMat(:,op_ind)','abscorr');    
+EEGonly = size(TS_DataMat,1)/7;
+Dij = BF_pdist(TS_DataMat(1:EEGonly,op_ind)','abscorr');    % Only EEG channels
 % Dij = BF_pdist(TS_DataMat(1:EEGonly,op_ind)','abscorr');   
 
 distanceMetric = 'abscorr';
@@ -778,7 +772,6 @@ clusterThreshold = 0.2; % threshold at which split into clusters
 % Ylabels
 Top_mean = num2cell(mean(Top_40_Acc'));  % Change it for later in the Ylabels section
 YLabel = [];
-
 for i = 1:length(Top_ID)
     YLabel = [YLabel {sprintf('[%s] %s (%1.1f%%)',Top_key{i},Top_name{i},Top_mean{i})}];
 end
