@@ -12,7 +12,7 @@ if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat') == 1
     delete '/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat'
 end
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'821'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 

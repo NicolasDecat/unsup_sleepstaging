@@ -8,13 +8,13 @@ set(0,'DefaultFigureVisible','on')
 figure;
 imagesc(Per_correct_mean)
 % title(sprintf('Classification performance per feature (Dataset %s)',sub));
-title('Classification performance per feature (Dataset 001)');
+title('Classification performance per feature (Dataset 870)');
 
 ax = gca;
-ax.XTick = 1:500:7749;
+ax.XTick = 1:500:5892;
 ax.YTick = 1:10;
 % ax.XTickLabels = strseq('f',1:100)';
-ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:7749,'uni',0);
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5892,'uni',0);
 ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
 ylabel('Binary classifiers');
 xlabel('features');
@@ -22,8 +22,6 @@ ax.XAxisLocation = 'bottom';
 
 colormap 'default'
 colorbar
-
-
 
 
 %% Line plot of accuracy for each binary classifier across features
@@ -61,32 +59,7 @@ xlabel('features');
 ylabel('accuracy');
 
 
-
-%% Features reordering 
-
-%%%%% From feature yielding highest mean accuracy to feature yielding
-%%%%% lowest mean accuracy
-
-%%% Load a Per_correct_mean matrix first
-
-means = mean(Per_correct_mean);
-[~,I] = sort((means)','descend');
-Per_correct_mean = Per_correct_mean(:,I);
-
-%%%% Getting the top X features 
-
-Top_Feat = I(1:20);   % return the 20 feat that yield best mean accuracy 
-
-
-%%%%% Features reordering based on TS_CLUSTER (op_clust)
-
-TS_Cluster
-Per_correct_mean = Per_correct_mean_D{1,1};
-Per_correct_mean = Per_correct_mean(:,(op_clust.ord)');
-
-
-
-%% Plot average accuracy across datasets 
+%% Plot average accuracy across datasets (wrong, can't overlap those because feature ordering not the same acorss datasets) 
 
 %%%  All 12 datasets must have the same length as the shortest dataset (752) 
 
@@ -127,6 +100,14 @@ ax.XAxisLocation = 'bottom';
 colormap 'default'
 colorbar
 
+%% Features reordering based on TS_CLUSTER (op_clust)
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D')
+
+TS_Cluster
+Per_correct_mean = Per_correct_mean_D{1,1};
+Per_correct_mean = Per_correct_mean(:,(op_clust.ord)');
+
 
 %% Identify the top features
 
@@ -144,40 +125,13 @@ for D = 1:length(Subs)
     Per_correct_mean = Per_correct_mean(:,I);
 
     %%% Best X features 
-    Top_Feat(:,D) = I(1:200);
+    Top_Feat(:,D) = I(1:20);
     
 end
 
 gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Top_50_feat';
 save(fullfile(gpath,'Top_Feat.mat'))
    
-
-%%% Identify the top features that are found across all datasets
-
-[ii,jj,kk]=unique(Top_Feat);
-
-% Find the repeated values
-out=ii(histc(kk,1:numel(ii))>1);
-
-% Double-check: where the repeated values (out) are in Top_Feat
-% for xx = 1:length(out)
-%    a = out(xx)
-%    [row,col] = find(Top_Feat == a) 
-% end
-  
-% Count the number of instances of each of the unique vals  
-for iii = 1:length(out)   % for each repeated var
-   weight_feat(iii) = sum(sum(Top_Feat == out(iii)));   % get the number of time they are repeated
-end
-  
-% Get the top feature that is the most repeated across datasets
-[most_rep index] = max(weight_feat);
-most_common_top_feat = out(which_feat);
-
-% To get the name of the feature
-Name_Feat = Operations.Name(most_common_top_feat);
-Keyword_Feat = Operations.Keywords(most_common_top_feat);
-
 
 %% Reorder the features to get proper alignment 
 
@@ -186,7 +140,7 @@ Keyword_Feat = Operations.Keywords(most_common_top_feat);
 
 %% Identify the features removed by TS_Quality
 
-Subs = {'870'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 for D = 1:length(Subs)   
     
@@ -228,7 +182,7 @@ Z = removed_feat_idx;
 %%% removed features  (run section above)
 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/common_features_removed')
-Subs = {'870'}; % {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 for D = 1:length(Subs)   
     
@@ -250,8 +204,38 @@ for D = 1:length(Subs)
 
 end
 
+%% Get all features removed (common + spe across datasets)
 
-%% Reconstruct the matrix by including the removed special-value features
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/common_features_removed')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/specifically_removed_features')
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)   
+    
+    sub = Subs{D};
+
+    % Configuration
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))
+    
+    ALLfeat_removed{1,D} = sort([val specifically_removed{1,D}]);
+end
+
+
+%%% list of all special value features removed
+ALLSPE = [];
+
+for D = 1:12
+    ALLSPE = [ALLSPE specifically_removed{1,D}];
+end
+
+All_spe = unique(ALLSPE);
+
+% List of all features removed across datasets
+spec_and_common_feat2 = sort([val All_spe]);
+
+
+%% Reconstruct the matrix by including the removed special-value features (for one dataset)
 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/common_features_removed')
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/specifically_removed_features')
@@ -300,38 +284,7 @@ end
 %%% If want to display the commonly-removed features, don't do "Per_correct_mean(:,val) = [];" above   
 
 
-%% Plot the Average accuracy matrix with the specifically removed features (across dataset)
-
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Figure_incl_spec_removed_feat.mat')
-
-% All 12 datasets have same length of 7749 features, minus the amount of common features(1332) = 6417
-Per_correct_mean_D{1,11} = Per_correct_mean_D{1,11}(:,1:6417);   % Dataset 821 and 870 are longer, for some reason...
-Per_correct_mean_D{1,12} = Per_correct_mean_D{1,12}(:,1:6417);
-
-% Stack all 12 matrices along 3rd dimension
-StackedMatrix = cat(3,Per_correct_mean_D{1,1},Per_correct_mean_D{1,2},Per_correct_mean_D{1,3},Per_correct_mean_D{1,4},Per_correct_mean_D{1,5},Per_correct_mean_D{1,6},Per_correct_mean_D{1,7},Per_correct_mean_D{1,8},Per_correct_mean_D{1,9},Per_correct_mean_D{1,10},Per_correct_mean_D{1,11},Per_correct_mean_D{1,12});
-AveragedMatrix = mean(StackedMatrix,3);
-
-% Plot 
-figure;
-imagesc(AveragedMatrix)
-title('Mean classification performance across datasets');
-
-ax = gca;
-ax.XTick = 1:500:6417;
-ax.YTick = 1:10;
-% ax.XTickLabels = strseq('f',1:100)';
-ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:6417,'uni',0);
-ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
-ylabel('Binary classifiers');
-xlabel('features');
-ax.XAxisLocation = 'bottom';
-
-colormap 'default'
-colorbar
-
-
-%% Remove both common and specifically removed features (even those present in only few or one dataset)
+%% Remove both common and specifically removed features (preserved ranking)
 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/All_unique_specificity_feat_combined')  % all specifically removed featured across datasets (combined ('unique'))
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/allfeat_removed') % For each of the 12 cells, All features removed for the corresponding dataset) 
@@ -364,19 +317,34 @@ for D = 1:length(Subs)
     
 end
 
-% Then plot the accuracy matrix, without any special-value feature
-Per_correct_mean_D{1,11} = Per_correct_mean_D{1,11}(:,1:5294);   % Dataset 821 and 870 are longer, for some reason...
-Per_correct_mean_D{1,12} = Per_correct_mean_D{1,12}(:,1:5294);
 
 % Stack all 12 matrices along 3rd dimension
 StackedMatrix = cat(3,Per_correct_mean_D{1,1},Per_correct_mean_D{1,2},Per_correct_mean_D{1,3},Per_correct_mean_D{1,4},Per_correct_mean_D{1,5},Per_correct_mean_D{1,6},Per_correct_mean_D{1,7},Per_correct_mean_D{1,8},Per_correct_mean_D{1,9},Per_correct_mean_D{1,10},Per_correct_mean_D{1,11},Per_correct_mean_D{1,12});
 AveragedMatrix = mean(StackedMatrix,3);
 
-% Then use one of the section above to plot AveragedMatrix
+%%% 5308 features are kept in total (7774 minus the 2441 special value
+%%% features)
+
+% Then plot AveragedMatrix (w/o special value features; preserved ranking)
+figure;
+imagesc(AveragedMatrix)
+title('Mean classification performance across datasets');
+
+ax = gca;
+ax.XTick = 1:500:5308;
+ax.YTick = 1:10;
+% ax.XTickLabels = strseq('f',1:100)';
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5308,'uni',0);
+ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+ylabel('Binary classifiers');
+xlabel('features');
+ax.XAxisLocation = 'bottom';
+
+colormap 'default'
+colorbar
 
 
-
-%% Reconstruct each dataset to a 7749-matrix, then apply spec_and_common_feat = []
+%% Reconstruct each dataset to a 7749-matrix and plot all features (special values in red)
 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/All_unique_specificity_feat_combined')  % all specifically removed featured across datasets (combined ('unique'))
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/allfeat_removed') % For each of the 12 cells, All features removed for the corresponding dataset) 
@@ -410,13 +378,16 @@ for D = 1:length(Subs)
     
 end
 
-% Then plot the accuracy matrix, without any special-value feature
-Per_correct_mean_D{1,11} = Per_correct_mean_D{1,11}(:,1:7749);   % Dataset 821 and 870 are longer, for some reason...
-Per_correct_mean_D{1,12} = Per_correct_mean_D{1,12}(:,1:7749);
 
 % Stack all 12 matrices along 3rd dimension
 StackedMatrix = cat(3,Per_correct_mean_D{1,1},Per_correct_mean_D{1,2},Per_correct_mean_D{1,3},Per_correct_mean_D{1,4},Per_correct_mean_D{1,5},Per_correct_mean_D{1,6},Per_correct_mean_D{1,7},Per_correct_mean_D{1,8},Per_correct_mean_D{1,9},Per_correct_mean_D{1,10},Per_correct_mean_D{1,11},Per_correct_mean_D{1,12});
 AveragedMatrix = mean(StackedMatrix,3);
+
+
+%%%% %All special value features will be marked as red
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')  % all specifically removed featured across datasets (combined ('unique'))
+AveragedMatrix(:,spec_and_common_feat) = 0;   % (give value 0 to be marked in red by colormap) / give value [] to get matrix without special value features
+
 
 % Then plot 
 figure;
@@ -439,27 +410,6 @@ colormap(cmap)           % Activate it
 colorbar
 
 
-%%%% Remove the red special-value features and plot again
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2455)')  % all specifically removed featured across datasets (combined ('unique'))
-AveragedMatrix(:,spec_and_common_feat) = 0;   % (give value 0 to be marked in red by colormap) / give value [] to get matrix without special value features
-
-% Then plot 
-figure;
-imagesc(AveragedMatrix)
-title('Mean classification performance across datasets');
-
-ax = gca;
-ax.XTick = 1:500:7749;
-ax.YTick = 1:10;
-% ax.XTickLabels = strseq('f',1:100)';
-ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:7749,'uni',0);
-ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
-ylabel('Binary classifiers');
-xlabel('features');
-ax.XAxisLocation = 'bottom';
-
-colormap 'default'
-colorbar
 
 %% Return the top features from averaged matrix 
 
@@ -479,7 +429,6 @@ load('HCTSA.mat', 'Operations')   % Simply to get the list of 7749 features
 CodeString = {Operations.CodeString}.';   % Get name
 Keywords = {Operations.Keywords}.';
 YLabel = {Operations.ID}.';
-
 
 Top_name = CodeString(Top_Feat,1);
 Top_key = Keywords(Top_Feat,1);
@@ -522,7 +471,7 @@ end
 %% Line plot of accuracy from all features sorted from best to worst
 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_incl_all_feat_removed(7749)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2455)')  % all specifically removed featured across datasets (combined ('unique'))
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')  % all specifically removed featured across datasets (combined ('unique'))
 AveragedMatrix(:,spec_and_common_feat) = [];
 
 % Features reordering: from best to worst feature
@@ -565,7 +514,7 @@ ylabel('Percentage Accuracy')
 % TimeSeries.Data = Data;
 
 
-%% Top 40 features for Dataset 001 (need to have the 7749-matrix)
+%% Top 40 features for one Dataset (need to have the 7749-matrix)
 
 % Copy pasted script to get 7749-matrix
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/All_unique_specificity_feat_combined')  % all specifically removed featured across datasets (combined ('unique'))
@@ -575,7 +524,7 @@ load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/spe
 
 InsertCol = zeros(10,1);
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'005'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once
 % (use y)
@@ -760,8 +709,8 @@ op_ind = Top_ID'; % indices of top 40 features (among the 7k)
 op_ind = cell2mat(op_ind);
 
 % Compute correlations based on hctsa responses
+Dij = BF_pdist(AveragedDataMat(:,op_ind)','abscorr'); 
 % EEGonly = size(AveragedDataMat,1)/7;
-Dij = BF_pdist(AveragedDataMat(:,op_ind)','abscorr');    
 % Dij = BF_pdist(TS_DataMat(1:EEGonly,op_ind)','abscorr');   
 
 distanceMetric = 'abscorr';
@@ -783,7 +732,6 @@ title(sprintf('Dependencies between %u top features (organized into %u clusters)
                         numTopFeatures,length(cluster_Groupi)))
                     
 
-                    
 %% Corr matrix on specific classifiers
 
 %%%%% Plot the corr matrix between hctsa values of 2 stages of a classifier
@@ -794,9 +742,8 @@ load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/all
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/common_features_removed')   % For each of the 12 cells, only features commonly removed (shared by all datasets) for the corresponding dataset
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/specifically_removed_features')  % For each of the 12 cells, only features specifically removed in the corresponding dataset
 
-InsertCol = zeros(10,1);
 
-Subs = {'439'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once
 % (use y)
@@ -806,31 +753,15 @@ SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
 for D = 1:length(Subs)  
  
     sub = Subs{D};
-    
-    % Go to corresponding current folder
-    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
-    
-    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
-    % Per_correct_mean = iteration_svm_testing_accuracy_MEAN;  % if you want to plot top features from supervised clustering
-
-    % I'll insert both the commonly and specifically removed features for
-    % this dataset
-    spec_common = sort([val specifically_removed{1,y(D)}]);
-    
-    for x = 1:length(spec_common)
-
-        Part1 = Per_correct_mean(:,1:spec_common(x)-1);
-        Part2 = [InsertCol Per_correct_mean(:,spec_common(x):end)];
-        Per_correct_mean = ([Part1 Part2]);
-
-    end
-    
-    % Store
-    Per_correct_mean_D{D} = Per_correct_mean;
+       
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D')
     
 end
 
+Per_correct_mean = Per_correct_mean_D{1,y};
+
 % Load Data
+cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
 load HCTSA.mat
 
 % Get top features per classifier
@@ -860,7 +791,7 @@ wake = 0; N1 = 1; N2 = 3; N3 = 3; rem = 5;
 CLASSIFIER = {[wake,N1] [wake,N2] [wake,N3] [wake,rem] [N1,N2] [N1,N3] [N1,rem] [N2,N3] [N2,rem] [N3,rem]};
 
 % Which classifier do we want to plot?
-ClNum = 10;  % Wake vs N1
+ClNum = 3;  
 Classif = Top_40{1,ClNum};  % Get the top features of the chosen classifier
 
 % hctsa values of this classif
@@ -880,8 +811,9 @@ op_ind = cell2mat(op_ind);
 
 % Compute correlations based on hctsa responses
 DataMat = DataMat';
-Dij = BF_pdist(TS_DataMat(DataMat,op_ind)','abscorr');    % Only EEG channels that are epochs of the stages
-% Dij = BF_pdist(TS_DataMat(1:1374,op_ind)','abscorr');    % all EEG channels
+EEGonly = 1:length(TimeSeries)/7;
+% Dij = BF_pdist(TS_DataMat(DataMat,op_ind)','abscorr');    % Only EEG channels that are epochs of the stages
+Dij = BF_pdist(TS_DataMat(EEGonly,op_ind)','abscorr');    % all EEG channels
 
 % Dij = BF_pdist(TS_DataMat(1:EEGonly,op_ind)','abscorr');   
 
@@ -892,7 +824,7 @@ clusterThreshold = 0.2; % threshold at which split into clusters
 Top_mean = Classif(:,4)';  % Change it for later in the Ylabels section
 YLabel = [];
 for i = 1:length(Top_ID)
-    YLabel = [YLabel {sprintf('[%s] %s (%1.1f%%)',Top_key{i},Top_name{i},Top_mean{i})}];
+    YLabel = [YLabel {sprintf('[%s] %s (%1.1f%%)',Classif{i,2},Classif{i,1},Classif{i,4})}];
 end
 
 % Plot
@@ -945,10 +877,11 @@ Classif = Top_40{1,ClNum};  % Get the top features of the chosen classifier
 
 %%%% Now get the hctsa values averaged over all datasets
 
-Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once (use y)
-SUB = {'001','005','439','458','596','748','749','752','604','807','821'};
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'
+    };
 [~,y] = ismember(Subs,SUB);
 
 for D = 1:length(Subs)  
@@ -974,7 +907,7 @@ for x = 1:length(DataMat)
 end
 
 % Average the DataMat files
-StackedDataMat = cat(3,DataMat{1,1},DataMat{1,2},DataMat{1,3},DataMat{1,4},DataMat{1,5},DataMat{1,6},DataMat{1,7},DataMat{1,8},DataMat{1,9},DataMat{1,10},DataMat{1,11});
+StackedDataMat = cat(3,DataMat{1,1},DataMat{1,2},DataMat{1,3},DataMat{1,4},DataMat{1,5},DataMat{1,6},DataMat{1,7},DataMat{1,8},DataMat{1,9},DataMat{1,10},DataMat{1,11},DataMat{1,12});
 AveragedDataMat = mean(StackedDataMat,3);
 
 %%%%%%%% Plot the correlation matrix
@@ -1052,10 +985,9 @@ for D = 1:length(Subs)
 end
 
 
-Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
-% for D = 1:length(Per_correct_mean_D)
-for D = 1:10
+for D = 1:12
     
     sub = Subs{D};
    
@@ -1090,11 +1022,11 @@ end
 
 % load Matrix with TopFeat for each classifier and dataset
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Top_Feat_Data_Class')  % all specifically removed featured across datasets (combined ('unique'))
-whichClassif = 2;
+whichClassif = 6;
 
 
 % Get the top Feat ID of a classifier across datasets
-for D = 1:10  % not 12 because issue with 821 870
+for D = 1:12
     Top_Feat_Cl(:,D) = Top_40{1,D}{1,whichClassif}(:,3);   % 3 refers to 3rd col (Feat ID)
 end
 
@@ -1167,22 +1099,80 @@ end
     
 
 % Sort from feature generating highest to lowest accuracy across datasets
+%%% This is good to know whether some top features, which were considered
+%%% 'top' because they yielf the highest accuracy, are actually shared by
+%%% most datasets or not. 
 [~,Y] = sort(cell2mat(Top_Keywords(:,5)),'descend');
 Top_Keywords = Top_Keywords(Y,:);   %  % Features sorted based on their mean accuracy across datasets
+Top_ID = Top_Keywords(:,3); 
+
+%%% Most top 3 features are actually present in the top-40-ranking of
+%%% approximately 2 to 4 datasets. 
 
 
+%%% Highlight which top feature was selected from AveragedMatrix
 
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_incl_all_feat_removed(7749)_all_datasets')
 
-for D = 1:10  % not 12 because issue with 821 870
-    
-    % Row = each top feature, col = 1 dataset (for given classif)
-    Accu_across_D(:,D) = Top_40{1,D}{1,whichClassif}(:,4);   % 4 refers to 4th col (accuracy)
+% Load Data
+load HCTSA.mat
+
+% Get top features per classifier
+
+CodeString = {Operations.CodeString}.';  
+Keywords = {Operations.Keywords}.';
+YLabel = {Operations.ID}.';
+
+for C = 1:10
+
+    % Features reordering: from best to worst feature
+    [~,I] = sort(AveragedMatrix(C,:)','descend');
+    Top_Feat_aver = I(1:40);
+
+    % Get the name and keyword associated with these features
+    Top_name_aver(1:40) = CodeString(Top_Feat_aver,1);
+    Top_key_aver(1:40) = Keywords(Top_Feat_aver,1);
+    Top_ID_aver(1:40) = YLabel(Top_Feat_aver,1);
+    Top_mean_aver(1:40) = AveragedMatrix(C,Top_Feat_aver);
+
+    Top_40_aver{C} = [Top_name_aver' Top_key_aver' Top_ID_aver' num2cell(Top_mean_aver')];
+
 end
 
-% just to try something
-for D = 1:12
-    Mean(:,D) = Per_correct_mean_D{1,D}(:,2);
-end
-mean(Mean')
-    
-    
+% Top_features of corresponding classifier; used in AverageMatrix
+Top_aver = Top_40_aver{1,whichClassif};
+
+% Find how many top features used in AverageMatrix are 
+selected_feat_aver = find(ismember(cell2mat(Top_ID(1:40)),cell2mat(Top_aver(:,3))) == 1);
+% ID_selected = Top_aver(selected_feat_aver,3);
+
+% Plot distribution of top features across datasets
+Featmode = cell2mat(Top_Keywords(:,4));   % y axis bar(Featmode)
+Features = Top_Keywords(:,1);
+Top_ID = Top_Keywords(:,3); 
+
+h = bar(Featmode);
+
+ax = gca;
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:10:length(Features),'uni',0);
+xticks(1:10:length(Features))
+ylim([0 max(Featmode)+1])
+xlabel('Top 40 features across all datasets (ranked from feature yielding highest to lowest accuracy) ')
+ylabel('Number of datasets sharing the top feature')
+title('Distribution of top features across datasets')
+
+hold on
+ii = bar(Featmode(selected_feat_aver));  % Features selected by AveragedMatrix are in red
+set(ii,'FaceColor','r');
+hold off
+
+
+%%
+
+
+
+
+
+
+  
+ 
