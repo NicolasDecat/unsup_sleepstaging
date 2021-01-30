@@ -421,7 +421,7 @@ means = mean(AveragedMatrix);  % AveragedMatrix = 7749-long including special va
 AveragedMatrix = AveragedMatrix(:,I);
 
 % Get best X features 
-Top_Feat = I(1:10);   % Get top 10 best features
+Top_Feat = I(1:500);   % Get top 10 best features
 
 % Get the name and keyword associated with these features
 load('HCTSA.mat', 'Operations')   % Simply to get the list of 7749 features 
@@ -433,7 +433,7 @@ YLabel = {Operations.ID}.';
 Top_name = CodeString(Top_Feat,1);
 Top_key = Keywords(Top_Feat,1);
 Top_ID = YLabel(Top_Feat,1);
-Top_mean = mean(AveragedMatrix(:,1:10))';
+Top_mean = mean(AveragedMatrix(:,1:500))';
 
 Top_10 = [Top_name Top_key Top_ID num2cell(Top_mean)];
 
@@ -466,6 +466,24 @@ Top_mean(1:3) = AveragedMatrix(C,Top_Feat);
 Top_3{C} = [Top_name' Top_key' Top_ID' num2cell(Top_mean')];
 
 end
+
+
+%% Get top features EXCLUDING the special values features
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+
+load('HCTSA.mat', 'Operations')   % Simply to get the list of 7749 features 
+
+equi_Top_Feat = setdiff(1:7749,spec_and_common_feat); % get the equivalent ranking of top feat after special-value features removed
+Operations = Operations(equi_Top_Feat,:);  % get Operations of well-behaved features only
+
+CodeString = {Operations.CodeString}.';  
+Keywords = {Operations.Keywords}.';
+YLabel = {Operations.ID}.';
+
+%%% and replace AverageMatrix and Per_correct_mean_D by AverageMatrix_excl and Per_correct_mean_D_excl
 
 
 %% Line plot of accuracy from all features sorted from best to worst
@@ -1022,7 +1040,7 @@ end
 
 % load Matrix with TopFeat for each classifier and dataset
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Top_Feat_Data_Class')  % all specifically removed featured across datasets (combined ('unique'))
-whichClassif = 6;
+whichClassif = 1;
 
 
 % Get the top Feat ID of a classifier across datasets
@@ -1030,10 +1048,9 @@ for D = 1:12
     Top_Feat_Cl(:,D) = Top_40{1,D}{1,whichClassif}(:,3);   % 3 refers to 3rd col (Feat ID)
 end
 
-% Get the top Feat ID that repeat in all datasets
 Top_Feat_Cl = cell2mat(Top_Feat_Cl);
 
-% Get all elements and assign how much they repeat
+% Get all elements and assign the number of datasets that share a feature
 UniqueElem = unique(Top_Feat_Cl);       
 Ncount = histc(Top_Feat_Cl, UniqueElem);   
 
@@ -1057,29 +1074,7 @@ CodeString = {Operations.CodeString}.';
 
 Top_Keywords = Keywords(Top_Elem(:,1));
 Top_name = CodeString(Top_Elem(:,1));
-Top_Keywords = [Top_name Top_Keywords num2cell(Top_Elem)];
-
-
-% % Get % accuracy for each top feat (average of accuracy only from the
-% % datasets that have this feature as a top feature.)
-% Accu = [];
-% 
-% for ID = 1:length(UniqueElem)
-%     for D = 1:10
-%         if find(Top_Feat_Cl(:,D) == UniqueElem(ID))  % if top feat of Dataset 1 contains the corresponding top feat
-%             Idx = find(cell2mat(Top_40{1,D}{1,whichClassif}(:,3)) == UniqueElem(ID));
-%             Accu = [Accu Top_40{1,D}{1,whichClassif}(Idx,4)];
-%         end
-%     end
-%     
-%     Top_Keywords(ID,5) = {Accu};  
-%     Accu = [];
-% end
-
-% % Average the accuracies for each top feature
-% for A = 1:length(Top_Keywords)
-%     Top_Keywords(A,6) = num2cell(mean(cell2mat(Top_Keywords{A,5})));  % Features sorted based on how many datasets share it as top feature
-% end
+Top_Keywords = [Top_name Top_Keywords num2cell(Top_Elem)];   % This top features may include features that are top in some datasets and special-value features in other datasets (that's why mean accuracy can be super low (around 7% if 11 datasets produced special values))
 
 
 % Get % accuracy for each top feat (average of accuracy from ALL datasets)
@@ -1167,12 +1162,33 @@ set(ii,'FaceColor','r');
 hold off
 
 
-%%
 
+%%%%% Try something similar, but instead of plotting ind features; let's plot the top families
 
+% Run section above to get Top_Keywords
 
+% Get all Keywords....
+Keywords = Top_Keywords(:,2);
+UniqueKey = unique(Keywords);
+Key_acc = []; 
 
+% And find the index of features belonging to each keyword
+for U = 1:length(UniqueKey)
+    Key_idx{1,U} = find(strcmp(Keywords,UniqueKey(U)));
+    Key_acc = [Key_acc Top_Keywords(Key_idx{1,U},5)];    % The accuracies given by each feature of a family
+    Key_idx{2,U} = mean(cell2mat(Key_acc));              % The mean accuracy for each family
+    Key_idx{3,U} = length(Key_idx{1,U});
+    Key_acc = [];
+end
 
+UniqueKey_rep = cell2mat(Key_idx(3,:))';
+Mean_acc = cell2mat(Key_idx(2,:))';
+UniqueKey = [UniqueKey num2cell(Mean_acc) num2cell(UniqueKey_rep)];   % 3rd col = number of all different features belonging to that family and present in the top 40 features across  datasets
+
+% sort from family having highest to lower mean accuracy (across their
+% corresponding features)
+[~,I] = sort((Mean_acc)','descend');
+UniqueKey = UniqueKey(I,:);
 
   
  
