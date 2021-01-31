@@ -531,8 +531,7 @@ ylabel('Percentage Accuracy')
 % 
 % TimeSeries.Data = Data;
 
-
-%% Top 40 features for one Dataset (need to have the 7749-matrix)
+%% on getting Per_correct_mean_D
 
 % Copy pasted script to get 7749-matrix
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/All_unique_specificity_feat_combined')  % all specifically removed featured across datasets (combined ('unique'))
@@ -542,7 +541,7 @@ load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/spe
 
 InsertCol = zeros(10,1);
 
-Subs = {'005'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once
 % (use y)
@@ -576,10 +575,35 @@ for D = 1:length(Subs)
     
 end
 
-% Load Data
-load HCTSA.mat
 
-% Reorder features
+%% Top 40 features for one Dataset (only WB Features)
+
+% Matrices with only WB features
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+
+Subs = {'604'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+% This is just to obtain the right index when not all Subs are ran at once (use y)
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+[~,y] = ismember(Subs,SUB);
+
+for D = 1:length(Subs)  
+ 
+    sub = Subs{D};
+    
+    % Go to corresponding current folder
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+    
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+    % Per_correct_mean = iteration_svm_testing_accuracy_MEAN;  % if you want to plot top features from supervised clustering
+    
+end
+
+Per_correct_mean = Per_correct_mean_D_excl{y};
+
+% Reorder features: from yielding theg highest to lowest accuracy
 means = mean(Per_correct_mean);
 [~,I] = sort((means)','descend');
 Per_correct_mean = Per_correct_mean(:,I);
@@ -587,18 +611,26 @@ Per_correct_mean = Per_correct_mean(:,I);
 % Get the best 40 features
 Top_Feat = I(1:40);   
 
+% Load Data
+load HCTSA_N.mat
+
+% From Operations, take only well behaved features
+equi_Top_Feat = setdiff(Operations.ID,spec_and_common_feat); % remove SV features
+Idx_WB_Feat = find(ismember(Operations.ID, equi_Top_Feat));  % Index of WB features
+Operations = Operations(Idx_WB_Feat,:);                      % 'Operations' with WB features only
+
 % Get the name and keyword associated with these features
-CodeString = {Operations.CodeString}.';   % Get name
-Keywords = {Operations.Keywords}.';
-YLabel = {Operations.ID}.';
+CodeString = Operations.CodeString;  
+Keywords = Operations.Keywords;
+YLabel = Operations.ID;
 
 Top_name(1:40) = CodeString(Top_Feat,1);
 Top_key(1:40) = Keywords(Top_Feat,1);
 Top_ID(1:40) = YLabel(Top_Feat,1);
 
-Top_40 = [Top_name' Top_key' Top_ID'];
+Top_40 = [Top_name' Top_key' num2cell(Top_ID')];
 
-% Get mean over classifiers
+% Top_mean (mean over classifiers)
 for F = 1:length(Top_40)
     for C = 1:10
         Top_40_Acc(F,C) = mean(Per_correct_mean(C,F));
@@ -606,36 +638,40 @@ for F = 1:length(Top_40)
 end
 
 Top_mean = mean(Top_40_Acc');
-
 Top_40 = [Top_40 num2cell(Top_mean')];
 
 
-%%%%%%%% Plot the correlation matrix
+%%%%%%%% Plot the correlation matrix %%%%%%%%%
 
-%%% Run section above (Top 40 features with dataset 001)
 
 % Get pairwise similarity matrix
-numTopFeatures = 40;  % Number of top features
-op_ind = Top_ID'; % indices of top 40 features (among the 7k)
-
-op_ind = cell2mat(op_ind);
+numTopFeatures = 40;    % Number of top features
+op_ind = Top_ID';       % indices of top 40 features (among the 7k), used if HCTSA_N = false
 
 % Compute correlations based on hctsa responses
-EEGonly = size(TS_DataMat,1)/7;
-Dij = BF_pdist(TS_DataMat(1:EEGonly,op_ind)','abscorr');    % Only EEG channels
-% Dij = BF_pdist(TS_DataMat(1:EEGonly,op_ind)','abscorr');   
+HCTSA_N = true;   % true if want to plot normalized hctsa values; else plot HCTSA.mat values
 
+if HCTSA_N
+    EEGonly = 1:size(TS_DataMat,1)/7;
+    TS_DataMat = TS_DataMat(EEGonly,Idx_WB_Feat);      % Only WB features and EEG channels 
+    Dij = BF_pdist(TS_DataMat(:,Top_Feat)','abscorr');  
+else
+    load('HCTSA.mat', 'TS_DataMat')
+    EEGonly = 1:size(TS_DataMat,1)/7;
+    Dij = BF_pdist(TS_DataMat(EEGonly,op_ind)','abscorr');    
+end
+    
 distanceMetric = 'abscorr';
-clusterThreshold = 0.2; % threshold at which split into clusters
+clusterThreshold = 0.2;     % threshold at which split into clusters
 
 % Ylabels
-Top_mean = num2cell(mean(Top_40_Acc'));  % Change it for later in the Ylabels section
+Top_mean = num2cell(mean(Top_40_Acc'));  
 YLabel = [];
 for i = 1:length(Top_ID)
     YLabel = [YLabel {sprintf('[%s] %s (%1.1f%%)',Top_key{i},Top_name{i},Top_mean{i})}];
 end
 
-% Plot
+% Plot the correlation matrix
 [~,cluster_Groupi] = BF_ClusterDown(Dij,'clusterThreshold',clusterThreshold,...
                         'whatDistance',distanceMetric,...
                         'objectLabels',YLabel);
@@ -700,7 +736,7 @@ for D = 1:length(Subs)
     cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
     
     % Load TS_DataMat 
-    load('HCTSA.mat', 'TS_DataMat')   % Simply to get the list of 7749 features 
+    load('HCTSA.mat', 'TS_DataMat')    
     
     % Store
     DataMat{D} = TS_DataMat;
@@ -1189,6 +1225,122 @@ UniqueKey = [UniqueKey num2cell(Mean_acc) num2cell(UniqueKey_rep)];   % 3rd col 
 % corresponding features)
 [~,I] = sort((Mean_acc)','descend');
 UniqueKey = UniqueKey(I,:);
+
+
+%% Try on HCTSA_N TS_DataMat
+
+
+% Copy pasted script to get 7749-matrix
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/All_unique_specificity_feat_combined')  % all specifically removed featured across datasets (combined ('unique'))
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/allfeat_removed') % For each of the 12 cells, All features removed for the corresponding dataset) 
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/common_features_removed')   % For each of the 12 cells, only features commonly removed (shared by all datasets) for the corresponding dataset
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/specifically_removed_features')  % For each of the 12 cells, only features specifically removed in the corresponding dataset
+
+InsertCol = zeros(10,1);
+
+Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+% This is just to obtain the right index when not all Subs are ran at once
+% (use y)
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+[~,y] = ismember(Subs,SUB);
+
+for D = 1:length(Subs)  
+ 
+    sub = Subs{D};
+    
+    % Go to corresponding current folder
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+    
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+  
+    Per_correct_mean = Per_correct_mean_D_excl{D};
+    
+end
+
+% load AveragedMatrix without special value features, and the list of
+% special value features
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+
+load('HCTSA_N.mat', 'Operations')    
+
+% From Operations, take only well behaved features
+equi_Top_Feat = setdiff(Operations.ID,spec_and_common_feat); % get the equivalent ranking of top feat after special-value features removed
+
+Idx_WB_Feat = find(ismember(Operations.ID, equi_Top_Feat));  % Index of well-behaved features
+
+Operations = Operations(Idx_WB_Feat,:);  % get Operations of well-behaved features only
+
+CodeString = {Operations.CodeString}.';  
+Keywords = {Operations.Keywords}.';
+YLabel = {Operations.ID}.';
+
+
+% Reorder features
+means = mean(Per_correct_mean);
+[~,I] = sort((means)','descend');
+Per_correct_mean = Per_correct_mean(:,I);
+    
+% Get the best 40 features
+Top_Feat = I(1:40);   
+
+% Get the name and keyword associated with these features
+CodeString = Operations.CodeString;   % Get name
+Keywords = Operations.Keywords;
+YLabel = Operations.ID;
+
+Top_name(1:40) = CodeString(Top_Feat,1);
+Top_key(1:40) = Keywords(Top_Feat,1);
+Top_ID(1:40) = YLabel(Top_Feat,1);
+
+Top_40 = [Top_name' Top_key' num2cell(Top_ID')];
+
+% Get mean over classifiers
+for F = 1:length(Top_40)
+    for C = 1:10
+        Top_40_Acc(F,C) = mean(Per_correct_mean(C,F));
+    end
+end
+
+Top_mean = mean(Top_40_Acc');
+
+Top_40 = [Top_40 num2cell(Top_mean')];
+
+
+%%%%%%%% Plot the correlation matrix
+
+%%% Run section above (Top 40 features with dataset 001)
+
+% Get pairwise similarity matrix
+numTopFeatures = 40;  % Number of top features
+op_ind = Top_ID'; % indices of top 40 features (among the 7k)
+
+% Compute correlations based on hctsa responses
+load('HCTSA_N.mat', 'TS_DataMat')
+EEGonly = 1:size(TS_DataMat,1)/7;    % Only EEG channels
+TS_DataMat = TS_DataMat(EEGonly,Idx_WB_Feat);   % Only WB features 
+
+Dij = BF_pdist(TS_DataMat(:,Top_Feat)','abscorr');    
+% Dij = BF_pdist(TS_DataMat(1:EEGonly,op_ind)','abscorr');   
+
+distanceMetric = 'abscorr';
+clusterThreshold = 0.2; % threshold at which split into clusters
+
+% Ylabels
+Top_mean = num2cell(mean(Top_40_Acc'));  % Change it for later in the Ylabels section
+YLabel = [];
+for i = 1:length(Top_ID)
+    YLabel = [YLabel {sprintf('[%s] %s (%1.1f%%)',Top_key{i},Top_name{i},Top_mean{i})}];
+end
+
+% Plot
+[~,cluster_Groupi] = BF_ClusterDown(Dij,'clusterThreshold',clusterThreshold,...
+                        'whatDistance',distanceMetric,...
+                        'objectLabels',YLabel);
+title(sprintf('Dependencies between %u top features (organized into %u clusters)',...
+                        numTopFeatures,length(cluster_Groupi)))
+                    
 
   
  
