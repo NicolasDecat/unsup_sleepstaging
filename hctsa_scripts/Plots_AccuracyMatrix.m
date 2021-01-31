@@ -662,7 +662,7 @@ else
 end
     
 distanceMetric = 'abscorr';
-clusterThreshold = 0.2;     % threshold at which split into clusters
+clusterThreshold = 0.2;      % threshold at which split into clusters
 
 % Ylabels
 Top_mean = num2cell(mean(Top_40_Acc'));  
