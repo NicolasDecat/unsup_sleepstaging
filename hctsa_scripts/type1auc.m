@@ -43,11 +43,10 @@ for Nit = 1:size(scoredTest,1)   % For each iteration Nf
         [X,Y,T,stgAUC(col,1)] = perfcurve(origlabels,clusterdecision,posclass);
 
         %Save
-        Iteration(col,1) = Nit;   % Number of iterations                                         % Col 1: number of iterations
-        Dataset(col,1) = convertCharsToStrings(sub);                                            % Col 2: Dataset ID
+        Iteration(col,1) = Nit;                                             % Col 1: number of iterations
+        Dataset(col,1) = convertCharsToStrings(sub);                        % Col 2: Dataset ID
         NumChannels(col,1) = NUM_CHANNELS_TO_RUN;                           % Col 3: Number of channel
         Sleep_stage(col,1) = idx(col_idx);                                  % Col 5: stage for ind AUC
-        %Testing_accuracy(col,1) = 1;
         Testing_accuracy(col,1) = ((sum((scoredTest(Nit,:) == predictTest(Nit,:))'))/size(scoredTest, 2))';
         AUC(col,1) = stgAUC(col);                                           % Col 6: AUC                                  % Col 8: predict test (for conf matrix)
         col = col+1;
@@ -55,16 +54,12 @@ for Nit = 1:size(scoredTest,1)   % For each iteration Nf
 
     end   
     
- 
-
-
-    
 end
 
 SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,AUC);
 
 fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC';
-% save(fullfile(fpath,'iterdata.mat'),'SummaryTable','col')  % Save both variables in AUC folder
+save(fullfile(fpath,'iterdata.mat'),'SummaryTable','col')  % Save both variables in AUC folder
 
 % Average of all AUC
 % AUC(6,1) = zeros(1);

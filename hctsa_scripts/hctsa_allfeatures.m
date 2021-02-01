@@ -4,12 +4,11 @@
 %%%%%%% calculate the one-vs-all type 1 AUC
 
 
-
 if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat') == 1
     delete '/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat'
 end
 
-Subs = {'001'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for save
 NumIter = compose('%diter',(1:100)); % used for save
 
@@ -21,13 +20,13 @@ for D = 1:length(Subs)
     % File selection
     WHICH_DATA = str2num(sprintf('%s',sub)); 
 
-    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) % get new pwd (current folder)
-    HCTSA_DIR = sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub);  % get directory
-
+    % go to current folder
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+    HCTSA_DIR = sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub);  
     ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s/ccshs_1800%s_annot.mat',sub,sub));
 
     
-    for v = 1:1   % For each channel condition
+    for v = 1:3   % For each channel condition
 
         % Configuration
         addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
@@ -50,7 +49,7 @@ for D = 1:length(Subs)
         %% Run cross-validation code
         % Change the number of operations
         set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying (sometimes it could be lots of figures!)
-        exps = EXPS_TO_RUN; % This allow us to selectively choose which experiment to run
+        exps = EXPS_TO_RUN; 
         statistics = [];
 
         save_stats_columns = {'Type', 'Iteration', 'TrainingAccuracy', 'TestingAccuracy', 'NumberOfFeatures','NumberOfChannels'};
@@ -115,8 +114,8 @@ for D = 1:length(Subs)
         iteration=1:size(statsOut.scoredTrain, 1);
         iteration_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.predictTrain)'))/size(statsOut.scoredTrain, 2))';
         iteration_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.predictTest)'))/size(statsOut.scoredTest, 2))';
-        iteration_svm_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.svmPredictTrain)'))/size(statsOut.scoredTrain, 2))';
-        iteration_svm_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.svmPredictTest)'))/size(statsOut.scoredTest, 2))';
+%         iteration_svm_training_accuracy = ((sum((statsOut.scoredTrain == statsOut.svmPredictTrain)'))/size(statsOut.scoredTrain, 2))';
+%         iteration_svm_testing_accuracy = ((sum((statsOut.scoredTest == statsOut.svmPredictTest)'))/size(statsOut.scoredTest, 2))';
         num_of_features=zeros(size(statsOut.scoredTrain, 1), 1);
         num_of_features(:) = unique(statsOut.totalFeatures);
         num_of_channels=zeros(size(statsOut.scoredTrain, 1), 1);
@@ -128,10 +127,10 @@ for D = 1:length(Subs)
         row = [types, iteration', iteration_training_accuracy, iteration_testing_accuracy, num_of_features, num_of_channels];
         save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
 
-        types=strings(size(statsOut.scoredTrain, 1), 1);
-        types(:)=strcat('Supervised_', conf);
-        row = [types, iteration', iteration_svm_training_accuracy, iteration_svm_testing_accuracy, num_of_features, num_of_channels];
-        save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
+%         types=strings(size(statsOut.scoredTrain, 1), 1);
+%         types(:)=strcat('Supervised_', conf);
+%         row = [types, iteration', iteration_svm_training_accuracy, iteration_svm_testing_accuracy, num_of_features, num_of_channels];
+%         save_stats = [save_stats; array2table(row, 'VariableNames', save_stats_columns)];
 
         % end
 
@@ -168,12 +167,7 @@ for D = 1:length(Subs)
             accuracy_test = [accuracy_test, statistics(l).output.testCorrect];
             complexity = [complexity, statistics(l).complexity];
         end
-
-
-    D
-    v
-
-    
+  
 
    end
 
