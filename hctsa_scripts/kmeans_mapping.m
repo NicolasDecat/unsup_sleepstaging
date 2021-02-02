@@ -253,7 +253,7 @@ predictTest = stats.predictTest;
 %clearvars -except Output datamat feat_id features k complexity CM_SAVE_DIR exps statsOut
 
 %% Run AUC
-   run('type1auc.m')
+   run('type1aucc.m')
 
 
 end

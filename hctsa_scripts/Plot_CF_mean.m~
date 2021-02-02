@@ -89,6 +89,7 @@ cmap(:,end+1:end+n2)=[linspace(c2(1),c3(1),n2);linspace(c2(2),c3(2),n2);linspace
 colormap(cmap')
 colorbar
 
-fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/ConfusionMatrix';
-saveas(gca,fullfile(fpath,sprintf('CF_all_%sch',num2str(CH))),'jpeg')
+fpath = '/Users/nico/Documents/HCTSA/Analysis/CF_v2(10iter)/Average CF datasets v2';
+saveas(gca,fullfile(fpath,'CF_all_allch'),'jpeg')
+% saveas(gca,fullfile(fpath,sprintf('CF_%s_%s(%s)', sub, chan, Nit)),'jpeg')
 

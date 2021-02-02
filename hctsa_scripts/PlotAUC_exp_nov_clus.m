@@ -10,8 +10,8 @@ close all
 % load('/Users/tand0009/Data/HCTSA_LD/FigJasmine/RawData.mat')
 % load('/Users/tand0009/Data/HCTSA_LD/FigJasmine/Psychophysics accuracy CCSHS.mat')
 % load('/Users/tand0009/Data/HCTSA_LD/PSG/behav/type1auc_algorithm_table.mat')
-load('/Users/nico/Documents/HCTSA/Analysis/AUC/type1auc_human_scorers_table.mat');
-load('/Users/nico/Documents/HCTSA/Analysis/AUC/Table_AUC_10iter_v2.mat');
+load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/type1auc_human_scorers_table.mat');
+load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/Table_AUC_100.mat');
 
 path_raincloud='/Users/nico/Documents/MATLAB/hctsa-master/RainCloudPlots-master/';
 addpath(genpath(path_raincloud));
@@ -27,16 +27,16 @@ cl(2, :) = cb(1, :);
 cl(3, :) = cb(2, :);
 
 
-% To adapt my v2 data
-SummaryTable.Dataset = num2str(SummaryTable.Dataset);
-for b = 1:150
-    SummaryTable.Dataset(b,:) = '001';
+% To adapt my data
+Table_AUC_100.Dataset = num2str(Table_AUC_100.Dataset);
+for b = 1:1500
+    Table_AUC_100.Dataset(b,:) = '001';
 end
-for bb = 151:300
-    SummaryTable.Dataset(bb,:) = '005';
+for bb = 1510:3000
+    Table_AUC_100.Dataset(bb,:) = '005';
 end
    
-type1auc_algorithm_table=SummaryTable;
+type1auc_algorithm_table=Table_AUC_100;   % Now, Dataset "1" and "2" are now "001 and "005"
 
 
 % read into cell array of the appropriate dimensions
@@ -184,8 +184,9 @@ for ncond=1:2
 %    h4{1,1}.EdgeColor= cb(5,:);
 end
 
-fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_figures/v3';
-saveas(gca,fullfile(fpath,sprintf('CEN_all')),'jpeg')
+fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Figures';
+% saveas(gca,fullfile(fpath,sprintf('CEN_all')),'jpeg')
+
 
 
 % export_fig('thisfigure.png','-r 30')

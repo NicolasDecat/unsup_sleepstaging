@@ -1,8 +1,8 @@
 
 %% Type 1 AUC hctsa
  
-if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat') == 1
-    load('/Users/nico/Documents/HCTSA/Analysis/AUC/iterdata.mat')
+if isfile('/Users/nico/Documents/HCTSA/Analysis/iterdata.mat') == 1
+    load('/Users/nico/Documents/HCTSA/Analysis/iterdata.mat')
     Iteration = table2array(SummaryTable(:,1));
     NumChannels = table2array(SummaryTable(:,2));                  
     Dataset = table2array(SummaryTable(:,3));                                
@@ -58,7 +58,7 @@ end
 
 SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,AUC);
 
-fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC';
+fpath = '/Users/nico/Documents/HCTSA/Analysis';
 save(fullfile(fpath,'iterdata.mat'),'SummaryTable','col')  % Save both variables in AUC folder
 
 % Average of all AUC

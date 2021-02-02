@@ -11,8 +11,8 @@ close all
 % load('/Users/tand0009/Data/HCTSA_LD/FigJasmine/RawData.mat')
 % load('/Users/tand0009/Data/HCTSA_LD/FigJasmine/Psychophysics accuracy CCSHS.mat')
 % load('/Users/tand0009/Data/HCTSA_LD/PSG/behav/type1auc_algorithm_table.mat')
-load('/Users/nico/Documents/HCTSA/Analysis/AUC/type1auc_human_scorers_table.mat')
-load('/Users/nico/Documents/HCTSA/Analysis/AUC/Table_AUC_10iter_v3.mat')
+load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/type1auc_human_scorers_table.mat');
+load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/Table_AUC_100.mat');
 
 path_raincloud='/Users/nico/Documents/MATLAB/hctsa-master/RainCloudPlots-master/';
 addpath(genpath(path_raincloud));
@@ -29,16 +29,17 @@ cl(3, :) = cb(2, :);
 
 %% 
 
-% To adapt my v2 data
-SummaryTable.Dataset = num2str(SummaryTable.Dataset);
-for b = 1:150
-    SummaryTable.Dataset(b,:) = '001';
+% To adapt my data
+Table_AUC_100.Dataset = num2str(Table_AUC_100.Dataset);
+for b = 1:1500
+    Table_AUC_100.Dataset(b,:) = '001';
 end
-for bb = 151:300
-    SummaryTable.Dataset(bb,:) = '005';
+for bb = 1510:3000
+    Table_AUC_100.Dataset(bb,:) = '005';
 end
    
-type1auc_algorithm_table=SummaryTable;
+type1auc_algorithm_table=Table_AUC_100;   % Now, Dataset "1" and "2" are now "001 and "005"
+
 
 Stage = {'Wake' 'N1' 'N2' 'N3' 'REM'};
 STG_algo = [0 1 2 3 5];
@@ -128,28 +129,28 @@ set(gcf,'Position',[1   117   400   680]);
 for ncond=1:2
     subplot(2, 1, ncond); format_fig;
     
-%     h1 = raincloud_plot(data{ncond,1}, 'box_on', 1, 'color', cb(7,:), 'alpha', 0.5,...
-%         'box_dodge', 1, 'box_dodge_amount', .15, 'dot_dodge_amount', .15, 'box_col_match', 0,'band_width',.04);
-%     scatter(h1{2}.XData(dataset{ncond,1}==1),h1{2}.YData(dataset{ncond,1}==1),'Marker','o','MarkerFaceColor',cb(7,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
-%     scatter(h1{2}.XData(dataset{ncond,1}==5),h1{2}.YData(dataset{ncond,1}==5),'Marker','d','MarkerFaceColor',cb(7,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
-%     
-%     h2 = raincloud_plot(data{ncond,2}, 'box_on', 1, 'color', cb(6,:), 'alpha', 0.5,...
-%         'box_dodge', 1, 'box_dodge_amount', .35, 'dot_dodge_amount', .35, 'box_col_match', 0,'band_width',.04);
-%     scatter(h2{2}.XData(dataset{ncond,2}==1),h2{2}.YData(dataset{ncond,2}==1),'Marker','o','MarkerFaceColor',cb(6,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
-%     scatter(h2{2}.XData(dataset{ncond,2}==5),h2{2}.YData(dataset{ncond,2}==5),'Marker','d','MarkerFaceColor',cb(6,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
+    h1 = raincloud_plot(data{ncond,1}, 'box_on', 1, 'color', cb(7,:), 'alpha', 0.5,...
+        'box_dodge', 1, 'box_dodge_amount', .15, 'dot_dodge_amount', .15, 'box_col_match', 0,'band_width',.04);
+    scatter(h1{2}.XData(dataset{ncond,1}==1),h1{2}.YData(dataset{ncond,1}==1),'Marker','o','MarkerFaceColor',cb(7,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
+    scatter(h1{2}.XData(dataset{ncond,1}==5),h1{2}.YData(dataset{ncond,1}==5),'Marker','d','MarkerFaceColor',cb(7,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
+    
+    h2 = raincloud_plot(data{ncond,2}, 'box_on', 1, 'color', cb(6,:), 'alpha', 0.5,...
+        'box_dodge', 1, 'box_dodge_amount', .35, 'dot_dodge_amount', .35, 'box_col_match', 0,'band_width',.04);
+    scatter(h2{2}.XData(dataset{ncond,2}==1),h2{2}.YData(dataset{ncond,2}==1),'Marker','o','MarkerFaceColor',cb(6,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
+    scatter(h2{2}.XData(dataset{ncond,2}==5),h2{2}.YData(dataset{ncond,2}==5),'Marker','d','MarkerFaceColor',cb(6,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
     
     h3 = raincloud_plot(data{ncond,3}, 'box_on', 1, 'color', cb(5,:), 'alpha', 0.5,...
         'box_dodge', 1, 'box_dodge_amount', .55, 'dot_dodge_amount', .55,...
         'box_col_match', 0,'band_width',.04);
     scatter(h3{2}.XData(3:end),h3{2}.YData(3:end),'SizeData',72,'Marker','s','MarkerFaceColor',cb(5,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',2,'SizeData',100,'MarkerFaceAlpha',0.7);
-%     scatter(h3{2}.XData(1),h3{2}.YData(1),'SizeData',72,'Marker','o','MarkerFaceColor',cb(5,:),'MarkerEdgeColor','r','LineWidth',2,'SizeData',100,'MarkerFaceAlpha',0.7);
-%     scatter(h3{2}.XData(2),h3{2}.YData(2),'SizeData',72,'Marker','d','MarkerFaceColor',cb(5,:),'MarkerEdgeColor','r','LineWidth',2,'SizeData',100,'MarkerFaceAlpha',0.7);
+    scatter(h3{2}.XData(1),h3{2}.YData(1),'SizeData',72,'Marker','o','MarkerFaceColor',cb(5,:),'MarkerEdgeColor','r','LineWidth',2,'SizeData',100,'MarkerFaceAlpha',0.7);
+    scatter(h3{2}.XData(2),h3{2}.YData(2),'SizeData',72,'Marker','d','MarkerFaceColor',cb(5,:),'MarkerEdgeColor','r','LineWidth',2,'SizeData',100,'MarkerFaceAlpha',0.7);
 
     set(gca,'XLim', [0.35 1], 'YLim', ylim.*[.8 1.6]);
     line([1 1]*.5,ylim,'Color',[1 1 1]*0.7,'LineStyle','--','LineWidth',2)
 
-%     set(h1{2},'SizeData',54)
-%     set(h2{2},'SizeData',54)
+    set(h1{2},'SizeData',54)
+    set(h2{2},'SizeData',54)
     set(h3{2},'SizeData',54)
     % xlabel('Type 1 - AUC')
     box off
@@ -161,11 +162,17 @@ for ncond=1:2
     h(2) = plot(NaN,NaN,'dk','MarkerEdgeColor','k','LineWidth',2);
     h(3) = plot(NaN,NaN,'sk','MarkerEdgeColor','k','LineWidth',2);
     
+    % Cluster alone
     if ncond == 1
     legend([h3{1}], {'Cluster'},'Location','northwest','FontSize',10);
     title(sprintf('%s',stg))
     end
   
+    % CEN
+    if ncond == 1
+    legend([h1{1} h2{1} h3{1}], {'Novices','Experts','Cluster'},'Location','northwest','FontSize',10);
+    title(sprintf('%s',stg))
+    end
     
     % xlabel('Type 1 - AUC')
     if ncond == 1
@@ -178,7 +185,7 @@ for ncond=1:2
    
 end
 
-fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC/AUC_figures/v3/cluster_alone';
+fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Figures';
 saveas(gca,fullfile(fpath,sprintf('CEN_%s stage',stg)),'jpeg')
 
 end
