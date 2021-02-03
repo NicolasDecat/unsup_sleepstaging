@@ -380,8 +380,6 @@ colorbar
 
 %% Plots unsupervised / supervised / per-feature / all-feature accuracies
 
-%%% Line plots
-
 
 
 

@@ -2,8 +2,8 @@
 
 %% Type 1 AUC hctsa for each feature: one-vs-one paired classification
 
-if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat') == 1
-    load('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat')
+if isfile('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Per_correct_mean.mat') == 1
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Per_correct_mean.mat')
 end
 
 IsStage1 = [];
@@ -111,7 +111,7 @@ end
 Per_correct_mean(:,FF) = mean([Per_correct_stage1_mean;Per_correct_stage2_mean])';
  
 % % Save
-fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC';
+fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/';
 save(fullfile(fpath,'Per_correct_mean.mat'),'Per_correct_mean')  % Save all columns in AUC folder
 
 

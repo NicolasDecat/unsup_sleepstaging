@@ -7,17 +7,19 @@
 
 %% Computing kmeans clustering and type1 auc for each feature
 
-% Making sure no file remains in folder
-if isfile('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat') == 1
-    delete '/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat'
-end
+tic
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'005'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
 
 for D = 1:length(Subs)   % For each dataset
+    
+    % Making sure no file remains in folder
+    if isfile('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Per_correct_mean.mat') == 1
+        delete '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Per_correct_mean.mat'
+    end
     
     sub = Subs{D};
 
@@ -51,7 +53,7 @@ for D = 1:length(Subs)   % For each dataset
         
             %% Run cross-validation code
             
-            set(0,'DefaultFigureVisible','on') % Remove this to disable the figure displaying 
+            set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying 
             exps = EXPS_TO_RUN; 
             statistics = [];
 
@@ -81,7 +83,7 @@ for D = 1:length(Subs)   % For each dataset
             SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
 
 
-            [testMat Nf testTS] = kmeans_mapping_eachfeature_crossval(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
+            [testMat Nf testTS Per_correct_mean] = kmeans_mapping_eachfeature_crossval(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
 
             % [~, statsOut.complexity]=size(hctsa_ops);
             
@@ -205,16 +207,15 @@ for D = 1:length(Subs)   % For each dataset
 % %     Signaldisagr = TimeSeries.Data(EpochIDdisagr,:);
 
 
-    load('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat')
-    % load('/Users/nico/Documents/HCTSA/Analysis/AUC/Matrices/crossvalAUC/Per_correct_mean(Dataset 001)')
+    % load('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat')
 
 
     %% Plot Data matrix
 
     figure;
     imagesc(Per_correct_mean)
-    % title(sprintf('Classification performance per feature (Dataset %s)',sub));
-    title('Classification performance per feature (Dataset 001)');
+    title(sprintf('Classification performance per feature (Dataset %s)',sub));
+    % title('Classification performance per feature (Dataset 001)');
 
     ax = gca;
     ax.XTick = 1:500:size(Operations,1);
@@ -230,16 +231,16 @@ for D = 1:length(Subs)   % For each dataset
     colorbar
 
 %     % Save figure
-%     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Figure_accuracy_per_feat';
-%     saveas(gca,fullfile(fpath,sprintf('Plot_AUCperFeature_%s_crossval',sub)),'fig')
-%     saveas(gca,fullfile(fpath,sprintf('Plot_AUCperFeature_%s_crossval',sub)),'jpg')
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Figure_accuracy_per_feat';
+    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'fig')
+    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'jpg')
 % 
-%     % Save matrix
-%     gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat';
-%     save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean') 
-
+     % Save matrix
+     gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat';
+     save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean') 
 
 
 end
 
+toc
 
