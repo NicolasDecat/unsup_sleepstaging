@@ -380,8 +380,182 @@ colorbar
 
 %% Plots unsupervised / supervised / per-feature / all-feature accuracies
 
-%%% Line plots
+%% Line plots %%%%%%%%%%%%%%%%%%
+
+% Accuracies dataset 001
+uns_all = [70.7 75.1 90.6 69.7 62.4 93.5 58.8 88.9 62.3 93.1]';
+uns_one = [54.0 56.1 63.6 56.0 57.7 68.8 54.1 61.8 53.8 68.2]';
+sup_all = [89.1 92.3 98.2 95.5 86.4 99.5 82.5 93.2 84.1 99.1]';
+sup_one = [58.4 59.9 69.7 59.8 57.5 69.7 54.4 64.0 55.6 66.4]';
+
+% Line plot
+figure;
+h = plot(uns_all,1:10,'LineWidth',1.3,'Color',[0.3010 0.7450 0.9330]);  % light blue
+hold on
+i = plot(sup_all,1:10,'LineWidth',1.3,'Color',[0 0.4470 0.7410]);  % dark blue
+hold on
+j = plot(uns_one,1:10,'LineWidth',1.3,'Color',[0.9350 0.580 0.3840]);  % light red
+hold on
+k = plot(sup_one,1:10,'LineWidth',1.3,'Color',[0.6350 0.0780 0.1840]);  % dark red
+hold off
+
+legend('Unsup - using all features','SVM - using all features','Unsup - one feature at a time','SVM - one feature at a time','Location','eastoutside')
+xlabel('Accuracy')
+ylabel('Classifiers')
+
+ax = gca;
+ax.YTick = 1:10;
+ax.YTickLabels = {'N3 vs REM','N2 vs REM','N2 vs N3','N1 vs REM','N1 vs N3','N1 vs N2','W vs REM','W vs N3','W vs N2','W vs N1'};
 
 
+%% Rainbow plots
+ 
+% Load data
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean(Dataset 001)')
+
+% Acc per feature, Wake vs N3 classifier  
+Data{1,1} = Per_correct_mean(3,:); 
+% Acc per feature, Wake vs N1 classifier 
+Data{2,1} = Per_correct_mean(1,:); 
+% Acc per feature, REM vs N3 classifier  
+Data{3,1} = Per_correct_mean(10,:); 
+% Acc per feature, REM vs N2 classifier 
+Data{4,1} = Per_correct_mean(9,:); 
+
+
+%%%% Plot Rainbow graph
+
+% Set colors
+[cb] = cbrewer('qual', 'Set3', 12, 'pchip');
+cl(1, :) = cb(4, :);
+cl(2, :) = cb(1, :);
+cl(3, :) = cb(2, :);
+
+figure; 
+format_fig;
+
+%%%%%% Left plot: W vs N1
+
+subplot(2,2,1);  
+
+% Wake vs N1: accuracy per feature
+l1 = raincloud_plot(Data{2,1}, 'box_on', 1, 'color', cb(7,:), 'alpha', 0.5,...    
+    'box_dodge', 1, 'box_dodge_amount', .15, 'dot_dodge_amount', .15, 'box_col_match', 0);
+
+yl = ylim;  % used later to get default max on y axis
+
+hold on
+m = bar(70.7,yl(2));   % Bar for all-features accuracy (unsup)
+hold on 
+n = bar(89.1,yl(2));   % Bar for all-features accuracy (sup)
+hold on
+mean2 = mean(Data{2,1});
+b = xline(mean2,'Color',cb(7,:),'LineWidth',2.5);
+
+title('Wake vs N1')
+o = line([50 50],[yl(1) yl(2)],'Color',[1 1 1]*0.7,'LineStyle','--','LineWidth',2);  % Line for 50% accuracy
+ylim([-0.015 yl(2)]);
+legend([l1{1} b m(1) n(1) o(1)], {'Accuracy per feature (unsup)','Mean accuracy per feature (unsup)','Accuracy all features (unsup)','Accuracy all features (SVM)','50% accuracy'},'Location','northwest','FontSize',10);
+xlabel('Accuracy')
+ylabel('Distribution')
+
+%%%%% Right plot: Wake vs N3
+
+subplot(2,2,2);  
+
+% Wake vs N3: accuracy per feature
+h1 = raincloud_plot(Data{1,1}, 'box_on', 1, 'color', cb(7,:), 'alpha', 0.5,...    
+    'box_dodge', 1, 'box_dodge_amount', .15, 'dot_dodge_amount', .15, 'box_col_match', 0);
+
+yl = ylim;  % used later to get default max on y axis
+
+hold on
+i = bar(90.6,yl(2));   % Bar for all-features accuracy (unsup)
+hold on 
+j = bar(98.2,yl(2));   % Bar for all-features accuracy (sup)
+hold on
+mean1 = mean(Data{1,1});
+a = xline(mean1,'Color',cb(7,:),'LineWidth',2.5);
+ylim([0 1])
+
+title('Wake vs N3')
+k = line([50 50],[yl(1) yl(2)],'Color',[1 1 1]*0.7,'LineStyle','--','LineWidth',2);  % Line for 50% accuracy
+ylim([-0.009 yl(2)]);
+xlabel('Accuracy')
+ylabel('Distribution')
+
+
+%%%%%% Bottom Left plot: N2 vs REM
+
+subplot(2,2,3);  
+
+% Wake vs N1: accuracy per feature
+ll1 = raincloud_plot(Data{4,1}, 'box_on', 1, 'color', cb(7,:), 'alpha', 0.5,...    
+    'box_dodge', 1, 'box_dodge_amount', .15, 'dot_dodge_amount', .15, 'box_col_match', 0);
+
+yl = ylim;  % used later to get default max on y axis
+
+hold on
+mm = bar(62.3,yl(2));   % Bar for all-features accuracy (unsup)
+hold on 
+nn = bar(84.1,yl(2));   % Bar for all-features accuracy (sup)
+hold on
+mean4 = mean(Data{4,1});
+c = xline(mean4,'Color',cb(7,:),'LineWidth',2.5);
+
+title('REM vs N2')
+oo = line([50 50],[yl(1) yl(2)],'Color',[1 1 1]*0.7,'LineStyle','--','LineWidth',2);  % Line for 50% accuracy
+ylim([-0.02 yl(2)]);
+xlabel('Accuracy')
+ylabel('Distribution')
+
+%%%%% Bottom Right plot: REM vs N3
+
+subplot(2,2,4);   
+
+% REM vs N3: accuracy per feature
+hh1 = raincloud_plot(Data{3,1}, 'box_on', 1, 'color', cb(7,:), 'alpha', 0.5,...    
+    'box_dodge', 1, 'box_dodge_amount', .15, 'dot_dodge_amount', .15, 'box_col_match', 0);
+
+yl = ylim;  % used later to get default max on y axis
+
+hold on
+ii = bar(93.1,yl(2));   % Bar for all-features accuracy (unsup)
+hold on 
+jj = bar(99.1,yl(2));   % Bar for all-features accuracy (sup)
+hold on
+mean3 = mean(Data{3,1});
+d = xline(mean3,'Color',cb(7,:),'LineWidth',2.5);
+
+title('REM vs N3')
+kk = line([50 50],[yl(1) yl(2)],'Color',[1 1 1]*0.7,'LineStyle','--','LineWidth',2);  % Line for 50% accuracy
+ylim([-0.008 yl(2)]);
+xlabel('Accuracy')
+ylabel('Distribution')
+
+
+%% Plot PCA
+
+% Labels
+load('ccshs_1800001_annot.mat','sleepstage')
+labels = sleepstage;
+
+load('HCTSA_N.mat')
+
+% EEG only
+TimeSeries = TimeSeries(1:length(sleepstage),:);
+TS_DataMat = TS_DataMat(1:length(sleepstage),:);
+
+% t_SNE
+mappedX = tsne(TS_DataMat);
+
+% Plot results
+figure;
+% p = gscatter(mappedX(:,1), mappedX(:,2),labels,'rmgbc'); 
+p = gscatter(mappedX(:,1), mappedX(:,2),labels,'rbgmy'); 
+
+p(1).MarkerSize = 8; p(2).MarkerSize = 8; p(3).MarkerSize = 8; p(4).MarkerSize = 8; p(5).MarkerSize = 8;
+title('Dataset 001')
+legend({'Wake','N1','N2','N3','REM'});
 
 

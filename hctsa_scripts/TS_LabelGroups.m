@@ -3,6 +3,8 @@
 %%%% I also trimmed TimeSeries and other matrices to 1374 (length of
 %%%% EEG-only channels) in Plots_AccuracyMatrix, section "Plot the top
 %%%% features - Ben's function"
+%%%% l.99: divided numTimeSeries by 7;  l.237: muliplied to get back to 7
+%%%% channels
 
 function [groupLabels,newFileName] = TS_LabelGroups(whatData,keywordGroups,saveBack,filterMissing)
 % TS_LabelGroups    Label groups of a time series using assigned keywords
@@ -96,7 +98,7 @@ end
 %% Load data from file
 % ------------------------------------------------------------------------------
 [~,TimeSeries,~,theFile] = TS_LoadData(whatData);
-numTimeSeries = height(TimeSeries);
+numTimeSeries = height(TimeSeries)/7;
 
 %-------------------------------------------------------------------------------
 % Check for 'clear' mode:
@@ -116,10 +118,9 @@ end
 % Split keywords by comma delimiter:
 
 %%%%% Nico modif: Get the keywords 
-load('ccshs_1800001_annot.mat', 'sleepstage')   
+load('ccshs_1800005_annot.mat', 'sleepstage')   
 KW = string(sleepstage);
-% KW =
-% string([sleepstage;sleepstage;sleepstage;sleepstage;sleepstage;sleepstage;sleepstage]);  % If you want to use all 7 channnels 
+% KW = string([sleepstage;sleepstage;sleepstage;sleepstage;sleepstage;sleepstage;sleepstage]);  % If you want to use all 7 channnels 
 Keywords = SUB_cell2cellcell(KW);
 
 % Set group labels as each unique keyword in the data. Works only in simple cases.
@@ -234,7 +235,7 @@ if saveBack
     fprintf(1,'Saving group labeling back to %s...',theFile);
 
     % Append/overwrite group names:
-    TimeSeries.Group = groupLabels';
+    TimeSeries.Group = [groupLabels groupLabels groupLabels groupLabels groupLabels groupLabels groupLabels]';
 
     % Save:
     save(theFile,'TimeSeries','-append')
