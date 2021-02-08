@@ -107,7 +107,7 @@ for D = 1:length(Subs)
         SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
        
         
-        [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC testTS] = kmeans_mapping(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v);
+        [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC testTS testTS_it] = kmeans_mapping_spectral(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v);
         [~, statsOut.complexity]=size(hctsa_ops);
         %statsOut.complexity = k;
         statsOut.id = k;

@@ -29,9 +29,17 @@ nIterations = 100;
 block(nIterations) = struct();
 stats = struct();
 
+disp(sprintf('Dataset %s,Feature %s',sub, num2str(FF)))
+
+
 for Nf = 1:nIterations
     
     [block(Nf).trainTS,block(Nf).testTS]=epochSelect(stgID,trainingProportion);
+    
+%     % If want EOG only (+ length(label)) or EMg only (+ (2*length(label))
+%     block(Nf).trainTS = block(Nf).trainTS + (2*length(label));  % Move it to 1374 rows to get to EOG
+%     block(Nf).testTS = block(Nf).testTS + (2*length(label));  
+    
     
     % The following turn the nxm matrix to 1x(n*m) matrix
     trainTS = block(Nf).trainTS.';

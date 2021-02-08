@@ -6,7 +6,7 @@
 
 %% Function: Count the number of epochs in each stages and recore the epochIDs
 
-function [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC testTS] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col)
+function [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC testTS testTS_it] = cross_validation_selectivefeatures(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col)
 
 %% Cross-validation code
 
@@ -32,7 +32,7 @@ stgLab = {'W','N1','N2','N3','R'};
 
 % Training
 trainingProportion = TRAINING_PERCENTAGE;
-nIterations = 10;
+nIterations = 100;
 
 %% Multiple iteration of randomisation and cross-validation
 % Initialise result struct
@@ -44,6 +44,8 @@ for Nf = 1:nIterations
     disp(sprintf('Dataset %s,Channel %s, Iteration %s',sub, num2str(v),num2str(Nf)))
     
     [block(Nf).trainTS,block(Nf).testTS]=epochSelect(stgID,trainingProportion);
+    
+    testTS_it(Nf,:) = block(Nf).testTS.';
     
     % The following turn the nxm matrix to 1x(n*m) matrix
     trainTS = block(Nf).trainTS.';

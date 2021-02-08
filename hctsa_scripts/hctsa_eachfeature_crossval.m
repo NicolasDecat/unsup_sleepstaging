@@ -9,7 +9,7 @@
 
 tic
 
-Subs = {'005'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
@@ -149,66 +149,12 @@ for D = 1:length(Subs)   % For each dataset
 %                 complexity = [complexity, statistics(l).complexity];
 %             end
 
-            FF
 
         end
    
        
     end
     
-
-    %% Spectral power analysis: Get the ID of epochs that were labeled wrong by the cluster 
-   
-%      TableEpochs = [];
-%      Stages = [0 1 2 3 5];
-%      
-%      for stg = 1:5
-%          
-%          idx = find(statsOut.scoredTest == Stages(stg));     % index of orig labels
-%          Cidx = find(statsOut.predictTest == Stages(stg));   % index of cluster decisions
-%          AGR = idx(find(ismember(idx,Cidx)));                % index of epochs (from TestTS) who were labelled right by cluster
-%          DISAGR = idx(find(~ismember(idx,Cidx)));            % index of epochs (from TestTS) who were labelled right by cluster
-%          ID_AGR = testTS(AGR);                               % Actual epochs ID labeled right
-%          ID_DISAGR = testTS(DISAGR);                         % Actual epochs ID labeled wrong
-%          
-%          TableEpochs{stg,1} = idx;   
-%          TableEpochs{stg,2} = Cidx;  
-%          TableEpochs{stg,3} = AGR;        
-%          TableEpochs{stg,4} = DISAGR;       
-%          TableEpochs{stg,5} = ID_AGR;                           
-%          TableEpochs{stg,6} = ID_DISAGR;  
-%                       
-%      end
-% 
-%      % Get the signal of all (dis)agreed epochs. For 2 / 3 channels, index
-%      % for TimeSeries.Data is incremented to reach rows for EOG and EMG
-%      
-%      if v == 1
-%         Data = TimeSeries.Data(1:size(eeg_ops,1),:);
-%     elseif v == 2
-%         Data = TimeSeries.Data((size(eeg_ops,1)+1):(size(eeg_ops,1)*2),:);
-%     elseif v == 3
-%         Data = TimeSeries.Data((((size(eeg_ops,1)*2)+1):(size(eeg_ops,1)*3)),:);
-%      end
-%      
-%      % 0vs1
-%      % 0vs2
-%      % 0vs3
-%      % 0vs5
-%      % 1vs2
-%      % 1vs3
-%      % 1vs5
-%      % 2vs3
-%      % 2vs5
-%      % 3vs5
-% 
-% %     % Signal of epochs labelled right / wrong
-% %     Signalagr = Data(EpochIDagr,:);
-% %     Signaldisagr = TimeSeries.Data(EpochIDdisagr,:);
-
-
-    % load('/Users/nico/Documents/HCTSA/Analysis/AUC/Per_correct_mean.mat')
-
 
     %% Plot Data matrix
 
@@ -232,12 +178,12 @@ for D = 1:length(Subs)   % For each dataset
 
 %     % Save figure
     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Figure_accuracy_per_feat';
-    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'fig')
-    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'jpg')
+%     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'fig')
+%     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'jpg')
 % 
      % Save matrix
      gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat';
-     save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean') 
+%      save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean') 
 
 
 end

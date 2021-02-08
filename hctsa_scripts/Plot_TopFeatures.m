@@ -8,7 +8,7 @@ for D = 1:length(Subs)
     
     sub = Subs{D};
     
-    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
     
     %%% Features reordering;
     means = mean(Per_correct_mean);
@@ -20,23 +20,40 @@ for D = 1:length(Subs)
     
 end
 
-gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Top_50_feat';
+gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Top_50_feat';
 save(fullfile(gpath,'Top_Feat.mat'))
 
 %% Features reordering based on TS_CLUSTER (op_clust)
 
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D')
 
-TS_Cluster
-Per_correct_mean = Per_correct_mean_D{1,1};
-Per_correct_mean = Per_correct_mean(:,(op_clust.ord)');
+Subs = {'001'};  % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+% This is just to obtain the right index when not all Subs are ran at once (use y)
+SUB = {'001'}; % ,'005','439','458','596','748','749','752','604','807','821','870'};
+[~,y] = ismember(Subs,SUB);
+
+for D = 1:length(Subs)  
+ 
+    sub = Subs{D};
+    
+    % Go to corresponding current folder
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+    
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
+    
+    % Load dataset 1
+    load('HCTSA_N.mat','op_clust')
+    
+    Per_correct_mean = Per_correct_mean(:,(op_clust.ord)');
+
+end
 
 
 %% Return the top features from averaged matrix (WB feat)
 
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
 % Equivalent indices for WB-features-only data
 load('HCTSA.mat', 'Operations')  
@@ -66,9 +83,9 @@ Top_10 = [Top_name Top_key Top_ID num2cell(Top_mean)];
 %% Same as above but top features for each classifier
 
 % Matrices with only WB features
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
 % Get 'Operations of WB features only
 load('HCTSA.mat', 'Operations')  
@@ -99,9 +116,9 @@ end
 
 %% Get top features EXCLUDING the special values features
 
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
 load('HCTSA.mat', 'Operations')   % Simply to get the list of 7749 features 
 
@@ -117,8 +134,8 @@ YLabel = {Operations.ID}.';
 
 %% Line plot of accuracy from all features sorted from best to worst
 
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_incl_all_feat_removed(7749)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')  % all specifically removed featured across datasets (combined ('unique'))
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_incl_all_feat_removed(7749)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')  % all specifically removed featured across datasets (combined ('unique'))
 AveragedMatrix(:,spec_and_common_feat) = [];
 
 % Features reordering: from best to worst feature
@@ -134,10 +151,37 @@ AveragedMatrix(:,x) = [];
 MeanFeat = mean(AveragedMatrix);
 
 % Line plot
-figure; plot(MeanFeat,'LineWidth',1.3)
+figure; ax = gca;
+plot(MeanFeat,'LineWidth',2)
 title('Mean accuracy across features')
 xlabel('features (sorted from "best" to "worst")')
 ylabel('Percentage Accuracy')
+
+ax.XTick = 1:50:5308;
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:50:5308,'uni',0);
+labels = string(ax.XTickLabels); 
+labels(2:2:end) = NaN;    % remove every other label
+ax.XTickLabels = labels; 
+grid on
+
+% Line plot but zoom in to top 100 only
+figure; ax = gca;
+plot(MeanFeat(1:120),'LineWidth',2)
+title('Mean accuracy across features')
+xlabel('Top 100 features')
+ylabel('Percentage Accuracy')
+
+ax.XTick = 1:10:110;
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:10:110,'uni',0);
+labels = string(ax.XTickLabels); 
+ax.XTickLabels = labels; 
+grid on
+
+xline(11,'k--','top 10','LineWidth',1.5);
+xline(41,'k--','top 40','LineWidth',1.5);
+xline(101,'k--','top 100','LineWidth',1.5);
+
+
 
 %% Plot the top features - Ben's functions
 
@@ -160,21 +204,21 @@ ylabel('Percentage Accuracy')
 % 
 % TimeSeries.Data = Data;
 
-%% on obtaining Per_correct_mean_D  /   or Per_correct_mean_D_SVM
+%% on obtaining Per_correct_mean_D  /   or Per_correct_mean_D_SVM   /  or Per_correct_mean_D_excl
 
 % Copy pasted script to get 7749-matrix
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/All_unique_specificity_feat_combined')  % all specifically removed featured across datasets (combined ('unique'))
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/allfeat_removed') % For each of the 12 cells, All features removed for the corresponding dataset) 
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/common_features_removed')   % For each of the 12 cells, only features commonly removed (shared by all datasets) for the corresponding dataset
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/specifically_removed_features')  % For each of the 12 cells, only features specifically removed in the corresponding dataset
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/All_unique_specificity_feat_combined')  % all specifically removed featured across datasets (combined ('unique'))
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/allfeat_removed') % For each of the 12 cells, All features removed for the corresponding dataset) 
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/common_features_removed')   % For each of the 12 cells, only features commonly removed (shared by all datasets) for the corresponding dataset
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/specifically_removed_features')  % For each of the 12 cells, only features specifically removed in the corresponding dataset
 
 InsertCol = zeros(10,1);
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001'};  % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once
 % (use y)
-SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+SUB = {'001'}; % ,'005','439','458','596','748','749','752','604','807','821','870'};
 [~,y] = ismember(Subs,SUB);
 
 for D = 1:length(Subs)  
@@ -184,7 +228,7 @@ for D = 1:length(Subs)
     % Go to corresponding current folder
     cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
     
-    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
     % Per_correct_mean = iteration_svm_testing_accuracy_MEAN;  % if you want to plot top features from supervised clustering
 
     % I'll insert both the commonly and specifically removed features for
@@ -199,8 +243,13 @@ for D = 1:length(Subs)
 
     end
     
-    % Store
-    Per_correct_mean_D_SVM{D} = Per_correct_mean;
+    % If want Per_correct_mean_D_excl
+%     load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')  % For each of the 12 cells, only features specifically removed in the corresponding dataset
+%     Per_correct_mean(:,spec_and_common_feat) = [];
+    Per_correct_mean_D_excl{D} = Per_correct_mean;
+    
+%   % If want Per_correct_mean_D_excl
+%     Per_correct_mean_D_SVM{D} = Per_correct_mean;
     
 end
 
@@ -216,9 +265,9 @@ end
 %% Top 40 features for one Dataset (only WB Features)
 
 % Matrices with only WB features
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
 Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
@@ -233,7 +282,7 @@ for D = 1:length(Subs)
     % Go to corresponding current folder
     cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
     
-    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
     % Per_correct_mean = iteration_svm_testing_accuracy_MEAN;  % if you want to plot top features from supervised clustering
     
 end
@@ -320,9 +369,9 @@ title(sprintf('Dependencies between %u top features (organized into %u clusters)
 
 %%%%% Get the AveragedMatrix with all 12 datasets and their 5308 WB features
 
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
 % Get 'Operations of WB features only, from HCTSA_N
 load HCTSA.mat   
@@ -441,11 +490,11 @@ title(sprintf('Dependencies between %u top features (organized into %u clusters)
 %% Corr matrix on specific classifiers
 
 % Matrices with only WB features
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once (use y)
 SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
@@ -458,7 +507,7 @@ for D = 1:length(Subs)
     % Go to corresponding current folder
     cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
     
-    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
     % Per_correct_mean = iteration_svm_testing_accuracy_MEAN;  % if you want to plot top features from supervised clustering
     
 end
@@ -552,9 +601,9 @@ title(sprintf('Dependencies between %u top features (organized into %u clusters)
 %% Corr matrix averaged over all 12 datasets on specific classifiers
 
 % Matrices with only WB features
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
 % Get 'Operations of WB features only, from HCTSA_N
 load HCTSA.mat   
@@ -671,11 +720,11 @@ title(sprintf('Dependencies between %u top features (organized into %u clusters)
 %% Get the top features for each classifier and each dataset
                    
 % Matrices with only WB features
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once (use y)
 SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
@@ -688,7 +737,7 @@ for D = 1:length(Subs)
     % Go to corresponding current folder
     cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
     
-    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
     % Per_correct_mean = iteration_svm_testing_accuracy_MEAN;  % if you want to plot top features from supervised clustering
     
 end
@@ -707,7 +756,7 @@ Operations = Operations(Idx_WB_Feat,:);
 CodeString = Operations.CodeString;  
 Keywords = Operations.Keywords;
 YLabel = Operations.ID;
-TOP = 100;
+TOP = 40;
 
 Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
@@ -739,7 +788,7 @@ end
 %% How many top features of a spe classifier are present across all datasets?
 
 % load Matrix with TopFeat for each classifier and dataset
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Top_Feat_Data_Class')  % all specifically removed featured across datasets (combined ('unique'))
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Top_Feat_Data_Class')  % all specifically removed featured across datasets (combined ('unique'))
 whichClassif = 2;
 TOP = 40;  % If other than 40, you need to run section above and comment the load (2 lines above)
 
@@ -768,9 +817,9 @@ Top_Elem = [UniqueElem SumElem];
 Top_Elem = Top_Elem(I,:);
 UniqueElem = UniqueElem(I,:);
 
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
 load('HCTSA.mat', 'Operations')   % Simply to get the list of 7749 features 
 
@@ -794,7 +843,7 @@ Top_Keywords = [Top_name Top_Keywords num2cell(Top_Elem)];   % This top features
 
 % Get % accuracy for each top feat (average of accuracy from ALL datasets)
 Accuracy = [];
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
 
 for ID = 1:length(UniqueElem)
     
@@ -823,9 +872,9 @@ Top_ID = Top_Keywords(:,3);
 %%% Highlight which top feature was selected from AveragedMatrix
 
 % Matrices with only WB features
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
 
 % Get 'Operations of WB features only
 load('HCTSA.mat', 'Operations')  
@@ -962,7 +1011,7 @@ title('Accuracy across datasets for feature 390 (top feature of Dataset 1)')
 
 %% Plot correlation coeff for given classifier across datasets
 
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
 
 Combination = {[1 2],[1 3],[1 4],[1 5],[1 6],[1 7],[1 8],[1 9],[1 10],[1 11],[1 12],...
     [2 3],[2 4],[2 5],[2 6],[2 7],[2 8],[2 9],[2 10],[2 11],[2 12],...
@@ -1011,10 +1060,10 @@ title('distribution of correlation coefficients (N3 vs REM)')
 %% Violin Plots: distribution of top features across classes
 
 % Matrices with only WB features
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Top_Feat_Data_Class')  
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5308)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Top_Feat_Data_Class')  
 
 % Load TS_DataMat 
 load('HCTSA_N.mat','Operations','TS_DataMat','TimeSeries')  

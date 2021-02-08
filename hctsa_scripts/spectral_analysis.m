@@ -174,26 +174,38 @@ run('/Users/nico/Documents/GitHub/unsup_sleepstaging/hctsa_scripts/hctsa_allfeat
 load('HCTSA_N.mat','TimeSeries')
 Data = TimeSeries{:,4};
 
+% Set indices for each stage
+Wake = 1:11; N1 = 12:22; N2 = 23:33; N3 = 34:44; rem = 45:55;
+Wake_L = 0; N1_L = 1; N2_L = 2; N3_L = 3; rem_L = 5; 
+
+STAGE = Wake;
+right_LABEL = Wake_L;      % = stage that we want to plot
+wrong_LABEL = N2_L;        % stage that the algo labels instead, will be compared to right_LABEL stage
+
 %%%% Original labels N2
-orig_labels_idx = statsOut.scoredTest(1,23:33);
+orig_labels_idx = statsOut.scoredTest(1,STAGE);
 
 %%%% Labels given by algo to N2 epochs
-algo_labels_idx = statsOut.predictTest(1,23:33);
+algo_labels_idx = statsOut.predictTest(1,STAGE);
 
 % Testing epochs labelled N2 by original labels
-N2_epoch_ID = testTS(1,23:33); 
+N2_epoch_ID = testTS(1,STAGE); 
 N2_epoch_EEG = Data(N2_epoch_ID,:);  % 11 testing epochs 
 
 % Get EEG of epochs not labelled correctly by algo (not labelled N2)
-idx_not_N2 = find(algo_labels_idx ~= 2);
+idx_not_N2 = find(algo_labels_idx == wrong_LABEL);
 EEG_Not_N2 = N2_epoch_EEG(idx_not_N2,:);
 
 % Get EEG of epochs  labelled correctly by algo ( labelled N2)
-idx_N2 = find(algo_labels_idx == 2);
+idx_N2 = find(algo_labels_idx == right_LABEL);
 EEG_N2 = N2_epoch_EEG(idx_N2,:);
 
 % Plot spectral power of (mis)classified N2 epochs
 PlotWrongN2 = true;
+
+ALL_EEG_Not_N2 = reshape(EEG_Not_N2.',1,[]);
+ALL_EEG_N2 = reshape(EEG_N2.',1,[]);
+
 
 if PlotWrongN2
     for i = 1:size(EEG_Not_N2,1)
@@ -210,5 +222,105 @@ else
 end
 
 
+ALL_EEG_N2 = ALL_EEG_N2(1,1:length(ALL_EEG_Not_N2));
+ALL_EEG = [ALL_EEG_N2;ALL_EEG_Not_N2];
+
+figure;
+[spectra,freqs] = spectopo(ALL_EEG, 0, 100);
+legend('Wake epochs (2) labelled as Wake by the algorithm','Wake epochs (2) labelled as N2 by the algorithm');
+title('Power spectrum of Wake epochs (as labelled by experts)')
+
+
+
+%% Same but additional epochs and plot all misclassified ones
+
+% First, run hctsa_allfeatures_spectral (1 sub, 1 chan, 100 Nf)
+% run('/Users/nico/Documents/GitHub/unsup_sleepstaging/hctsa_scripts/hctsa_allfeatures_spectral')
+
+% Load TimeSeries
+load('HCTSA_N.mat','TimeSeries')
+Data = TimeSeries{:,4};
+
+% % Set indices for each stage
+% Wake = 1:11; N1 = 12:22; N2 = 23:33; N3 = 34:44; rem = 45:55;
+% Wake_L = 0; N1_L = 1; N2_L = 2; N3_L = 3; rem_L = 5; 
+% 
+% STAGE = Wake;
+% right_LABEL = Wake_L;      % = stage that we want to plot
+% wrong_LABEL = N2_L;        % stage that the algo labels instead, will be compared to right_LABEL stage
+
+load('/Users/nico/Documents/HCTSA/Analysis/spectral/statsOut')
+load('/Users/nico/Documents/HCTSA/Analysis/spectral/testTS_it')
+
+
+for ITER = 1:100
+
+    %%%% Original labels N2
+    orig_labels_idx = statsOut.scoredTest(ITER,23:33);
+
+    %%%% Labels given by algo to N2 epochs
+    algo_labels_idx = statsOut.predictTest(ITER,23:33);
+
+    % Testing epochs labelled N2 by original labels
+    N2_epoch_ID = testTS_it(ITER,23:33); 
+    N2_epoch_EEG = Data(N2_epoch_ID,:);  % 11 testing epochs 
+
+    % Get EEG of epochs not labelled correctly by algo (not labelled N2)
+    idx_not_N2_wake = find(algo_labels_idx == 0);
+    EEG_Not_N2_wake = N2_epoch_EEG(idx_not_N2_wake,:);
+    idx_not_N2_N1 = find(algo_labels_idx == 1);
+    EEG_Not_N2_N1 = N2_epoch_EEG(idx_not_N2_N1,:);
+    idx_not_N2_N3 = find(algo_labels_idx == 3);
+    EEG_Not_N2_N3 = N2_epoch_EEG(idx_not_N2_N3,:);
+    idx_not_N2_rem = find(algo_labels_idx == 5);
+    EEG_Not_N2_rem = N2_epoch_EEG(idx_not_N2_rem,:);
+
+    % Get EEG of epochs labelled correctly by algo ( labelled N2)
+    idx_N2 = find(algo_labels_idx == 2);
+    EEG_N2 = N2_epoch_EEG(idx_N2,:);
+
+    % Plot spectral power of (mis)classified N2 epochs
+    PlotWrongN2 = true;
+
+    ALL_EEG_Not_N2_wake{ITER} = reshape(EEG_Not_N2_wake.',1,[]);
+    ALL_EEG_Not_N2_N1{ITER} = reshape(EEG_Not_N2_N1.',1,[]);
+    ALL_EEG_Not_N2_N3{ITER} = reshape(EEG_Not_N2_N3.',1,[]);
+    ALL_EEG_Not_N2_rem{ITER} = reshape(EEG_Not_N2_rem.',1,[]);
+
+    ALL_EEG_N2{ITER} = reshape(EEG_N2.',1,[]);
+
+end
+
+% Remove ALL_EEG_Not_N2 that are empty
+i = find(cellfun(@isempty,ALL_EEG_N2));
+ALL_EEG_N2(:,i) = [];
+
+% Put all epochs attached side by side, in one vector
+ALL_EEG_N2_ALL = cat(2,ALL_EEG_N2{:});
+
+ALL_EEG_Not_N2_wake_ALL = cat(2,ALL_EEG_Not_N2_wake{:});
+ALL_EEG_Not_N2_N1_ALL = cat(2,ALL_EEG_Not_N2_N1{:});
+ALL_EEG_Not_N2_N3_ALL = cat(2,ALL_EEG_Not_N2_N3{:});
+ALL_EEG_Not_N2_rem_ALL = cat(2,ALL_EEG_Not_N2_rem{:});
+
+
+% Trim to vector that is shortest
+shortest = min([length(ALL_EEG_N2_ALL) length(ALL_EEG_Not_N2_wake_ALL) length(ALL_EEG_Not_N2_N1_ALL) length(ALL_EEG_Not_N2_N3_ALL) length(ALL_EEG_Not_N2_rem_ALL)]);
+
+ALL_EEG_N2_ALL = ALL_EEG_N2_ALL(1,1:shortest);
+ALL_EEG_Not_N2_wake_ALL = ALL_EEG_Not_N2_wake_ALL(1,1:shortest);
+ALL_EEG_Not_N2_N1_ALL = ALL_EEG_Not_N2_N1_ALL(1,1:shortest);
+ALL_EEG_Not_N2_N3_ALL = ALL_EEG_Not_N2_N3_ALL(1,1:shortest);
+ALL_EEG_Not_N2_rem_ALL = ALL_EEG_Not_N2_rem_ALL(1,1:shortest);
+
+% To know how many epochs used
+Num = shortest/3840;
+
+ALL_EEG = [ALL_EEG_N2_ALL;ALL_EEG_Not_N2_wake_ALL;ALL_EEG_Not_N2_N1_ALL;ALL_EEG_Not_N2_N3_ALL;ALL_EEG_Not_N2_rem_ALL];
+
+figure;
+[spectra,freqs] = spectopo(ALL_EEG, 0, 1000);
+legend(sprintf('Epochs (%s) labelled as N2 by the algorithm',num2str(Num)),sprintf('Epochs (%s) labelled as Wake by the algorithm',num2str(Num)),sprintf('Epochs (%s) labelled as N1 by the algorithm',num2str(Num)),sprintf('Epochs (%s) labelled as N3 by the algorithm',num2str(Num)),sprintf('Epochs (%s) labelled as REM by the algorithm',num2str(Num)));
+title('Power spectrum of N2 epochs (as labelled by experts)')
 
 
