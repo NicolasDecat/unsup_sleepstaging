@@ -6,8 +6,8 @@
 %%%%%%%% time (the latter being returned by crossval script group)
 
 
-if isfile('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat_SVM/SVM_test_acc.mat') == 1
-    delete '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat_SVM/SVM_test_acc.mat'
+if isfile('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat_SVM/SVM_test_acc.mat') == 1
+    delete '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat_SVM/SVM_test_acc.mat'
 end
 
 
@@ -88,7 +88,7 @@ for D = 1:length(Subs)   % For each dataset
         end
          
        % Mean across classifiers over all features
-       MEAN_allfeat = mean(iteration_svm_testing_accuracy_MEAN')
+       MEAN_allfeat = mean(iteration_svm_testing_accuracy_MEAN');
       
         
     end

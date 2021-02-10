@@ -88,10 +88,12 @@ for D = 1:length(Subs)
     PERC_PER_CLASSIFIER_10iter = mean(PERC_STAGE); 
     
     % Save for each dataset
-    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy';
-    save(fullfile(fpath,sprintf('PERC_PER_CLASSIFIER_30iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_10iter')  
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy';
+%     save(fullfile(fpath,sprintf('PERC_PER_CLASSIFIER_30iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_10iter')  
 
     
 end
 
-
+for C = 1:10
+    MeanC(C) = mean(Per_correct_mean_D_excl{1,1}(C,:))
+end

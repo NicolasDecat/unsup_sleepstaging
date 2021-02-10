@@ -3,8 +3,8 @@
 %%%%%   Testing accuracy obtained through Supervised (SVM) clustering fo each feature
 
 
-if isfile('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat_SVM/SVM_test_acc.mat') == 1
-    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat_SVM/SVM_test_acc.mat')
+if isfile('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat_SVM/SVM_test_acc.mat') == 1
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat_SVM/SVM_test_acc.mat')
 end
 
 
@@ -117,7 +117,7 @@ for Cl = 1:10   % For each of the 10 classifiers
 end
     
 % Save into variable, so that it is used for next feature
-fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat_SVM';
+fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat_SVM';
 save(fullfile(fpath,'SVM_test_acc.mat'),'iteration_svm_testing_accuracy_MEAN')  
 
 FF
