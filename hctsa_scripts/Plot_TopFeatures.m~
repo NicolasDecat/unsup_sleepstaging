@@ -179,50 +179,30 @@ grid on
 
 % Plot std (variance across datasets)
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+whichClassif = 5;
 
 for D = 1:12
-    Var(D,:) =  Per_correct_mean_D_excl{1,D}(5,:);
-    Var2(D,:) =  Per_correct_mean_D_excl{1,D}(7,:);
-    Var3(D,:) =  Per_correct_mean_D_excl{1,D}(9,:);
+    Var(D,:) =  Per_correct_mean_D_excl{1,D}(whichClassif,:);
+    Var3
 end
 
 MEAN = mean(Var);
 [~,I] = sort((MEAN)','descend');
 Var = Var(:,I);
-MEAN2 = mean(Var2);
-[~,Y] = sort((MEAN2)','descend');
-Var2 = Var2(:,Y);
-MEAN3 = mean(Var3);
-[~,Z] = sort((MEAN3)','descend');
-Var3 = Var3(:,Z);
 
-figure; subplot(3,1,1) 
+figure; ax = gca;
 stdshade(Var,0.5,'b');
-title('N1/N2')
-xlabel('features')
+title('Mean accuracy across features')
+xlabel('features sorted from best to worst')
 ylabel('Percentage Accuracy')
+ax.XTick = 1:50:5308;
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:50:5308,'uni',0);
+labels = string(ax.XTickLabels); 
+labels(2:2:end) = NaN;    % remove every other label
+ax.XTickLabels = labels; 
 grid on
 xlim([0 5400])
 ylim([0 100])
-
-subplot(3,1,2) 
-stdshade(Var2,0.5,'g');
-title('N1/REM')
-xlabel('features')
-ylabel('Percentage Accuracy')
-grid on
-xlim([0 5400])
-ylim([0 100])
-
-subplot(3,1,3) 
-stdshade(Var3,0.5,'r');
-title('N2/REM ')
-xlabel('features')
-ylabel('Percentage Accuracy')
-grid on
-xlim([0 5400])
-ylim([0 100])
-
 
 % % Line plot but zoom in to top 100 only
 % figure; ax = gca;

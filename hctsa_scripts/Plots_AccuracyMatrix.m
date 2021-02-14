@@ -406,8 +406,8 @@ for D = 1:12
 
     % Save figure
     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Figure_accuracy_per_feat/AccMatrix_noSV_5308';
-    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_5308_%s_crossval',sub)),'fig')
-    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_5308_%s_crossval',sub)),'jpg')
+   %  saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_5308_%s_crossval',sub)),'fig')
+    % saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_5308_%s_crossval',sub)),'jpg')
  
     
 end
@@ -418,10 +418,10 @@ end
 %% Line plots %%%%%%%%%%%%%%%%%%
 
 % Accuracies dataset 001
-uns_all = [73.0 77.1 92.1 74.5 63.2 93.8 59.9 84.5 63.8 91.1]';
-uns_one = [54.2 56.3 64.0 56.1 58.3 69.4 54.5 62.5 54.2 69.0]';
-sup_all = [89.1 92.3 98.2 95.5 86.4 99.5 82.5 93.2 84.1 99.1]';
-sup_one = [58.4 59.9 69.7 59.8 57.5 69.7 54.4 64.0 55.6 66.4]';
+uns_all = flip([73.0 77.1 92.1 74.5 63.2 93.8 59.9 84.5 63.8 91.1])';
+uns_one = flip([54.2 56.3 64.0 56.1 58.3 69.4 54.5 62.5 54.2 69.0])';
+sup_all = flip([89.1 92.3 98.2 95.5 86.4 99.5 82.5 93.2 84.1 99.1])';
+sup_one = flip([58.4 59.9 69.7 59.8 57.5 69.7 54.4 64.0 55.6 66.4])';
 
 % Line plot
 figure;
@@ -570,39 +570,81 @@ ylabel('Distribution')
 
 %% Plot PCA
 
-% Labels
-load('ccshs_1800001_annot.mat','sleepstage')
-labels = sleepstage;
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
-load('HCTSA_N.mat')
+for D = 1:length(Subs)   
+    
+    sub = Subs{D};
 
-% EEG only
-TimeSeries = TimeSeries(1:length(sleepstage),:);
-TS_DataMat = TS_DataMat(1:length(sleepstage),:);
+    % Get the name of all 7749 features 
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+    
+    % Labels
+    load(sprintf('ccshs_1800%s_annot.mat',sub),'sleepstage')
+    labels = sleepstage;
 
-% t_SNE
-mappedX = tsne(TS_DataMat);
+    load('HCTSA_N.mat')
 
-% Plot results
+    % EEG only
+    TimeSeries = TimeSeries(1:length(sleepstage),:);
+    TS_DataMat = TS_DataMat(1:length(sleepstage),:);
+
+    % t_SNE
+    mappedX = tsne(TS_DataMat);
+
+    % Plot results
+    figure;
+    p = gscatter(mappedX(:,1), mappedX(:,2),labels,[0.894117647058824,0.101960784313725,0.109803921568627;0.215686274509804,0.494117647058824,0.721568627450980;0.301960784313725,0.686274509803922,0.290196078431373;0.596078431372549,0.305882352941177,0.639215686274510;1,0.498039215686275,0]);
+
+    p(1).MarkerSize = 8; p(2).MarkerSize = 8; p(3).MarkerSize = 8; p(4).MarkerSize = 8; p(5).MarkerSize = 8;
+    title(sprintf('Dataset %s',sub))
+    legend({'Wake','N1','N2','N3','REM'});
+    
+    % Save figure
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/PCA_100';
+    saveas(gca,fullfile(fpath,sprintf('PCA(%s)',sub)),'jpg')
+    
+end
+
+%% Fix 870
+Data = {TimeSeries.Data}.';
+Data = cell2mat(Data');
+Data = Data';
+Data = table(Data);
+Data = table2struct(Data);
+TimeSeries.Data = Data;
+
+for i = 1:length(TimeSeries.Data)
+    TimeSeries(i).Data = TimeSeries(i).Data';
+end
+
+%% Plot data matrix of accuracy across datasets for given classifier
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl') 
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+NumFeat = 5308;
+whichClassif = 5;
+
+for D = 1:12
+    
+    sub = Subs{D};
+    Per_correct_mean(D,:) = Per_correct_mean_D_excl{1,D}(whichClassif,1:NumFeat);  % e.g., N1 vs N2, 100 features
+    
+end
+
 figure;
-% p = gscatter(mappedX(:,1), mappedX(:,2),labels,'rmgbc'); 
-p = gscatter(mappedX(:,1), mappedX(:,2),labels,'rbgmy'); 
+imagesc(Per_correct_mean)
+title('Classification performance per feature across datasets');
+ax = gca;
+ax.XTick = 1:50:NumFeat;
+ax.YTick = 1:12;
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:50:NumFeat,'uni',0);
+ax.YTickLabels = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+ylabel('Datasets');
+xlabel('features');
+ax.XAxisLocation = 'bottom';
+colormap 'default'
+colorbar
 
-p(1).MarkerSize = 8; p(2).MarkerSize = 8; p(3).MarkerSize = 8; p(4).MarkerSize = 8; p(5).MarkerSize = 8;
-title('Dataset 001')
-legend({'Wake','N1','N2','N3','REM'});
-
-
-%% Average EEG, EOG and EMG data matrices
-
-% load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean(Dataset 001)')
-% load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_EOG(Dataset 001)')
-% load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_EMG(Dataset 001)')
-
-
-StackedMatrix = cat(3,Per_correct_mean_EEG,Per_correct_mean_EOG,Per_correct_mean_EMG);
-AveragedMatrix = mean(StackedMatrix,3);
-
-
-
-
+ 

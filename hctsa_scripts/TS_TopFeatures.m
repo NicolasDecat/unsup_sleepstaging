@@ -30,7 +30,7 @@ function [ifeat,testStat,testStat_rand,featureClassifier] = TS_TopFeatures(whatD
 %                   cluster plot.
 % 'numFeaturesDistr' [16], sets a custom number of distributions to display (can
 %                   set this lower to avoid producing large numbers of figures).
-% 'numNulls' [0], the number of shuffled nulls to generate (e.g., 10 shuffles pools
+% 'numNulls' [0], the number of shuffled nu flls to generate (e.g., 10 shuffles pools
 %               shuffles for all M features, for a total of 10*M elements in the
 %               null distribution)
 %
@@ -89,7 +89,7 @@ addParameter(inputP,'numTopFeatures',default_numTopFeatures,@isnumeric);
 default_numFeaturesDistr = 16;
 addParameter(inputP,'numFeaturesDistr',default_numFeaturesDistr,@isnumeric);
 % numNulls
-default_numNulls = 0; % by default, don't compute an empirical null distribution
+default_numNulls = 1; % by default, don't compute an empirical null distribution
                       % by randomizing class labels
 addParameter(inputP,'numNulls',default_numNulls,@isnumeric);
 
