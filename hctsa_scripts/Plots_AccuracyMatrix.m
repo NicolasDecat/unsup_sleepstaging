@@ -11,7 +11,7 @@ imagesc(Per_correct_mean)
 title('Classification performance per feature');
 
 ax = gca;
-ax.XTick = 1:500:6006;
+ax.XTick = 1:500:6056;
 ax.YTick = 1:10;
 % ax.XTickLabels = strseq('f',1:100)';
 ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:6006,'uni',0);
@@ -110,17 +110,17 @@ colorbar
 
 Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
+% Get the name of all 7749 features 
+all_op = load('HCTSA.mat','Operations');
+all_op_name = {all_op.Operations.CodeString}.';
+    
 for D = 1:length(Subs)   
     
     sub = Subs{D};
 
-    % Get the name of all 7749 features 
     cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))  
-    all_op = load('HCTSA.mat','Operations');
-    all_op_name = {all_op.Operations.CodeString}.';
     
-    % Get the name of all retained operations (exclude special value
-    % features)
+    % Get the name of all retained operations (exclude SV features)
     retained_op = load('HCTSA_N.mat','Operations');
     retained_op_name = retained_op.Operations.CodeString;
     
@@ -152,20 +152,22 @@ Z = removed_feat_idx;
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/common_features_removed')
 Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
+% Original features - names
+all_op = load('HCTSA.mat','Operations');
+all_op_name = {all_op.Operations.CodeString}.';
+all_7749 = 1:7749;
+
 for D = 1:length(Subs)   
     
     sub = Subs{D};
 
     % Configuration
     cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))  
-    all_op = load('HCTSA.mat','Operations');
-    all_op_name = {all_op.Operations.CodeString}.';
     
     retained_op = load('HCTSA_N.mat','Operations');
     retained_op_name = retained_op.Operations.CodeString;
 
-    all_op_idx = retained_op.Operations{:,4};   
-    all_7749 = 1:7749;                          
+    all_op_idx = retained_op.Operations{:,4};                             
     removed_feat_idx{D} =  all_7749(~ismember(all_7749,all_op_idx));   
     
     specifically_removed{D} = setdiff(removed_feat_idx{1,D},val);  % Get only features that are not commonly found across datasets (the "specific ones")
@@ -200,24 +202,24 @@ end
 All_spe = unique(ALLSPE);
 
 % List of all features removed across datasets
-spec_and_common_feat2 = sort([val All_spe]);
+spec_and_common_feat = sort([val All_spe]);
 
 
 %% Reconstruct the matrix by including the removed special-value features (for one dataset)
 
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/common_features_removed')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/specifically_removed_features')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/allfeat_removed')  % All features removed
+Dataset = 12;
+spec_and_common_feat = removed_feat_idx{1,Dataset};
 
 InsertCol = zeros(10,1);  % column that will be inserted
 
-for x = 1:length(removed_feat_idx{:,:})
+for x = 1:length(spec_and_common_feat)
     
-    Part1 = Per_correct_mean(:,1:removed_feat_idx{1,1}(x)-1);
-    Part2 = [InsertCol Per_correct_mean(:,removed_feat_idx{1,1}(x):end)];  % Add the 'zeros' column (act as a special-value feature)
+    Part1 = Per_correct_mean(:,1:spec_and_common_feat(x)-1);
+    Part2 = [InsertCol Per_correct_mean(:,spec_and_common_feat(x):end)];  % Add the 'zeros' column (act as a special-value feature)
     Per_correct_mean = ([Part1 Part2]);  % then merge the parts, with the zeros column in sandwich between the 2
     
 end
-
 
 %% Include in the accuracy matrix the specifically removed features (blue bars)
 
@@ -258,7 +260,7 @@ load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/allfeat_removed') % For each of the 12 cells, All features removed for the corresponding dataset) 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/common_features_removed')   % For each of the 12 cells, only features commonly removed (shared by all datasets) for the corresponding dataset
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/specifically_removed_features')  % For each of the 12 cells, only features specifically removed in the corresponding dataset
-
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146).mat') 
 InsertCol = zeros(10,1);
 
 Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
@@ -279,7 +281,6 @@ for D = 1:length(Subs)
     end
     
     % Remove both the specific and commonly removed features
-    spec_and_common_feat = [val All_spec_feat];
     Per_correct_mean(:,spec_and_common_feat) = [];   
     Per_correct_mean_D{D} = Per_correct_mean;
     
@@ -290,19 +291,19 @@ end
 StackedMatrix = cat(3,Per_correct_mean_D{1,1},Per_correct_mean_D{1,2},Per_correct_mean_D{1,3},Per_correct_mean_D{1,4},Per_correct_mean_D{1,5},Per_correct_mean_D{1,6},Per_correct_mean_D{1,7},Per_correct_mean_D{1,8},Per_correct_mean_D{1,9},Per_correct_mean_D{1,10},Per_correct_mean_D{1,11},Per_correct_mean_D{1,12});
 AveragedMatrix = mean(StackedMatrix,3);
 
-%%% 5308 features are kept in total (7774 minus the 2441 special value
+%%% 5603 features are kept in total (7779 minus the 2146 special value
 %%% features)
 
 % Then plot AveragedMatrix (w/o special value features; preserved ranking)
 figure;
-imagesc(AveragedMatrix)
+imagesc(AveragedMatrix_excl)
 title('Mean classification performance across datasets');
 
 ax = gca;
-ax.XTick = 1:500:5308;
+ax.XTick = 1:500:5603;
 ax.YTick = 1:10;
 % ax.XTickLabels = strseq('f',1:100)';
-ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5308,'uni',0);
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5603,'uni',0);
 ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
 ylabel('Binary classifiers');
 xlabel('features');
@@ -353,7 +354,7 @@ AveragedMatrix = mean(StackedMatrix,3);
 
 
 %%%% %All special value features will be marked as red
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2441)')  % all specifically removed featured across datasets (combined ('unique'))
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')  % all specifically removed featured across datasets (combined ('unique'))
 AveragedMatrix(:,spec_and_common_feat) = 0;   % (give value 0 to be marked in red by colormap) / give value [] to get matrix without special value features
 
 
@@ -378,7 +379,7 @@ colormap(cmap)           % Activate it
 colorbar
 
 
-%% Data Matrices in 5308 (no SV features)
+%% Data Matrices in 5603 (no SV features)
 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl') 
 
@@ -394,9 +395,9 @@ for D = 1:12
     imagesc(Per_correct_mean)
     title(sprintf('Classification performance per feature (Dataset %s)',sub));
     ax = gca;
-    ax.XTick = 1:500:5308;
+    ax.XTick = 1:500:5603;
     ax.YTick = 1:10;
-    ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5308,'uni',0);
+    ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5603,'uni',0);
     ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
     ylabel('Binary classifiers');
     xlabel('features');
@@ -405,9 +406,9 @@ for D = 1:12
     colorbar
 
     % Save figure
-    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Figure_accuracy_per_feat/AccMatrix_noSV_5308';
-   %  saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_5308_%s_crossval',sub)),'fig')
-    % saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_5308_%s_crossval',sub)),'jpg')
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Figure_accuracy_per_feat/AccMatrix_noSV_5603';
+    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_5603_%s_crossval',sub)),'fig')
+    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_5603_%s_crossval',sub)),'jpg')
  
     
 end
@@ -568,9 +569,9 @@ xlabel('Accuracy')
 ylabel('Distribution')
 
 
-%% Plot PCA
+%% Plot PCA - Supervised
 
-Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'870'}; % {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 for D = 1:length(Subs)   
     
@@ -586,7 +587,6 @@ for D = 1:length(Subs)
     load('HCTSA_N.mat')
 
     % EEG only
-    TimeSeries = TimeSeries(1:length(sleepstage),:);
     TS_DataMat = TS_DataMat(1:length(sleepstage),:);
 
     % t_SNE
@@ -606,24 +606,73 @@ for D = 1:length(Subs)
     
 end
 
-%% Fix 870
-Data = {TimeSeries.Data}.';
-Data = cell2mat(Data');
-Data = Data';
-Data = table(Data);
-Data = table2struct(Data);
-TimeSeries.Data = Data;
+%% Plot PCA - Unsupervised
 
-for i = 1:length(TimeSeries.Data)
-    TimeSeries(i).Data = TimeSeries(i).Data';
+% First, run hctsa_allfeatures_spectral (1 sub, 1 chan, 100 Nf) % and
+% collect for each iteration: 100 epochs ID per stage, their labels (predict_test) and their TS_DataMat
+% vector
+load('/Users/nico/Documents/HCTSA/Analysis/spectral/statsOut_2')
+load('/Users/nico/Documents/HCTSA/Analysis/spectral/testTS_it_2')
+load('/Users/nico/Documents/HCTSA/Analysis/spectral/TestMat')
+
+NumIter = 10;
+IDX = NumIter*55;
+
+cluster_decisions = statsOut.scoredTest(1:NumIter,:)'; 
+EpochID = testTS_it_2(1:NumIter,:)';
+
+% Reshape
+cluster_decisions = reshape(cluster_decisions,[IDX,1]);
+EpochID = reshape(EpochID,[IDX,1]);
+
+datamat = TestMat';
+datamat = cell2mat(datamat);
+
+Subs = {'001'}; % {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)   
+    
+    sub = Subs{D};
+    
+    % Labels
+    labels = cluster_decisions;
+
+    % EEG only
+    TS_DataMat = datamat;
+
+    % t_SNE
+    mappedX = tsne(TS_DataMat);
+
+    % Plot results
+    figure;
+    p = gscatter(mappedX(:,1), mappedX(:,2),labels,[0.894117647058824,0.101960784313725,0.109803921568627;0.215686274509804,0.494117647058824,0.721568627450980;0.301960784313725,0.686274509803922,0.290196078431373;0.596078431372549,0.305882352941177,0.639215686274510;1,0.498039215686275,0]);
+
+    p(1).MarkerSize = 8; p(2).MarkerSize = 8; p(3).MarkerSize = 8; p(4).MarkerSize = 8; p(5).MarkerSize = 8;
+    title(sprintf('Dataset %s',sub))
+    legend({'Wake','N1','N2','N3','REM'});
+    
+    % Save figure
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/PCA_100';
+    % saveas(gca,fullfile(fpath,sprintf('PCA(%s)',sub)),'jpg')
+    
 end
+
+
+
+%% Fix 870
+
+TimeSeries = struct2table(TimeSeries);
+for i = 1:length(TimeSeries.Data)
+    TimeSeries.Data(i,1) = TimeSeries.Data{i,1};
+end
+TimeSeries.Data = cell2mat(TimeSeries.Data);
 
 %% Plot data matrix of accuracy across datasets for given classifier
 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl') 
 Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
-NumFeat = 5308;
+NumFeat = 5603;
 whichClassif = 5;
 
 for D = 1:12
@@ -647,4 +696,3 @@ ax.XAxisLocation = 'bottom';
 colormap 'default'
 colorbar
 
- 

@@ -10,7 +10,7 @@ end
 
 tic
 
-Subs = {'001'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'870'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for save
 NumIter = compose('%diter',(1:100)); % used for save
 
@@ -28,7 +28,7 @@ for D = 1:length(Subs)
     ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s/ccshs_1800%s_annot.mat',sub,sub));
 
     
-    for v = 1:1   % For each channel condition
+    for v = 1:3   % For each channel condition
 
         % Configuration
         addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
@@ -145,8 +145,8 @@ for D = 1:length(Subs)
         end
     
         chan = Channels{NUM_CHANNELS_TO_RUN}; 
-%         fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/ConfusionMatrix';
-%         saveas(gca,fullfile(fpath,sprintf('CF_%s_%s', sub, chan)),'jpeg')
+        fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/ConfusionMatrix';
+        saveas(gca,fullfile(fpath,sprintf('CF_%s_%s', sub, chan)),'jpeg')
         
         set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
         s=save_stats; [UA, ~, idx] = unique(s(:,[1 6]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A;
@@ -174,28 +174,28 @@ end
 
 %%% Average CF (already averaged over iterations) over datasets for each channel condition
 
-% % EEG only
-% CH = 1;
-% Y = cat(3,Percent_cf{:,1});   
-% MEAN_percent_cf = mean(Y,3);
-% run('Plot_CF_mean.m') % change saveas name
-% 
-% % EEG+EOG
-% CH = 2;
-% Y = cat(3,Percent_cf{:,2});   
-% MEAN_percent_cf = mean(Y,3);
-% run('Plot_CF_mean.m')
-% 
-% % EEG+EOG+EMG
-% CH = 3;
-% Y = cat(3,Percent_cf{:,3});   
-% MEAN_percent_cf = mean(Y,3);
-% run('Plot_CF_mean.m')
-% 
-% % All
-% Y = cat(3,Percent_cf{:});   
-% MEAN_percent_cf = mean(Y,3);
-% run('Plot_CF_mean.m')
+% EEG only
+CH = 1;
+Y = cat(3,Percent_cf{:,1});   
+MEAN_percent_cf = mean(Y,3);
+run('Plot_CF_mean.m') % change saveas name
+
+% EEG+EOG
+CH = 2;
+Y = cat(3,Percent_cf{:,2});   
+MEAN_percent_cf = mean(Y,3);
+run('Plot_CF_mean.m')
+
+% EEG+EOG+EMG
+CH = 3;
+Y = cat(3,Percent_cf{:,3});   
+MEAN_percent_cf = mean(Y,3);
+run('Plot_CF_mean.m')
+
+% All
+Y = cat(3,Percent_cf{:});   
+MEAN_percent_cf = mean(Y,3);
+run('Plot_CF_mean.m')
 
 
 SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,AUC);

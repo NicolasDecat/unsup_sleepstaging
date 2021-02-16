@@ -319,7 +319,7 @@ Num = shortest/3840;
 ALL_EEG = [ALL_EEG_N2_ALL;ALL_EEG_Not_N2_wake_ALL;ALL_EEG_Not_N2_N1_ALL;ALL_EEG_Not_N2_N3_ALL;ALL_EEG_Not_N2_rem_ALL];
 
 figure;
-[spectra,freqs] = spectopo(ALL_EEG, 0,[]);
+[spectra,freqs] = spectopo(ALL_EEG, 0,1000);
 legend(sprintf('Epochs (%s) labelled as N2 by the algorithm',num2str(Num)),sprintf('Epochs (%s) labelled as Wake by the algorithm',num2str(Num)),sprintf('Epochs (%s) labelled as N1 by the algorithm',num2str(Num)),sprintf('Epochs (%s) labelled as N3 by the algorithm',num2str(Num)),sprintf('Epochs (%s) labelled as REM by the algorithm',num2str(Num)));
 title('Power spectrum of N2 epochs (as labelled by experts)')
 

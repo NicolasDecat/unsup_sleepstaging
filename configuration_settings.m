@@ -7,8 +7,9 @@ EXPS_TO_RUN=[5:5];
 NUM_CHANNELS = 7;
  % NUM_CHANNELS_TO_RUN = [1];
 CONFIGURATIONS_TO_RUN = ["BALANCED_LABELED"];
-% WHICH_DATA = 001; % Which dataset
-  WHICH_DATA = str2num(sprintf('%s',sub)); 
+% WHICH_DATA = 870; % Which dataset
+WHICH_DATA = str2num(sprintf('%s',sub)); 
+  
 CM_SAVE_DIR= HCTSA_DIR;
 % ANSWER_FILE=('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_001/ccshs_1800001_annot.mat');
   ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s/ccshs_1800%s_annot.mat',sub,sub));

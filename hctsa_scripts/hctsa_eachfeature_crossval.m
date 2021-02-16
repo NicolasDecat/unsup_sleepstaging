@@ -9,7 +9,7 @@
 
 tic
 
-Subs = {'439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
@@ -176,14 +176,14 @@ for D = 1:length(Subs)   % For each dataset
     colormap 'default'
     colorbar
 
-%     % Save figure
+%    % Save figure
     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Figure_accuracy_per_feat';
-%     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'fig')
-%     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'jpg')
-% 
-     % Save matrix
-     gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat';
-%      save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean') 
+    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'fig')
+    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'jpg')
+ 
+%   % Save matrix
+    gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat';
+    save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean') 
 
 
 end

@@ -185,7 +185,7 @@ for ncond=1:2
    
 end
 
-fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Figures';
+fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Rainbow figures';
 saveas(gca,fullfile(fpath,sprintf('CEN_%s stage',stg)),'jpeg')
 
 end

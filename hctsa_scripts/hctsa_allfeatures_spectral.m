@@ -1,7 +1,4 @@
 
-%%%%%%% Together with kmneans_mapping.m and type1auc.m: load all hctsa
-%%%%%%% operations, perform kmeans clustering and sequential matching, and
-%%%%%%% calculate the one-vs-all type 1 AUC
 
 
 if isfile('/Users/nico/Documents/HCTSA/Analysis/iterdata.mat') == 1
@@ -107,7 +104,7 @@ for D = 1:length(Subs)
         SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
        
         
-        [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC testTS testTS_it] = kmeans_mapping_spectral(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v);
+        [statsOut testMat scoredTest predictTest Nf Iteration NumChannels Dataset Sleep_stage Testing_accuracy AUC testTS testTS_it_2 TestMat] = kmeans_mapping_spectral(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v);
         [~, statsOut.complexity]=size(hctsa_ops);
         %statsOut.complexity = k;
         statsOut.id = k;
@@ -202,4 +199,9 @@ SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,
 % save('Summary_table_v3.mat','SummaryTable')
 % save('CF_data','Percent_cf')
 
-toc
+
+fpath = '/Users/nico/Documents/HCTSA/Analysis/spectral';
+save(fullfile(fpath, 'TestMat.mat'), 'TestMat', '-mat');
+save(fullfile(fpath, 'statsOut_2.mat'), 'statsOut', '-mat');
+save(fullfile(fpath, 'testTS_it_2.mat'), 'testTS_it_2', '-mat');
+
