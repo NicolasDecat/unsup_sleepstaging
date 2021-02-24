@@ -1310,5 +1310,82 @@ mean(M)
 %% Compute pairwise correlation
 
 Top40 = cell2mat(Top_40{1,1}(:,4))';
-
 rho = corr(Top40);
+
+%% Top Features for OVA
+
+% 1) Reconstruct 7749 matrix
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)') % For each of the 12 cells, All features removed for the corresponding dataset) 
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/common_features_removed')   % For each of the 12 cells, only features commonly removed (shared by all datasets) for the corresponding dataset
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/specifically_removed_features')  % For each of the 12 cells, only features specifically removed in the corresponding dataset
+
+InsertCol = zeros(5,1);
+
+Subs = {'001'};
+
+for D = 1:length(Subs)  
+    
+    sub = Subs{D};
+    
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/Per_correct_mean_OVA(Dataset 001)')
+
+    spec_common = sort([val specifically_removed{1,D}]);
+    
+    for x = 1:length(spec_common)
+
+        Part1 = Per_correct_mean(:,1:spec_common(x)-1);
+        Part2 = [InsertCol Per_correct_mean(:,spec_common(x):end)];
+        Per_correct_mean = ([Part1 Part2]);
+
+    end
+    
+    % Store
+    Per_correct_mean_D{D} = Per_correct_mean;
+    
+end
+
+% 2) Remove all SV features
+
+Per_correct_mean(:,spec_and_common_feat) = [];
+
+% 3) Get top features
+
+% Equivalent indices for WB-features-only data
+load('HCTSA.mat', 'Operations')  
+
+equi_Top_Feat = setdiff(1:7749,spec_and_common_feat);   % remove SV features
+Operations = Operations(equi_Top_Feat,:);               % get Operations with WB features only
+
+CodeString = {Operations.CodeString}.';  
+Keywords = {Operations.Keywords}.';
+YLabel = {Operations.ID}.';
+
+% Features reordering: from best to worst feature
+
+Classif = [1:5];
+
+for C = 1:5
+    
+    Classif = C;   
+    
+    means = AveragedMatrix(Classif,:);  
+    [~,I] = sort((means)','descend');
+    AveragedMatrix = AveragedMatrix(:,I);
+    
+    Top_Feat = I(1:40);   
+
+    Top_name = CodeString(Top_Feat,1);
+    Top_key = Keywords(Top_Feat,1);
+    Top_ID = YLabel(Top_Feat,1);
+    Top_mean = AveragedMatrix(Classif,1:40)';
+
+    Top_40{C} = [Top_name Top_key Top_ID num2cell(Top_mean)];
+
+end
+
+
+
+
+
+

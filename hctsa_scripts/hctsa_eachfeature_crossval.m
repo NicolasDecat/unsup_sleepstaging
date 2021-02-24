@@ -9,7 +9,7 @@
 
 tic
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
@@ -39,7 +39,7 @@ for D = 1:length(Subs)   % For each dataset
     for v = 1:1  % For each channel condition
 
         for FF = 1:size(Operations,1)    % For each feature
-        % for FF = 1:100
+        % for FF = 1:1
        
             % Load data matrix for one feature
             datamat = datam;
@@ -53,7 +53,7 @@ for D = 1:length(Subs)   % For each dataset
         
             %% Run cross-validation code
             
-            set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying 
+            set(0,'DefaultFigureVisible','on') % Remove this to disable the figure displaying 
             exps = EXPS_TO_RUN; 
             statistics = [];
 
@@ -169,6 +169,7 @@ for D = 1:length(Subs)   % For each dataset
     % ax.XTickLabels = strseq('f',1:100)';
     ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1),'uni',0);
     ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+    % ax.YTickLabels = {'Wake vs all', 'N1 vs all', 'N2 vs all', 'N3 vs all', 'REM vs all'};
     ylabel('Binary classifiers');
     xlabel('features');
     ax.XAxisLocation = 'bottom';
@@ -178,12 +179,14 @@ for D = 1:length(Subs)   % For each dataset
 
 %    % Save figure
     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Figure_accuracy_per_feat';
-    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'fig')
-    saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'jpg')
+%     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'fig')
+%     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'jpg')
  
 %   % Save matrix
-    gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat';
-    save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean') 
+%     gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat';
+%     save(fullfile(gpath,sprintf('Per_correct_mean_OVA(Dataset %s).mat',sub)),'Per_correct_mean') 
+       gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/OVA';
+       save(fullfile(gpath,sprintf('Per_correct_mean_OVA(Dataset %s).mat',sub)),'Per_correct_mean')
 
 
 end

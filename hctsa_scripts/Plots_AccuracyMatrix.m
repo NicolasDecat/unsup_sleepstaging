@@ -696,3 +696,43 @@ ax.XAxisLocation = 'bottom';
 colormap 'default'
 colorbar
 
+%% Reorder the figure above: most consistent features across datasets first
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl') 
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+NumFeat = 5603;
+whichClassif = 5;
+
+for D = 1:12
+    
+    sub = Subs{D};
+    Per_correct_mean(D,:) = Per_correct_mean_D_excl{1,D}(whichClassif,1:NumFeat);  % e.g., N1 vs N2, 100 features
+
+end
+
+% get mean and standard deviation across datasets for given classifer
+MEAN = mean(Per_correct_mean);
+STD = std(Per_correct_mean);
+
+% Compute consistency and sort from most to least consistent
+Consistent = MEAN./STD;
+[~,I] = sort((Consistent)','descend');
+Consistent = Consistent(:,I);
+Per_correct_mean = Per_correct_mean(:,I);
+
+
+% Plot
+figure;
+imagesc(Consistent)
+title('Classification performance per feature across datasets');
+ax = gca;
+ax.XTick = 1:50:NumFeat;
+ax.YTick = 1:12;
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:50:NumFeat,'uni',0);
+ax.YTickLabels = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+ylabel('Datasets');
+xlabel('features');
+ax.XAxisLocation = 'bottom';
+colormap 'default'
+colorbar
