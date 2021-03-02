@@ -48,9 +48,9 @@ for Nf = 1:nIterations
     
     % The following turn the nxm matrix to 1x(n*m) matrix
     % trainTS = block(Nf).trainTS.';
-    trainTS = 1:1374;
+    trainTS = 1:1166;
     % testTS = block(Nf).testTS.';
-    testTS = 1:1374;
+    testTS = 1:1166;
 
     if DEBUG_CROSSVALIDATION
         debug_folder =  strcat('Exp_', sprintf('%d', experiment), '_iteration_', num2str(Nf), '_channel_', num2str(number_of_channels_used));

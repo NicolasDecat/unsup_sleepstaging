@@ -270,7 +270,7 @@ label_p.Position(2) = 9000;
 
 % Add a color bar:
 cB = colorbar('eastoutside');
-cB.Position = [0.928,0.669,0.028,0.400];  % Change last digit for the height of colorbar
+cB.Position = [0.915,0.522,0.018,0.400];  % Change last digit for the height of colorbar
 cB.Label.String = 'Output';
 
 if numGroups > 0
@@ -279,7 +279,7 @@ if numGroups > 0
 	cB.TickLabelInterpreter = 'none';
 end
 
-
+title('Dataset 001')
 
 % Mark channel conditions
 yline(1,'k-','EEG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')

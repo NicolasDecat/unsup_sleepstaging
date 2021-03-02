@@ -1532,8 +1532,17 @@ delete(ha(12,1))
 % ALL = [ALLKEYS{1,1};ALLKEYS{1,2};ALLKEYS{1,3};ALLKEYS{1,4};ALLKEYS{1,5};ALLKEYS{1,6};ALLKEYS{1,7};ALLKEYS{1,8};ALLKEYS{1,9};ALLKEYS{1,10}];
 % all_unique_families = unique(ALL);
 
-%%% Percentage spectral features among top 40 feat across all classifiers
+
+% ha = tight_subplot(3,2,[.01 .03],[.1 .01],[.01 .01])
+% for ii = 1:6; 
+%     axes(ha(ii)); 
+%     plot(randn(10,ii));
+% end
+%           set(ha(1:4),'XTickLabel',''); set(ha,'YTickLabel','')
+% 
+% ha(1,1).YTickLabels = {'ok'}
+
 for x = 1:10
-    idx(x) = numel(find(ALLKEYS{1,x} == 'spectral'));
+    idx(x) = numel(find(ALLKEYS{1,x} == 'spectral'))
 end
-PercentSpectral = sum(idx)/(40*10); % 0.20 %
+sum(idx)

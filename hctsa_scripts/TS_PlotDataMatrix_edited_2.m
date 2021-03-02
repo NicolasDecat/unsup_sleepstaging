@@ -85,7 +85,7 @@ clear('inputP');
 %% Read in the data
 % --------------------------------------------------------------------------
 % You always want to retrieve and plot the clustered data if it exists
-getClustered = true;
+getClustered = false;
 [TS_DataMat,TimeSeries,Operations] = TS_LoadData(whatData,getClustered);
 [numTS,numOps] = size(TS_DataMat); % size of the data matrix
 
@@ -99,11 +99,9 @@ end
 
 TimeSeries.Data = CellData;
 
-%%%% Only EEG, EOG, EMG
+%%%% Only EEG (439)
 
-
-
-numTS = 4122;
+numTS = 1166;
 TimeSeries = TimeSeries(1:numTS,:);
 TS_DataMat = TS_DataMat(1:numTS,:);
 
@@ -142,6 +140,8 @@ end
 %-------------------------------------------------------------------------------
 % Reorder according to groups
 %-------------------------------------------------------------------------------
+groupReorder=false;
+
 if groupReorder
 	if isempty(timeSeriesGroups)
 		warning('Cannot reorder by time series group; no group information found')
@@ -150,7 +150,7 @@ if groupReorder
 	    dataMatReOrd = TS_DataMat(ixData,:);
 	    ixAgain = ixData;
 	    for i = 1:numClasses
-	        isGroup = TimeSeries.Group(ixData)==i;
+	        isGroup = grp2idx(TimeSeries.Group(ixData))==i;
 	        ordering = BF_ClusterReorder(dataMatReOrd(isGroup,:),'euclidean','average');
 	        istmp = ixData(isGroup);
 	        ixAgain(isGroup) = istmp(ordering);
@@ -201,7 +201,7 @@ end
 % --------------------------------------------------------------------------
 if numGroups <= 1
     numColorMapGrads = 6; % number of gradations in each set of colourmap
-    if strcmp(customColorMap,'redyellowblue');
+    if strcmp(customColorMap,'redyellowblue')
         customColorMap = flipud(BF_GetColorMap('redyellowblue',numColorMapGrads,0));
     else
         customColorMap = gray(numColorMapGrads);
@@ -228,7 +228,11 @@ f = figure('color','w');
 %% Plot the data matrix
 % ------------------------------------------------------------------------------
 colormap(customColorMap)
-TS_DataMat = [TS_DataMat(1:1374,:) TS_DataMat(1375:2748,:) TS_DataMat(2749:4122,:)]';
+% TS_DataMat = [TS_DataMat(1:1166,:) TS_DataMat(1167:2332,:) TS_DataMat(2333:3498,:)]';
+load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/stage_ordered(439)')
+
+% TS_DataMat = TS_DataMat(stage_ordered,:);
+TS_DataMat = TS_DataMat';
 imagesc(TS_DataMat);
 
 % ------------------------------------------------------------------------------
@@ -266,26 +270,25 @@ if numOps < 1000 % if too many operations, it's too much to list them all...
 end
 
 label_p = ylabel('Operations');
-label_p.Position(2) = 9000; 
+label_p.Position(2) = 3000; 
 
 % Add a color bar:
 cB = colorbar('eastoutside');
-cB.Position(2) = 0.6; 
-
-set(cB, 'VerticalAlignment', 'top')
+cB.Position = [0.915,0.522,0.018,0.400];  % Change last digit for the height of colorbar
 cB.Label.String = 'Output';
+
 if numGroups > 0
 	cB.Ticks = 0.5:1:numGroups;
 	cB.TickLabels = categories(timeSeriesGroups);
 	cB.TickLabelInterpreter = 'none';
 end
 
-
+title('Dataset 439')
 
 % Mark channel conditions
-yline(1,'k-','EEG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
-yline(6006,'k-','EOG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
-yline(12012,'k-','EMG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
+% yline(1,'k-','EEG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
+% yline(6006,'k-','EOG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
+% yline(12012,'k-','EMG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
 
 
 

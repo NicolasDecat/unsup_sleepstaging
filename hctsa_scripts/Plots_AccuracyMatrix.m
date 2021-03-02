@@ -606,7 +606,7 @@ for D = 1:length(Subs)
     
 end
 
-%% Plot PCA - Unsupervised
+%% Plot PCA - Unsupervised (useless)
 
 % First, run hctsa_allfeatures_spectral (1 sub, 1 chan, 100 Nf) % and
 % collect for each iteration: 100 epochs ID per stage, their labels (predict_test) and their TS_DataMat

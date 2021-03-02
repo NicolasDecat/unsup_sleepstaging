@@ -21,11 +21,6 @@ addpath(genpath(path_export));
 path_LSCPtools='/Users/nico/Documents/MATLAB/hctsa-master/LSCPtools-master/';
 addpath(genpath(path_LSCPtools));
 
-[cb] = cbrewer('qual', 'Set3', 12, 'pchip');
-cl(1, :) = cb(4, :);
-cl(2, :) = cb(1, :);
-cl(3, :) = cb(2, :);
-
 
 % To adapt my data
 Table_AUC_100.Dataset = num2str(Table_AUC_100.Dataset);

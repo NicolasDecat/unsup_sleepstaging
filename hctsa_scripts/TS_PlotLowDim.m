@@ -88,7 +88,7 @@ TellMeAboutLabeling(TimeSeries);
 % [TS_DataMat,Operations] = FilterFeatures(TS_DataMat,Operations,cfnParams);
 
 % Nico Modif
-load('ccshs_1800870_annot.mat','sleepstage')
+load('ccshs_1800001_annot.mat','sleepstage')
 TimeSeries = TimeSeries(1:length(sleepstage),:);
 TS_DataMat = TS_DataMat(1:length(sleepstage),:);
 

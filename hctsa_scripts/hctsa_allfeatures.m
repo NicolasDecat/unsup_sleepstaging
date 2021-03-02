@@ -10,7 +10,7 @@ end
 
 tic
 
-Subs = {'870'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'439'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for save
 NumIter = compose('%diter',(1:100)); % used for save
 
@@ -28,7 +28,7 @@ for D = 1:length(Subs)
     ANSWER_FILE=(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s/ccshs_1800%s_annot.mat',sub,sub));
 
     
-    for v = 1:3   % For each channel condition
+    for v = 1:1   % For each channel condition
 
         % Configuration
         addpath '/Users/nico/Documents/GitHub/unsup_sleepstaging';
