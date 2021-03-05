@@ -168,7 +168,7 @@ legend('Wake','N1','N2','N3','rem');
 %% Get misclassified N2 epochs and plot their spectral power
 
 % First, run hctsa_allfeatures (1 sub, 1 chan, 1 Nf)
-run('/Users/nico/Documents/GitHub/unsup_sleepstaging/hctsa_scripts/hctsa_allfeatures')
+%run('/Users/nico/Documents/GitHub/unsup_sleepstaging/hctsa_scripts/hctsa_allfeatures')
 
 % Load TimeSeries
 load('HCTSA_N.mat','TimeSeries')

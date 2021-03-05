@@ -70,14 +70,16 @@ means = mean(AveragedMatrix_excl);
 [~,I] = sort((means)','descend');
 AveragedMatrix = AveragedMatrix_excl(:,I);
 
-Top_Feat = I(1:10);   
+TOP = 40;
+
+Top_Feat = I(1:TOP);   
 
 Top_name = CodeString(Top_Feat,1);
 Top_key = Keywords(Top_Feat,1);
 Top_ID = YLabel(Top_Feat,1);
-Top_mean = mean(AveragedMatrix(:,1:10))';
+Top_mean = mean(AveragedMatrix(:,1:TOP))';
 
-Top_10 = [Top_name Top_key Top_ID num2cell(Top_mean)];
+Top_40 = [Top_name Top_key Top_ID num2cell(Top_mean)];
 
 
 %% Same as above but top features for each classifier
@@ -1486,8 +1488,7 @@ for C = 1:10
     % Later, to know bin edges
     Sum = cumsum(Ncount);
     edges = [0 Sum];
-    
-        
+
     %%% Plot (rectangle)
     
     [cb] = cbrewer('qual', 'Set3', 12, 'pchip');
@@ -1537,3 +1538,117 @@ for x = 1:10
     idx(x) = numel(find(ALLKEYS{1,x} == 'spectral'));
 end
 PercentSpectral = sum(idx)/(40*10); % 0.20 %
+
+
+
+%% Pie chart
+
+%%%% Get top 40 features 
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5603)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+
+
+% Matrices with only WB features
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5603)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+
+% Get 'Operations of WB features only, from HCTSA_N
+load HCTSA.mat   
+Operations_ID = [Operations.ID].';
+
+equi_Top_Feat = setdiff(Operations_ID,spec_and_common_feat); % remove SV features
+Operations = Operations(equi_Top_Feat,:);                      % 'Operations' with WB features only (from HCTSA_N)
+
+CodeString = {Operations.CodeString}.';  
+Keywords = {Operations.Keywords}.';
+YLabel = {Operations.ID}.';
+
+TOP = 40;
+
+for C = 1:10
+    
+    % Reorder features: from yielding theg highest to lowest accuracy
+    [~,I] = sort(AveragedMatrix_excl(C,:)','descend');
+    Top_Feats{C} = I(1:TOP);   
+                    
+    % Get the name and keyword associated with these features
+    Top_name(1:TOP) = CodeString(Top_Feats{C},1);
+    Top_key(1:TOP) = Keywords(Top_Feats{C},1);
+    Top_ID(1:TOP) = YLabel(Top_Feats{C},1);
+    Top_mean(1:TOP) = AveragedMatrix_excl(C,Top_Feats{C});
+
+    Top_40{C} = [Top_name' Top_key' Top_ID' num2cell(Top_mean')];
+end
+
+
+% Indices of classifiers
+wake = 0; N1 = 1; N2 = 3; N3 = 3; rem = 5;
+CLASSIFIER = {[wake,N1] [wake,N2] [wake,N3] [wake,rem] [N1,N2] [N1,N3] [N1,rem] [N2,N3] [N2,rem] [N3,rem]};
+classifstr = {['Wake vs N1';'          '],['Wake vs N2';'          '],['Wake vs N3';'          '],['Wake vs REM';'           '],['N1 vs N2';'        '],['N1 vs N3';'        '],['N1 vs REM';'         '],['N2 vs N3';'        '],['N2 vs REM';'         '],['N3 vs REM';'         ']};  
+
+%%
+figure;    
+[ha, pos] = tight_subplot(2,5,[.075 .04],[.1 .05],[.05 .05]);
+
+%%% Plot pie chart: % representation of each family
+
+for C = 1:10
+
+    ClNum = C;  
+    Classif = Top_40{1,ClNum};  % Get the top features of the chosen classifier
+
+    % Get keywords
+    Keyword = char(Classif(:,2));
+
+    for k = 1:size(Keyword,1)
+
+        F = find(ismember(Keyword(k,:),',') == 1);
+
+        if ~isempty(F)
+            KEY(k,:) = convertCharsToStrings(Keyword(k,1:F-1));
+        else
+            KEY(k,:) = convertCharsToStrings(Keyword(k,:));
+        end
+
+    end
+
+    % Remove blank spaces
+    KEY = strtrim(KEY);
+
+    % Get repetitions
+    [UniqFam,~,Num] = unique(KEY);
+
+    for i = 1:length(UniqFam)
+        Ncount(i) = length(find(UniqFam(i) == KEY));
+    end
+
+    % Pie chart
+    axes(ha(C)); 
+    
+    labels = UniqFam;
+    p = pie(Ncount, labels);
+    set(p(2:2:end),'FontSize',12);
+
+    
+    % Color
+    idx = find(UniqFam == 'spectral');
+    
+    if idx == 1
+        actualidx = 1;
+    else
+        actualidx = (idx*2)-1;
+    end
+    
+    t = p(actualidx);
+    t.FaceColor = 'red';
+    title(classifstr(C),'FontSize',13)
+        
+    clear UniqFam Num KEY Keyword Ncount
+
+end
+
+
+
