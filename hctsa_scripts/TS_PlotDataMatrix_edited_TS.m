@@ -89,7 +89,6 @@ getClustered = false;
 [TS_DataMat,TimeSeries,Operations] = TS_LoadData(whatData,getClustered);
 [numTS,numOps] = size(TS_DataMat); % size of the data matrix
 
-
 %%%%%%%% Nico modification: Change TimeSeries.Data into cell array (ONLY
 %%%%%%%% FOR HCTSA_N FILES -- HCTSA.mat files already in cell array)
 
@@ -105,6 +104,49 @@ TimeSeries.Data = CellData;
 numTS = 1166;
 TimeSeries = TimeSeries(1:numTS,:);
 TS_DataMat = TS_DataMat(1:numTS,:);
+
+%%% Reorder operations
+load('HCTSA_N.mat', 'op_clust')
+TS_DataMat = TS_DataMat(:,op_clust.ord);
+
+%%% Reorder TS to match cluster decisions
+
+load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs(439)')
+original_labels = statsOut.scoredTest;
+
+wake_OL = find(original_labels == 0);  
+N1_OL = find(original_labels == 1);
+N2_OL = find(original_labels == 2);
+N3_OL = find(original_labels == 3);
+rem_OL = find(original_labels == 5);
+
+% Group in 5 stages according to orig labels
+stage_ordered = [wake_OL N1_OL N2_OL N3_OL rem_OL];
+
+% Get cluster decisions
+cluster_decision = statsOut.predictTest;
+
+stage_ordered = [{wake_OL} {N1_OL} {N2_OL} {N3_OL} {rem_OL}];
+
+for i = 1:5  % for all 5 groups of oiriginal labels (stage_ordered)
+    
+    stage = stage_ordered{1,i};
+    clust_dec = cluster_decision(stage);
+    
+    wake_CL = find(clust_dec == 0);
+    N1_CL = find(clust_dec == 1);
+    N2_CL = find(clust_dec == 2);
+    N3_CL = find(clust_dec == 3);
+    rem_CL = find(clust_dec == 5);
+
+    reordered{i} = [stage(wake_CL) stage(N1_CL) stage(N2_CL) stage(N3_CL) stage(rem_CL)];
+    
+    CLL2 = cluster_decision(reordered{i});  % To double check whether right ordering
+
+end
+
+reordered = [reordered{1,1} reordered{1,2} reordered{1,3} reordered{1,4} reordered{1,5}];
+
 
 % ------------------------------------------------------------------------------
 %% Reorder according to customOrder
@@ -229,11 +271,9 @@ f = figure('color','w');
 %% Plot the data matrix
 % ------------------------------------------------------------------------------
 colormap(customColorMap)
-% TS_DataMat = [TS_DataMat(1:1166,:) TS_DataMat(1167:2332,:) TS_DataMat(2333:3498,:)]';
-load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/stage_ordered(439)')
 
-% TS_DataMat = TS_DataMat(stage_ordered,:);
 TS_DataMat = TS_DataMat';
+TS_DataMat = TS_DataMat(:,reordered);  % Ordered TS according to cluster decisions
 imagesc(TS_DataMat);
 
 % ------------------------------------------------------------------------------
@@ -257,9 +297,6 @@ ax2 = gca;
 ax2.FontSize = 8; % small font size (often large datasets)
 ax2.TickLabelInterpreter = 'none'; % prevent displaying underscores as subscripts
 
-% Rows: time series
-% ax2.YTick = 1:numTS;
-% ax2.YLim = [0.5,numTS+0.5];
 
 % Columns: operations:
 xlabel('Time (hours)')
@@ -270,13 +307,12 @@ if numOps < 1000 % if too many operations, it's too much to list them all...
     ax2.XTickLabelRotation = 90;
 end
 
-label_p = ylabel('Operations','fontsize',17);
+label_p = ylabel('Operations');
 label_p.Position(2) = 3000; 
-label_p.Position(1) = -10; 
 
 % Add a color bar:
 cB = colorbar('eastoutside');
-cB.Position = [0.820,0.522,0.015,0.400];  % Change last digit for the height of colorbar
+cB.Position = [0.870,0.522,0.015,0.400];  % Change last digit for the height of colorbar
 cB.Label.String = 'Output';
 
 if numGroups > 0
@@ -287,10 +323,7 @@ end
 
 title('Dataset 439')
 
-% Mark channel conditions
-% yline(1,'k-','EEG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
-% yline(6006,'k-','EOG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
-% yline(12012,'k-','EMG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
+ax.FontSize = 14;
 
 
 end

@@ -19,25 +19,45 @@ end
 % Plot power spectra
 figure;
 
-[spectra,freqs] = spectopo(signal, 0,1000);
+[spectra,freqs] = spectopo(signal, 0,128);
+grid on
+xlim([0 45])
 
-legend('Epochs (80) labelled as N2 by the algorithm',...
-    'Epochs (80) labelled as Wake by the algorithm',...
-    'Epochs (80) labelled as N1 by the algorithm',...
-    'Epochs (80) labelled as N3 by the algorithm',...
-    'Epochs (80) labelled as REM by the algorithm');
+legend('N2','Wake','N1','N3','REM')
 
 title('Power spectrum of N2 epochs (as labelled by experts)')
 
+%% Using Welch
+
+load('/Users/nico/Documents/HCTSA/Analysis/spectral/signal.mat')
+
+
+Fs = 128;
+w_window=40*Fs; % Where Fs is sampling rate (applies the method on windows of 6s)
+w_overlap=w_window/2; % overlap between windows
+df=0.2; % freq resolution
+freqV=1:0.2:40;
+
+figure;
+
+for i = 1:5
+    signal = SIGNAL{i};
+    pwelch(signal,w_window,w_overlap,freqV,Fs,'psd');
+    plot(faxis, pow);
+    hold on
+end
+
+legend('N2','Wake','N1','N3','REM')
 
 %% Using Thomas' script
 
 DecibelsFlag = 1;   
-SamplingRate = 1000;   
+SamplingRate = 128;   
 
 %%% Load the time-series of the N2 epochs (80 epochs each)
 %%% Cell 1 = N2 (correctly classified N2 epochs), 2 = wake, 3 = N1, 4 = N3, 5 = REM
 load('/Users/nico/Documents/HCTSA/Analysis/spectral/signal.mat')
+
 
 for st = 1:5     % For all 5 stages
     
@@ -64,7 +84,7 @@ for st = 1:5     % For all 5 stages
 end
 
 %%% Smoothing: average every 100 frequency data points to make the graph more readable
-smooth = true;
+smooth = false;
 
 if smooth
     
@@ -72,8 +92,8 @@ if smooth
     for st = 1:5
         x = power(st,:)';
         S = numel(x);
-        xx = reshape(x(1:S - mod(S, 100)), 100, []);
-        y(:,st)  = sum(xx, 1).' / 100;
+        xx = reshape(x(1:S - mod(S, 128)), 128, []);
+        y(:,st)  = sum(xx, 1).' / 128;
     end
     y = y';  
     power = y;
@@ -82,8 +102,8 @@ if smooth
     for st = 1:5
         a = faxis(st,:)';
         B = numel(a);
-        aa = reshape(a(1:B - mod(S, 100)), 100, []);
-        k(:,st)  = sum(aa, 1).' / 100;
+        aa = reshape(a(1:B - mod(S, 128)), 128, []);
+        k(:,st)  = sum(aa, 1).' / 128;
     end
     k = k';  
     faxis = k;
@@ -105,11 +125,11 @@ for st = 1:5
     
 end
 
-legend('Epochs (80) labelled as N2 by the algorithm',...
-    'Epochs (80) labelled as Wake by the algorithm',...
-    'Epochs (80) labelled as N1 by the algorithm',...
-    'Epochs (80) labelled as N3 by the algorithm',...
-    'Epochs (80) labelled as REM by the algorithm');
+legend('Epochs labelled as N2 by the algorithm',...
+    'Epochs labelled as Wake by the algorithm',...
+    'Epochs labelled as N1 by the algorithm',...
+    'Epochs labelled as N3 by the algorithm',...
+    'Epochs labelled as REM by the algorithm');
 
 title('Power spectrum of N2 epochs (as labelled by experts)')
 

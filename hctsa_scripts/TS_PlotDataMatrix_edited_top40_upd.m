@@ -23,7 +23,42 @@ function TS_PlotDataMatrix_edited(varargin)
 % Produces a heat map of the data matrix with time series as rows and
 %   operations as columns.
 
-% ------------------------------------------------------------------------------
+% -----------------------------------------------------------------------------
+
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean(Dataset 439).mat')
+
+load('HCTSA.mat', 'Operations')  
+
+
+    CodeString = {Operations.CodeString}.';  
+    Keywords = {Operations.Keywords}.';
+    YLabel = {Operations.ID}.';
+
+    % Features reordering: from best to worst feature
+    means = mean(Per_correct_mean);  
+    [~,I] = sort((means)','descend');
+    Per_correct_mean = Per_correct_mean(:,I);
+
+    TOP = 40;
+
+    Top_Feat = I(1:TOP);   
+
+    Top_name = CodeString(Top_Feat,1);
+    Top_key = Keywords(Top_Feat,1);
+    Top_ID = YLabel(Top_Feat,1);
+    Top_mean = mean(Per_correct_mean(:,1:TOP))';
+
+    Top_40 = [Top_name Top_key Top_ID num2cell(Top_mean)];
+
+    IDX_40 = cell2mat(Top_40(:,3));
+
+    load HCTSA_N.mat
+    x = find(ismember(Operations.ID,IDX_40));
+    
+    y = find(ismember(op_clust.ord,x));
+
+
 
 %% Check inputs and set defaults:
 % ------------------------------------------------------------------------------
@@ -89,7 +124,7 @@ getClustered = false;
 [TS_DataMat,TimeSeries,Operations] = TS_LoadData(whatData,getClustered);
 [numTS,numOps] = size(TS_DataMat); % size of the data matrix
 
-
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Top_Features/TS_DataMat_439rec.mat')
 %%%%%%%% Nico modification: Change TimeSeries.Data into cell array (ONLY
 %%%%%%%% FOR HCTSA_N FILES -- HCTSA.mat files already in cell array)
 
@@ -100,11 +135,17 @@ end
 
 TimeSeries.Data = CellData;
 
-%%%% Only EEG (439)
+%%% Reorder to clust
+load('HCTSA_N.mat', 'op_clust')
+for i = 1:40
+x(i) = find(op_clust.ord == IDX_40(i))
+end
 
-numTS = 1166;
-TimeSeries = TimeSeries(1:numTS,:);
-TS_DataMat = TS_DataMat(1:numTS,:);
+%%%% Only EEG (439)
+numTS = 1:1166;
+TimeSeries = TimeSeries(numTS,:);
+TS_DataMat = TS_DataMat(numTS,:);
+% TS_DataMat = TS_DataMat(:,x);
 
 % ------------------------------------------------------------------------------
 %% Reorder according to customOrder
@@ -270,13 +311,12 @@ if numOps < 1000 % if too many operations, it's too much to list them all...
     ax2.XTickLabelRotation = 90;
 end
 
-label_p = ylabel('Operations','fontsize',17);
+label_p = ylabel('Operations');
 label_p.Position(2) = 3000; 
-label_p.Position(1) = -10; 
 
 % Add a color bar:
 cB = colorbar('eastoutside');
-cB.Position = [0.820,0.522,0.015,0.400];  % Change last digit for the height of colorbar
+cB.Position = [0.915,0.522,0.018,0.400];  % Change last digit for the height of colorbar
 cB.Label.String = 'Output';
 
 if numGroups > 0
@@ -291,6 +331,8 @@ title('Dataset 439')
 % yline(1,'k-','EEG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
 % yline(6006,'k-','EOG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
 % yline(12012,'k-','EMG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
+
+
 
 
 end

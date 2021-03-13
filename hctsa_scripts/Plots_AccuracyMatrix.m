@@ -6,22 +6,27 @@ set(0,'DefaultFigureVisible','on')
 %% Standard Plotting: accuracy matrix (try things here)
 
 figure;
-imagesc(Per_correct_mean)
+imagesc(AveragedMatrix_excl)
 % title(sprintf('Classification performance per feature (Dataset %s)',sub));
-title('Classification performance per feature');
+% title('Classification performance per feature');
 
 ax = gca;
 ax.XTick = 1:500:6056;
 ax.YTick = 1:10;
+set(ax, 'TickLength', [0 0]);
 % ax.XTickLabels = strseq('f',1:100)';
 ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:6006,'uni',0);
 ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
 ylabel('Binary classifiers');
 xlabel('features');
 ax.XAxisLocation = 'bottom';
+ax.FontSize = 12; 
 
 colormap 'default'
 colorbar
+
+% Save figure
+exportgraphics(gca,'/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/AveragedMatrix_HQ.jpg','Resolution',200)
 
 
 %% Line plot of accuracy for each binary classifier across features

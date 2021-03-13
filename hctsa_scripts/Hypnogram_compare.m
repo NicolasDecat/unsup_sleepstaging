@@ -129,9 +129,11 @@ title('N3, N1')
 
 set(0,'DefaultFigureVisible','on')
 
+% go to 439 directory
+cd('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_439')
+
 %%%%%%% Plot the Data matrix (439)
 TS_PlotDataMatrix_edited_2('norm')
-
 
 %%%%%%% Plot the hypnogram
 load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs(439)')
@@ -182,13 +184,43 @@ ax.YTickLabels = {'Wake','N1','N2','N3','REM'};
 ylim([0 10500])
 
 a = get(gca,'YTickLabel');  
-set(gca,'YTickLabel',a,'fontsize',14)
+set(gca,'YTickLabel',a,'fontsize',17)
 
 % Cluster decisions
 hold on
 z = plot(x_time,cluster_decision,'k','LineWidth',1,'Color',[.3 .3 .3]);  % light grey
 
-legend([y z],'Original labels','Cluster decisions','Location','southwest')
+% Draw the xlines for misclassified epochs
+
+% Agreed epochs
+wake_wake = 86 ;
+N2_N2 = 476;
+N3_N3 = 710;
+% Misclassified epochs
+wake_N2 = 129 ;
+N2_N1 = 531;
+N3_N1 = 763;
+
+hold on
+line([wake_wake wake_wake], [6000 10500],'LineStyle',':','Color',[0.552941176470588,0.827450980392157,0.780392156862745],'LineWidth',3);
+line([wake_N2 wake_N2], [6000 10500],'LineStyle',':','Color',[0.552941176470588,0.827450980392157,0.780392156862745],'LineWidth',3);
+line([N2_N2 N2_N2], [6000 10500],'LineStyle',':','Color',[0.552941176470588,0.827450980392157,0.780392156862745],'LineWidth',3);
+line([N2_N1 N2_N1], [6000 10500],'LineStyle',':','Color',[0.552941176470588,0.827450980392157,0.780392156862745],'LineWidth',3);
+line([N3_N3 N3_N3], [6000 10500],'LineStyle',':','Color',[0.552941176470588,0.827450980392157,0.780392156862745],'LineWidth',3);
+line([N3_N1 N3_N1], [6000 10500],'LineStyle',':','Color',[0.552941176470588,0.827450980392157,0.780392156862745],'LineWidth',3);
+
+hold on
+gap = 18;
+str = {'1','2','3','4','5','6'};
+text(wake_wake-gap,10250,str(1),'FontSize',18,'FontWeight','bold','Color',[0.552941176470588,0.827450980392157,0.780392156862745])
+text(wake_N2-gap,10250,str(2),'FontSize',18,'FontWeight','bold','Color',[0.552941176470588,0.827450980392157,0.780392156862745])
+text(N2_N2-gap,10250,str(3),'FontSize',18,'FontWeight','bold','Color',[0.552941176470588,0.827450980392157,0.780392156862745])
+text(N2_N1-gap,10250,str(4),'FontSize',18,'FontWeight','bold','Color',[0.552941176470588,0.827450980392157,0.780392156862745])
+text(N3_N3-gap,10250,str(5),'FontSize',18,'FontWeight','bold','Color',[0.552941176470588,0.827450980392157,0.780392156862745])
+text(N3_N1-gap,10250,str(6),'FontSize',18,'FontWeight','bold','Color',[0.552941176470588,0.827450980392157,0.780392156862745])
+
+legend([y z],'Original labels','Cluster decisions','Location','southeastoutside')
+
 
 
 %% Plot the time series of (mis)classified epochs
@@ -206,7 +238,9 @@ N2_N1 = 531;
 N3_N1 = 763;
 
 Epochs = [wake_wake wake_N2 N2_N2 N2_N1 N3_N3 N3_N1];
-Stages = {'wake, wake','wake, N2','N2, N2','N2, N1','N3, N3','N3, N1'}
+Stages = {'wake, wake','wake, N2','N2, N2','N2, N1','N3, N3','N3, N1'};
+
+str = {'1','2','3','4','5','6'};
 
 load('HCTSA_N.mat','TS_DataMat')
 
@@ -225,6 +259,8 @@ for subplot = 1:6
     yticks(-0.7:0.2:0.4);
     xticklabels('')
     yticklabels('')
+    
+    text(80,0.25,str(subplot),'FontSize',20,'FontWeight','bold','Color',[0.552941176470588,0.827450980392157,0.780392156862745])
 
 end 
 
@@ -350,10 +386,19 @@ cline = line(NaN,NaN,'LineWidth',30,'LineStyle','-','Color',cb(3,:));
 dline = line(NaN,NaN,'LineWidth',30,'LineStyle','-','Color',cb(4,:));
 eline = line(NaN,NaN,'LineWidth',30,'LineStyle','-','Color',cb(5,:));
 
-legend([aline bline cline dline eline],{'Wake','N1','N2','N3','REM'},'Location','southeastoutside')
+legend([aline bline cline dline eline],{'Wake','N1','N2','N3','REM'},'Location','southeastoutside','FontSize',20)
 labelOrig = ylabel('Original labels');
-labelClust = ylabel('Cluster decisions');
+labelClust = ylabel('Operations');
 
+ax = gca; 
+ax.XTick = 1:120:1166;
+ax.XTickLabels = strseq('',0:9)';
+ax.YTickLabels = strseq('',0:1000:6000);
+
+title('Dataset 439')
+xlabel('Time (hours)')
+ylabel('Operations')
+ax.FontSize = 16;
 
 %% Same; data matrix with top 40 features only
 

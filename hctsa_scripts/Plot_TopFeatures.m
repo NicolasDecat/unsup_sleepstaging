@@ -154,95 +154,96 @@ MeanFeat = mean(AveragedMatrix);
 % Line plot
 figure; ax = gca;
 plot(MeanFeat,'LineWidth',2)
-title('Mean accuracy across features')
-xlabel('features (sorted from "best" to "worst")')
-ylabel('Percentage Accuracy')
+xlabel('Features')
+ylabel('Singl-feature classification Accuracy (%)')
 
-ax.XTick = 1:50:5603;
-ax.XTickLabels = arrayfun(@(a)num2str(a),0:50:5603,'uni',0);
+ax.XTick = 0:500:5603;
+ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:5603,'uni',0);
 labels = string(ax.XTickLabels); 
-labels(2:2:end) = NaN;    % remove every other label
+% labels(2:2:end) = NaN;    % remove every other label
 ax.XTickLabels = labels; 
+ax.FontSize = 12; 
 grid on
 
-% Plot std (variance across classifiers)
-figure; ax = gca;
-stdshade(AveragedMatrix,0.5,'r');
-title('Mean accuracy across features')
-xlabel('features sorted from best to worst')
-ylabel('Percentage Accuracy')
-ax.XTick = 1:50:5603;
-ax.XTickLabels = arrayfun(@(a)num2str(a),0:50:5603,'uni',0);
-labels = string(ax.XTickLabels); 
-labels(2:2:end) = NaN;    % remove every other label
-ax.XTickLabels = labels; 
-grid on
-xlim([0 5650])
-
-% Plot std (variance across datasets)
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-
-for D = 1:12
-    Var(D,:) =  Per_correct_mean_D_excl{1,D}(5,:);
-    Var2(D,:) =  Per_correct_mean_D_excl{1,D}(7,:);
-    Var3(D,:) =  Per_correct_mean_D_excl{1,D}(9,:);
-end
-
-MEAN = mean(Var);
-[~,I] = sort((MEAN)','descend');
-Var = Var(:,I);
-MEAN2 = mean(Var2);
-[~,Y] = sort((MEAN2)','descend');
-Var2 = Var2(:,Y);
-MEAN3 = mean(Var3);
-[~,Z] = sort((MEAN3)','descend');
-Var3 = Var3(:,Z);
-
-figure; subplot(3,1,1) 
-stdshade(Var,0.5,'b');
-title('N1/N2')
-xlabel('features')
-ylabel('Percentage Accuracy')
-grid on
-xlim([0 5650])
-ylim([0 100])
-
-subplot(3,1,2) 
-stdshade(Var2,0.5,'g');
-title('N1/REM')
-xlabel('features')
-ylabel('Percentage Accuracy')
-grid on
-xlim([0 5650])
-ylim([0 100])
-
-subplot(3,1,3) 
-stdshade(Var3,0.5,'r');
-title('N2/REM ')
-xlabel('features')
-ylabel('Percentage Accuracy')
-grid on
-xlim([0 5650])
-ylim([0 100])
+% % Plot std (variance across classifiers)
+% figure; ax = gca;
+% stdshade(AveragedMatrix,0.5,'r');
+% title('Mean accuracy across features')
+% xlabel('features sorted from best to worst')
+% ylabel('Percentage Accuracy')
+% ax.XTick = 1:50:5603;
+% ax.XTickLabels = arrayfun(@(a)num2str(a),0:50:5603,'uni',0);
+% labels = string(ax.XTickLabels); 
+% labels(2:2:end) = NaN;    % remove every other label
+% ax.XTickLabels = labels; 
+% grid on
+% xlim([0 5650])
+% 
+% % Plot std (variance across datasets)
+% load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+% 
+% for D = 1:12
+%     Var(D,:) =  Per_correct_mean_D_excl{1,D}(5,:);
+%     Var2(D,:) =  Per_correct_mean_D_excl{1,D}(7,:);
+%     Var3(D,:) =  Per_correct_mean_D_excl{1,D}(9,:);
+% end
+% 
+% MEAN = mean(Var);
+% [~,I] = sort((MEAN)','descend');
+% Var = Var(:,I);
+% MEAN2 = mean(Var2);
+% [~,Y] = sort((MEAN2)','descend');
+% Var2 = Var2(:,Y);
+% MEAN3 = mean(Var3);
+% [~,Z] = sort((MEAN3)','descend');
+% Var3 = Var3(:,Z);
+% 
+% figure; subplot(3,1,1) 
+% stdshade(Var,0.5,'b');
+% title('N1/N2')
+% xlabel('features')
+% ylabel('Percentage Accuracy')
+% grid on
+% xlim([0 5650])
+% ylim([0 100])
+% 
+% subplot(3,1,2) 
+% stdshade(Var2,0.5,'g');
+% title('N1/REM')
+% xlabel('features')
+% ylabel('Percentage Accuracy')
+% grid on
+% xlim([0 5650])
+% ylim([0 100])
+% 
+% subplot(3,1,3) 
+% stdshade(Var3,0.5,'r');
+% title('N2/REM ')
+% xlabel('features')
+% ylabel('Percentage Accuracy')
+% grid on
+% xlim([0 5650])
+% ylim([0 100])
 
 
 % Line plot but zoom in to top 100 only
 figure; ax = gca;
 plot(MeanFeat(1:120),'LineWidth',2)
-title('Mean accuracy across features')
-xlabel('Top 100 features')
-ylabel('Percentage Accuracy')
+title('')
+xlabel('')
+ylabel('')
 
 ax.XTick = 1:10:110;
 ax.XTickLabels = arrayfun(@(a)num2str(a),0:10:110,'uni',0);
 labels = string(ax.XTickLabels); 
 ax.XTickLabels = labels; 
+ax.FontSize = 12; 
 grid on
 
 % xlines for top features
-xline(11,'k--','top 10','LineWidth',1.5);
-xline(41,'k--','top 40','LineWidth',1.5);
-xline(101,'k--','top 100','LineWidth',1.5);
+xline(11,'--','top 10','LineWidth',2,'Color','#A2142F','FontSize',13);
+xline(41,'--','top 40','LineWidth',2,'Color','#A2142F','FontSize',13);
+xline(101,'--','top 100','LineWidth',2,'Color','#A2142F','FontSize',13);
 
 
 % %%%% Percentile
@@ -338,7 +339,7 @@ load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
 
-Subs = {'005'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once (use y)
 SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
@@ -1188,116 +1189,6 @@ hold on; plot(Acc_N2REM,'LineWidth',2)
 xlim([0 265])
 
 
-%% Violin Plots: distribution of top features across classes
-
-% Matrices with only WB features
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5603)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Top_Feat_Data_Class')  
-
-% Load TS_DataMat 
-load('HCTSA_N.mat','Operations','TS_DataMat','TimeSeries')  
-
-% Get equivalent indices (only WB features)
-equi_Top_Feat = setdiff(Operations.ID,spec_and_common_feat); % remove SV features
-Idx_WB_Feat = find(ismember(Operations.ID, equi_Top_Feat));  % Index of WB features
-
-% Trim Operations to WB features
-EEGonly = 1:size(TS_DataMat,1);
-Operations = Operations(Idx_WB_Feat,:);
-
-% Average TS_DataMat across all 12 datasets
-Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
-
-SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
-[~,y] = ismember(Subs,SUB);
-
-for D = 1:length(Subs)  
- 
-    sub = Subs{D};
-    
-    % Go to corresponding current folder
-    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
-    
-    % Load TS_DataMat 
-    load('HCTSA_N.mat','Operations','TS_DataMat')   % Simply to get the list of 7749 features 
-    
-    % Get equivalent indices (only WB features)
-    equi_Top_Feat = setdiff(Operations.ID,spec_and_common_feat); % remove SV features
-    Idx_WB_Feat = find(ismember(Operations.ID, equi_Top_Feat));  % Index of WB features
-    
-    % Get DataMat
-    EEGonly = 1:size(TS_DataMat,1)/7;
-    DataMat{D} = TS_DataMat(EEGonly,Idx_WB_Feat);
-    
-end
-
-% Trim the TS_DataMat of each file to have their length matched, before
-% averagaging (here, shortest file has 1088 time series (EEG only) 
-for x = 1:length(DataMat)
-    DataMat{1,x} = DataMat{1,x}(1:1088,:);  % Multiply 1088 by 7 to include all 7 channels, and not only EEG
-end
-
-TS_DataMat = TS_DataMat(1:1088,Idx_WB_Feat);
-    
-CodeString = Operations.CodeString;  
-Keywords = Operations.Keywords;
-YLabel = Operations.ID;
-
-% Features reordering: from best to worst feature
-means = mean(AveragedMatrix_excl);  
-[~,I] = sort((means)','descend');
-AveragedMatrix = AveragedMatrix_excl(:,I);
-
-% Get best 40 features 
-Top_Feat = I(1:40); 
-
-Top_name(1:40) = CodeString(Top_Feat,1);
-Top_key(1:40) = Keywords(Top_Feat,1);
-Top_ID(1:40) = YLabel(Top_Feat,1);
-
-Top_40 = [Top_name' Top_key' num2cell(Top_ID')];
-
-
-% Parameters plot
-numClasses = 5; 
-subPerFig = 16; % subplots per figure
-numFeaturesDistr = 16;  % How many top features I want to plot
-
-ifeat = Top_ID';
-
-% Set the colors to be assigned to groups:
-colors = GiveMeColors(numClasses);
-
-% Space the figures out properly:
-numFigs = ceil(numFeaturesDistr/subPerFig);
-
-% Make data structure for TS_SingleFeature
-data = struct('TS_DataMat',TS_DataMat,'TimeSeries',TimeSeries,...
-            'Operations',Operations);
-
-for figi = 1:numFigs
-    if figi*subPerFig > length(ifeat)
-        break % We've exceeded number of features
-    end
-    % Get the indices of features to plot
-    r = ((figi-1)*subPerFig+1:figi*subPerFig);
-    if figi==numFigs % filter down for last one
-        r = r(r<=numFeaturesDistr);
-    end
-    featHere = ifeat(r); % features to plot on this figure
-    featHere = find(ismember(cell2mat(YLabel), featHere));  % Make equivalent
-    % Make the figure
-    f = figure('color','w');
-    f.Position(3:4) = [1353, 857];
-    % Loop through features
-    for opi = 1:length(featHere)
-        subplot(ceil(length(featHere)/4),4,opi);
-        TS_SingleFeature(data,Operations.ID(featHere(opi),:),true,false);
-    end
-end
-
 %%  Significantly different? 
 
 entropy = [68.8 70.3 68.6 68.4 69.2 66.6 67.9 69.6 66 65.9 67.2 65.8 66];
@@ -1393,6 +1284,7 @@ end
 
 
 
+
 %% Plot accuracy + distribution for AveragedMatrix
 
 
@@ -1437,8 +1329,10 @@ classifstr = {'Wake vs N1','Wake vs N2','Wake vs N3','Wake vs REM','N1 vs N2','N
 
 %%%
 figure;    
-[ha, pos] = tight_subplot(3,4,[.085 .03],[.1 .05],[.05 .05]);
+[ha, pos] = tight_subplot(4,4,[.065 .05],[.1 .05],[.05 .05]);
 
+% diagonal position og subplots
+diag_pos = [1 2 3 4 5 6 7 9 10 13];
 
 % Select a classifier 
 for C = 1:10
@@ -1496,7 +1390,7 @@ for C = 1:10
     [cb] = [cb;cb2];
     
    
-    axes(ha(C)); 
+    axes(ha(diag_pos(C))); 
     
     for j = 1:length(Accu)
         
@@ -1526,8 +1420,13 @@ for C = 1:10
     clear Accu Ncount KEY
 end
 
+delete(ha(8,1))
 delete(ha(11,1))
 delete(ha(12,1))
+delete(ha(14,1))
+delete(ha(15,1))
+delete(ha(16,1))
+
 
 %%% Get same colors across datasets
 % ALL = [ALLKEYS{1,1};ALLKEYS{1,2};ALLKEYS{1,3};ALLKEYS{1,4};ALLKEYS{1,5};ALLKEYS{1,6};ALLKEYS{1,7};ALLKEYS{1,8};ALLKEYS{1,9};ALLKEYS{1,10}];
@@ -1589,9 +1488,12 @@ wake = 0; N1 = 1; N2 = 3; N3 = 3; rem = 5;
 CLASSIFIER = {[wake,N1] [wake,N2] [wake,N3] [wake,rem] [N1,N2] [N1,N3] [N1,rem] [N2,N3] [N2,rem] [N3,rem]};
 classifstr = {['Wake vs N1';'          '],['Wake vs N2';'          '],['Wake vs N3';'          '],['Wake vs REM';'           '],['N1 vs N2';'        '],['N1 vs N3';'        '],['N1 vs REM';'         '],['N2 vs N3';'        '],['N2 vs REM';'         '],['N3 vs REM';'         ']};  
 
-%%
+
 figure;    
-[ha, pos] = tight_subplot(2,5,[.075 .04],[.1 .05],[.05 .05]);
+[ha, pos] = tight_subplot(4,4,[.075 .08],[.1 .05],[.05 .05]);
+
+% diagonal position og subplots
+diag_pos = [1 2 3 4 5 6 7 9 10 13];
 
 %%% Plot pie chart: % representation of each family
 
@@ -1626,7 +1528,7 @@ for C = 1:10
     end
 
     % Pie chart
-    axes(ha(C)); 
+    axes(ha(diag_pos(C))); 
     
     labels = UniqFam;
     p = pie(Ncount, labels);
@@ -1650,5 +1552,10 @@ for C = 1:10
 
 end
 
-
-
+% Delete unused subplots
+delete(ha(8,1))
+delete(ha(11,1))
+delete(ha(12,1))
+delete(ha(14,1))
+delete(ha(15,1))
+delete(ha(16,1))

@@ -117,7 +117,7 @@ for D = 1:length(Subs)
     % Assign transparency value (from 0.2 to 1) to each data point
     for i = 1:5
         Numshade = length(stages{i});
-        Transpar{i} = linspace(0.2,1,Numshade);
+        Transpar{i} = linspace(1,0.2,Numshade);
     end
     
     % EEG only
@@ -167,9 +167,9 @@ for D = 1:length(Subs)
         legend([v(1) v(2) v(3) v(4) v(5)],{'Wake','N1','N2','N3','REM'});
     
     
-    % Save figure
-    fpath = '/Users/nico/Documents/HCTSA/Analysis/PCA_100/PCA_time/';
-    exportgraphics(gca,sprintf('/Users/nico/Documents/HCTSA/Analysis/PCA_100/PCA_time/HQ/PCA(%s).jpg',sub),'Resolution',600)
+%     % Save figure
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis/PCA_100/PCA_time/';
+%     exportgraphics(gca,sprintf('/Users/nico/Documents/HCTSA/Analysis/PCA_100/PCA_time/HQ2/PCA(%s).jpg',sub),'Resolution',600)
 
 end
 
