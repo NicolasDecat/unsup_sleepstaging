@@ -246,7 +246,7 @@ xline(41,'--','top 40','LineWidth',2,'Color','#A2142F','FontSize',13);
 xline(101,'--','top 100','LineWidth',2,'Color','#A2142F','FontSize',13);
 
 
-% %%%% Percentile
+% %%%% Percentile g
 % means = means(1,I);
 % Y = prctile(means,99)  % Take 1% (53 Features) of best features -> Take top 50 ?
 

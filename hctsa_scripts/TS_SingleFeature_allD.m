@@ -1,4 +1,4 @@
-function [dataCell] = TS_SingleFeature(whatData,featID,makeViolin,makeNewFigure,D)
+function [dataCell] = TS_SingleFeature(whatData,featID,makeViolin,makeNewFigure)
 % TS_SingleFeature  Plot distributions for a single feature given a feature ID
 %
 %---INPUTS:
@@ -57,9 +57,8 @@ else
 end
 numClasses = length(classLabels);
 
-TS = size(TS_DataMat,1)/7;
-TS_DataMat = TS_DataMat(1:TS,:);
-TimeSeries = TimeSeries(1:TS,:);
+TS_DataMat = TS_DataMat(1:1088,:);
+TimeSeries = TimeSeries(1:1088,:);
 
 %-------------------------------------------------------------------------------
 load('HCTSA_N.mat','Operations')

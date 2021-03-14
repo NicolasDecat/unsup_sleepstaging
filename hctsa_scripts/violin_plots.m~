@@ -116,7 +116,7 @@ load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
 
-Subs = {'439'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once (use y)
 SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
@@ -209,19 +209,20 @@ for D = 1:length(Subs)
         for opi = 1:length(featHere)
             subplot(ceil(length(featHere)/4),4,opi);
             [dataCell] = TS_SingleFeature_1D(data,featHere(opi),true,false,D);
-           if numel(Top_40{opi,1}) > 25
-               Top_40{opi,1} = Top_40{opi,1}(1:25);
-           end
-            title({sprintf('[%u] %s: %1.1f%%',featHere(opi),string(Top_40{opi,1}),string(Top_40{opi,4}));...
+            Top_40{opi,4} = round(Top_40{opi,4},2);
+            title({sprintf('[%u] %s: %s',featHere(opi),string(Top_40{opi,1}(1:30)),string(Top_40{opi,4}));...
                             ['(',Top_40{opi,2},')']},'interpreter','none')
         end
         
     end
+
+    DataCell{1,D} = dataCell;
     
 end
 
-
-%%%%%%%% Plot the correlation matrix of top 10 features
+hold on
+subplot(3,4,11)
+%%%%%%%% Plot the correlation matrix
 
 numTopFeatures = numFeaturesDistr;  % Number of top features
 ifeat = ifeat(1:10); % indices of top  features (among the 7k)
