@@ -1,4 +1,4 @@
-function [dataCell] = TS_SingleFeature(whatData,featID,makeViolin,makeNewFigure)
+function [dataCell] = TS_SingleFeature(dataCell,featID,makeViolin,makeNewFigure,feature,C)
 % TS_SingleFeature  Plot distributions for a single feature given a feature ID
 %
 %---INPUTS:
@@ -48,28 +48,29 @@ end
 
 %-------------------------------------------------------------------------------
 % Load data:
-[TS_DataMat,TimeSeries,Operations,whatDataSource] = TS_LoadData(whatData);
+% [TS_DataMat,TimeSeries,Operations,whatDataSource] = TS_LoadData(whatData);
 % Get classLabels:
-if ismember('Group',TimeSeries.Properties.VariableNames)
-    classLabels = categories(TimeSeries.Group);
-else
-    error('You must assign groups to data to use TS_SingleFeature. Use TS_LabelGroups.');
-end
+% if ismember('Group',TimeSeries.Properties.VariableNames)
+classLabels = [0 1 2 3 5];
+% else
+%     error('You must assign groups to data to use TS_SingleFeature. Use TS_LabelGroups.');
+% end
 numClasses = length(classLabels);
 
-TS_DataMat = TS_DataMat(1:1088,:);
-TimeSeries = TimeSeries(1:1088,:);
+% TS = size(TS_DataMat,1)/7;
+% TS_DataMat = TS_DataMat(1:TS,:);
+% TimeSeries = TimeSeries(1:TS,:);
 
 %-------------------------------------------------------------------------------
-load('HCTSA_N.mat','Operations')
-op_ind = find(Operations.ID==featID);
-
-if isempty(op_ind)
-    error('Operation with ID %u not found in %s',featID,whatDataSource);
-end
-if beVocal
-    fprintf(1,'[%u] %s (%s)\n',featID,Operations.Name{op_ind},Operations.Keywords{op_ind});
-end
+% load('HCTSA_N.mat','Operations')
+% op_ind = find(Operations.ID==featID);
+op_ind = featID;
+% if isempty(op_ind)
+%     error('Operation with ID %u not found in %s',featID,whatDataSource);
+% end
+% if beVocal
+%     fprintf(1,'[%u] %s (%s)\n',featID,Operations.Name{op_ind},Operations.Keywords{op_ind});
+% end
 
 %-------------------------------------------------------------------------------
 % Plot this stuff:
@@ -80,14 +81,18 @@ hold('on')
 ax = gca;
 colors = GiveMeColors(numClasses);
 
-if makeViolin
-    dataCell = cell(numClasses,1);
-    for i = 1:numClasses
-        dataCell{i} = (TS_DataMat(TimeSeries.Group==classLabels{i},op_ind));
-    end
 
+
+if makeViolin
+%     dataCell = cell(numClasses,1);
+%     for i = 1:numClasses
+%         dataCell{i} = (TS_DataMat(TimeSeries.Group==classLabels{i},op_ind));
+%     end
+
+    dataCell_C = dataCell(:,C);
+    dataCell_CC = dataCell_C(:,feature);
     % Re-order groups by mean (excluding any NaNs, descending):
-    meanGroup = cellfun(@nanmean,dataCell);
+    % meanGroup = cellfun(@nanmean,dataCell);
 %     [~,ix] = sort(meanGroup,'descend');
 
    % Re-order groups: wake, N1, N2, N3, REM   
@@ -97,7 +102,7 @@ if makeViolin
     extraParams.theColors = colors(ix);
     extraParams.customOffset = -0.5;
     extraParams.offsetRange = 0.7;
-    BF_JitteredParallelScatter(dataCell(ix),1,1,0,extraParams);
+    BF_JitteredParallelScatter(Data,1,1,0,extraParams);
 
     % Adjust appearance:
     ax = gca;
