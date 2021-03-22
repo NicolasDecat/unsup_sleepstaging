@@ -208,7 +208,7 @@ for D = 1:length(Subs)
         % Loop through features
         for opi = 1:length(featHere)
             subplot(ceil(length(featHere)/4),4,opi);
-            [dataCell] = TS_SingleFeature_1D(data,featHere(opi),true,false,D);
+            TS_SingleFeature_1D(data,featHere(opi),true,false);
            if numel(Top_40{opi,1}) > 25
                Top_40{opi,1} = Top_40{opi,1}(1:25);
            end
@@ -217,6 +217,20 @@ for D = 1:length(Subs)
         end
         
     end
+    
+     %%% Add line plot among subplots
+    subplot(3,4,11)
+    plot(Top_mean(1:10),'LineWidth',2)
+    xlabel('Top 10 Features')
+    ylabel('Accuracy (%)')
+
+    ax.XTick = 1:10;
+    ax.XTickLabels = arrayfun(@(a)num2str(a),0:10,'uni',0);
+    labels = string(ax.XTickLabels); 
+    ax.XTickLabels = labels; 
+    ax.FontSize = 12; 
+    title('Accuracy averaged across all classifiers')
+    grid on
     
 end
 
@@ -259,106 +273,20 @@ title(sprintf('Dependencies between %u top features (organized into %u clusters)
 
 %% Violin plots for all datasets
 
-%%%%% Problem: each dataset as different TimeSeries.Group. We can averaged
-%%%%% DataMat but regarding original labels, would need to collect from
-%%%%% each dataset the data the epochs from each stage and their datamat
-%%%%% values, and then plot
-
-
-%%%%% Get the AveragedMatrix with all 12 datasets and their 5603 WB features
-
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5603)_all_datasets')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
-load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
-
-% Get top features
-load HCTSA.mat   
-Operations_ID = [Operations.ID].';
-
-equi_Top_Feat = setdiff(Operations_ID,spec_and_common_feat); % remove SV features
-Operations = Operations(equi_Top_Feat,:);                      % 'Operations' with WB features only (from HCTSA_N)
-
-CodeString = {Operations.CodeString}.';  
-Keywords = {Operations.Keywords}.';
-YLabel = {Operations.ID}.';
-
-% Features reordering: from best to worst feature
-means = mean(AveragedMatrix_excl);  
-[~,I] = sort((means)','descend');
-AveragedMatrix = AveragedMatrix_excl(:,I);
-
-% Get best 40 features 
-Top_Feat = I(1:10); 
-
-Top_name(1:10) = CodeString(Top_Feat,1);
-Top_key(1:10) = Keywords(Top_Feat,1);
-Top_ID(1:10) = YLabel(Top_Feat,1);
-
-Top_10 = [Top_name' Top_key' Top_ID'];
-
-% Get mean over classifiers
-for F = 1:length(Top_10)
-    for C = 1:10
-        Top_10_Acc(F,C) = mean(AveragedMatrix(C,F));
-    end
-end
-
-Top_mean = mean(Top_10_Acc');
-
-Top_10 = [Top_10 num2cell(Top_mean')];
-
-
-% Load Averaged DataMat across datasets
-load('/Users/nico/Documents/HCTSA/Analysis/violin/AveragedDataMat')
-
-%%%  Parameters plot
-numClasses = 5; 
-subPerFig = 10; % subplots per figure
-numFeaturesDistr = 10;  % How many top features I want to plot
-
-ifeat = Top_ID';
-
-% Set the colors to be assigned to groups:
-colors = GiveMeColors(numClasses);
-
-% Space the figures out properly:
-numFigs = ceil(numFeaturesDistr/subPerFig);
-
-% Make data structure for TS_SingleFeature
-data = struct('TS_DataMat',AveragedDataMat,'TimeSeries',TimeSeries,...
-            'Operations',Operations);
-
-for figi = 1:numFigs
-    if figi*subPerFig > length(ifeat)
-        break % We've exceeded number of features
-    end
-    % Get the indices of features to plot
-    r = ((figi-1)*subPerFig+1:figi*subPerFig);
-    if figi==numFigs % filter down for last one
-        r = r(r<=numFeaturesDistr);
-    end
-    featHere = ifeat(r); % features to plot on this figure
-    % featHere = find(ismember(YLabel, featHere));  % Make equivalent
-    % Make the figure
-    f = figure('color','w');
-    f.Position(3:4) = [1353, 857];
-    % Loop through features
-    for opi = 1:length(featHere)
-        subplot(ceil(length(featHere)/4),4,opi);
-        TS_SingleFeature_allD(data,featHere(opi),true,false);
-        title({sprintf('[%u] %s: %s',featHere(opi),string(Top_40{opi,1}),string(Top_40{opi,4}));...
-                        ['(',Top_40{opi,2},')']},'interpreter','none')
-    end
-
-end
 
 
 
 
 %% Line plot for top 10 for each classifier 
 
-
-% Prepare top 10
+% Go to corresponding current folder
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+Dataset = 3;
+sub = SUB{Dataset};
+    
+cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+    
+%%%%%%  Prepare top 10
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
 load HCTSA.mat   
 Operations_ID = [Operations.ID].';
@@ -374,7 +302,6 @@ TOP = 40;
 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
 
-Dataset = 1;
 CL = {'Wake vs N1', 'Wake vs N2', 'Wake vs N3', 'Wake vs REM', 'N1 vs N2', 'N1 vs N3', 'N1 vs REM', 'N2 vs N3', 'N2 vs REM', 'N3 vs REM'};
 
 figure;    
@@ -382,7 +309,7 @@ figure;
 
 TOP = 10;
 
-% Select a classifier 
+%%%%% Select a classifier 
 for C = 1:10
     
     Per_correct_mean = Per_correct_mean_D_excl{1,Dataset}(C,:);
@@ -398,7 +325,7 @@ for C = 1:10
 
     Top_10{C} = [Top_name' Top_key' Top_ID' num2cell(Top_mean')];
 
-    % Line plot
+    %%%%% Line plot of top 10 features
     axes(ha(C)); 
     
     plot(Top_mean,'LineWidth',2)
@@ -413,5 +340,112 @@ for C = 1:10
     title(CL(C))
     grid on
 
+    
+     %%% Violin plot
+
+    numClasses = 5; 
+    subPerFig = 10; % subplots per figure
+    numFeaturesDistr = 10;  % How many top features I want to plot
+
+    ifeat = Top_ID';
+
+    % Set the colors to be assigned to groups:
+    colors = GiveMeColors(numClasses);
+
+    % Space the figures out properly:
+    numFigs = ceil(numFeaturesDistr/subPerFig);
+
+    load HCTSA_N
+    
+    % Make data structure for TS_SingleFeature
+    data = struct('TS_DataMat',TS_DataMat,'TimeSeries',TimeSeries,...
+                'Operations',Operations);
+
+    for figi = 1:numFigs
+        if figi*subPerFig > length(ifeat)
+            break % We've exceeded number of features
+        end
+        % Get the indices of features to plot
+        r = ((figi-1)*subPerFig+1:figi*subPerFig);
+        if figi==numFigs % filter down for last one
+            r = r(r<=numFeaturesDistr);
+        end
+        featHere = cell2mat(ifeat(r)); % features to plot on this figure
+        % featHere = find(ismember(YLabel, featHere));  % Make equivalent
+        % Make the figure
+        f = figure('color','w');
+        f.Position(3:4) = [1353, 857];
+        % Loop through features
+        for opi = 1:length(featHere)
+            NameFeat = Top_10{1,C}{opi,1};
+            subplot(ceil(length(featHere)/4),4,opi);
+            TS_SingleFeature_1D(data,featHere(opi),true,false);
+           
+           if numel(NameFeat) > 25
+               NameFeat = NameFeat(1:25);
+           end
+            title({sprintf('[%u] %s: %1.1f%%',featHere(opi),string(NameFeat),string(Top_10{1,C}{opi,4}));...
+                            ['(',Top_10{1,C}{opi,2},')']},'interpreter','none')
+        end
+        
+    end
+    
+    %%% Add line plot among subplots
+    subplot(3,4,11)
+    plot(Top_mean,'LineWidth',2)
+    xlabel('Top 10 Features')
+    ylabel('Accuracy (%)')
+
+    ax.XTick = 0:10;
+    ax.XTickLabels = arrayfun(@(a)num2str(a),0:10,'uni',0);
+    labels = string(ax.XTickLabels); 
+    ax.XTickLabels = labels; 
+    ax.FontSize = 12; 
+    title(CL(C))
+    grid on
+    
+    % Save
+    sgtitle(sprintf('Top 10 Features for: %s',CL{C}))
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/violin/Dataset439';
+%     saveas(gca,fullfile(fpath,sprintf('top10_%s(%s)',string(CL{C}),sub)),'jpg')
+    
+    %%%%%%%% Add correlation matrix among subplots
+
+    numTopFeatures = numFeaturesDistr;  % Number of top features
+    ifeat = cell2mat(ifeat(1:10)); % indices of top  features (among the 7k)
+
+    % Convert /7749 to /6606
+    load('HCTSA_N.mat','Operations')
+    for i = 1:numel(ifeat)
+        op_ind(i) = find(Operations.ID == ifeat(i));
+    end
+
+    % Compute correlations based on hctsa responses
+    EEGonly = 1:size(TS_DataMat,1)/7;
+    TS_DataMat = TS_DataMat(EEGonly,op_ind);      % Only WB features and EEG channels 
+    Dij = BF_pdist(TS_DataMat','abscorr');  
+
+    distanceMetric = 'abscorr';
+    clusterThreshold = 0.2; % threshold at which split into clusters
+
+    % Ylabels
+    Top_Mean = Top_10{1,C}(:,4)';  % Change it for later in the Ylabels section
+    Ylabel = [];
+
+    for i = 1:length(Top_ID)
+        Ylabel = [Ylabel {sprintf('[%s] %s (%1.1f%%)',Top_key{i},Top_name{i},Top_Mean{i})}];
+    end
+
+    % Plot
+    [~,cluster_Groupi] = BF_ClusterDown(Dij,'clusterThreshold',clusterThreshold,...
+                            'whatDistance',distanceMetric,...
+                            'objectLabels',Ylabel);
+    title(sprintf('Dependencies between %u top features (%u clusters), %s',...
+                            numTopFeatures,length(cluster_Groupi),CL{C}))
+         
+                                      
 end
+
+
+
 

@@ -162,11 +162,11 @@ for ncond=1:2
     h(2) = plot(NaN,NaN,'dk','MarkerEdgeColor','k','LineWidth',2);
     h(3) = plot(NaN,NaN,'sk','MarkerEdgeColor','k','LineWidth',2);
     
-    % Cluster alone
-    if ncond == 1
-    legend([h3{1}], {'Cluster'},'Location','northwest','FontSize',10);
-    title(sprintf('%s',stg))
-    end
+%     % Cluster alone
+%     if ncond == 1
+%     legend([h3{1}], {'Cluster'},'Location','northwest','FontSize',10);
+%     title(sprintf('%s',stg))
+%     end
   
     % CEN
     if ncond == 1
@@ -174,25 +174,22 @@ for ncond=1:2
     title(sprintf('%s',stg))
     end
     
-    % xlabel('Type 1 - AUC')
-    if ncond == 1
-        % ylabel({'EEG'})
-    else 
-        % ylabel({'EEG+EOG+EMG'}) 
-        xlabel('Type 1 - AUC')
+    if ncond == 1 && S == 1 || ncond == 1 && S == 4 
+        ylabel({'EEG'})
+    elseif S == 1 || S == 4 
+        ylabel({'EEG+EOG+EMG'}) 
+        xlabel('Type-1 AUC')
     end
     
    
 end
 
 fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Rainbow figures';
-saveas(gca,fullfile(fpath,sprintf('CEN_%s stage',stg)),'jpeg')
+export_fig([fpath filesep sprintf('CEN_%s stage',stg)],'-r 300')
+
+% fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Rainbow figures';
+% saveas(gca,fullfile(fpath,sprintf('CEN_%s stage',stg)),'jpeg')
 
 end
 
-% saveas(gcf, 'thisfigure');
-% export_fig('thisfigure.png','-r 30')
-
-% x = export_fig(['/Users/nico/Documents/HCTSA/Analysis/AUC'],'-r 300')
-% export_fig(['/Users/tand0009/Work/Documents/Articles/InPrep/HCTSA_LD/Figures' filesep 'Fig_CCSHSclustering_accuracy.fig'])
 

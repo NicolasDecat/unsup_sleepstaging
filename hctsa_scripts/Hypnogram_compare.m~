@@ -134,15 +134,16 @@ z = plot(x_time,cluster_decision,'k','LineWidth',1,'Color',[.3 .3 .3]);  % light
 
 %%% Same figure but 4th-7th hour (magnify)
 
-% a = figure;
-% copyobj(ax,a)
-% set(a, 'Color', 'w')
-% customColorMap = flipud(BF_GetColorMap('redyellowblue',6,0));
-% colormap(customColorMap);
-% 
-% factor = (2*60);  % multiply by 2 to go 30-->60s, and *60 for hour
-% 
-% xlim([4*factor 7*factor ])  % 4th to 5th hour
+a = figure;
+copyobj(ax,a)
+customColorMap = flipud(BF_GetColorMap('redyellowblue',6,0));
+colormap(customColorMap);
+
+factor = (2*60);  % multiply by 2 to go 30-->60s, and *60 for hour
+
+xlim([4*factor 7*factor ])  % 4th to 5th hour
+
+
 
 
 

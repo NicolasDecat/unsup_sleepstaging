@@ -792,9 +792,9 @@ for C = [5,7,9]
     % fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Top_Features/ind_classifier(all_datasets)';
     % saveas(gca,fullfile(fpath,sprintf('CM_top40_%s(allD)',string(thisClassif))),'jpg')
     
-%     % Save
-%     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Top_Features/ind_classifier(all_datasets)/figs';
-%     export_fig([fpath filesep sprintf('CM_top40_%s(allD)',string(thisClassif))],'-r 300')
+    % Save
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Top_Features/ind_classifier(all_datasets)/figs';
+    export_fig([fpath filesep sprintf('CM_top40_%s(allD)',string(thisClassif))],'-r 300')
 
     
 end

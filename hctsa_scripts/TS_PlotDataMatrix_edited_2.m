@@ -229,11 +229,11 @@ f = figure('color','w');
 %% Plot the data matrix
 % ------------------------------------------------------------------------------
 colormap(customColorMap)
-% TS_DataMat = [TS_DataMat(1:1166,:) TS_DataMat(1167:2332,:) TS_DataMat(2333:3498,:)]';
 load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/stage_ordered(439)')
 
 % TS_DataMat = TS_DataMat(stage_ordered,:);
-TS_DataMat = TS_DataMat';
+load('HCTSA_N.mat', 'op_clust')
+TS_DataMat = TS_DataMat(:,op_clust.ord)';
 imagesc(TS_DataMat);
 
 % ------------------------------------------------------------------------------
@@ -276,7 +276,7 @@ label_p.Position(1) = -10;
 
 % Add a color bar:
 cB = colorbar('eastoutside');
-cB.Position = [0.820,0.522,0.015,0.400];  % Change last digit for the height of colorbar
+cB.Position = [0.930,0.522,0.015,0.400];  % Change last digit for the height of colorbar
 cB.Label.String = 'Output';
 
 if numGroups > 0
@@ -292,5 +292,7 @@ title('Dataset 439')
 % yline(6006,'k-','EOG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
 % yline(12012,'k-','EMG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
 
+pos = get(f,'position');
+set(f,'position',[pos(1) pos(2)*2 pos(3) pos(4)*2])
 
 end

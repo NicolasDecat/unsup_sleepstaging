@@ -15,6 +15,13 @@ load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/Table_AUC_100.mat');
 
 path_raincloud='/Users/nico/Documents/MATLAB/hctsa-master/RainCloudPlots-master/';
 addpath(genpath(path_raincloud));
+
+[cb] = cbrewer('qual', 'Set3', 12, 'pchip');
+cl(1, :) = cb(4, :);
+cl(2, :) = cb(1, :);
+cl(3, :) = cb(2, :);
+
+
 path_export='/Users/nico/Documents/MATLAB/hctsa-master/export_fig-master';
 addpath(genpath(path_export));
 
@@ -163,7 +170,6 @@ for ncond=1:2
     legend([h1{1} h3{1} h2{1} h(1) h(2) h(3) ], {'Novices', 'Cluster','Experts','Dataset 1','Dataset 2','Dataset 3-12'},'Location','northwest','FontSize',10);
     end
 
-    
     xlabel('Type 1 - AUC')
     if ncond == 1
         ylabel({'EEG'})
@@ -171,68 +177,27 @@ for ncond=1:2
         ylabel({'EEG+EOG+EMG'}) 
     end
     
-    
-%    h4{1,2}.MarkerEdgeColor=cb(5,:);
+    aline = line(NaN,NaN,'LineWidth',10,'LineStyle','-','Color',cb(7,:));
+    bline = line(NaN,NaN,'LineWidth',10,'LineStyle','-','Color',cb(5,:));
+    cline = line(NaN,NaN,'LineWidth',10,'LineStyle','-','Color',cb(6,:));
+    dline = plot(NaN,NaN,'ok','MarkerEdgeColor',([10 17 17]/255),'MarkerFaceColor',([17 17 17]/255),'LineWidth',2);
+    eline = plot(NaN,NaN,'dk','MarkerEdgeColor',([17 17 17]/255),'MarkerFaceColor',([17 17 17]/255),'LineWidth',2);
+    fline = plot(NaN,NaN,'sk','MarkerEdgeColor',([17 17 17]/255),'MarkerFaceColor',([17 17 17]/255),'LineWidth',2);
+
+    if ncond == 1
+    legend([aline bline cline dline eline fline],{'Novices', 'Cluster','Experts','Dataset 1','Dataset 2','Dataset 3-12'},'Location','northwest','FontSize',12)
+    end 
+
+    %    h4{1,2}.MarkerEdgeColor=cb(5,:);
 %    h4{1,2}.MarkerFaceColor='w';
    
 %    h4{1,1}.FaceAlpha   = 0.5;
 %    h4{1,1}.EdgeColor= cb(5,:);
 end
 
-fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Figures';
+% fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Figures';
 % saveas(gca,fullfile(fpath,sprintf('CEN_all')),'jpeg')
+% 
+fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Rainbow figures';
+export_fig([fpath filesep 'CEN_all'],'-r 300')
 
-
-
-% export_fig('thisfigure.png','-r 30')
-
-% x = export_fig(['/Users/nico/Documents/HCTSA/Analysis/AUC'],'-r 300')
-% export_fig(['/Users/tand0009/Work/Documents/Articles/InPrep/HCTSA_LD/Figures' filesep 'Fig_CCSHSclustering_accuracy.fig'])
-
-
-% %%
-% for k=1:2
-%     for j=1:3
-% [h, pV(k,j), ~, stats]=ttest(data{k,j},0.5);
-%     end
-% end
-% 
-% for k=1:2
-%     for j=1:2
-% [h, pV2(k,j), ~, stats]=ttest2(data{k,3},data{k,j});
-%     end
-% end
-% 
-% %%
-% table_all=type1auc_human_scorers_table;
-% type1auc_algorithm_table.dataset_type=repmat("clustering",size(type1auc_algorithm_table,1),1);
-% table_all=[table_all ; type1auc_algorithm_table];
-% 
-% table_all.type1auc=double(table_all.type1auc);
-% 
-% % mdl_3=fitlme(table_all,'type1auc~dataset_type+(1|dataset)+(1|dataset:subject)');
-% mdl_3=fitlme(table_all,'type1auc~1+channel*dataset_type+(1|dataset)+(1|dataset:subject)'); %winning
-% mdl_2=fitlme(table_all,'type1auc~1+channel+dataset_type+(1|dataset)+(1|dataset:subject)'); %winning
-% mdl_1=fitlme(table_all,'type1auc~1+channel+(1|dataset)+(1|dataset:subject)'); %winning
-% mdl_0=fitlme(table_all,'type1auc~1+(1|dataset)+(1|dataset:subject)');
-% 
-% 
-% mdl2_5=fitlme(table_all,'type1auc~1+sleep_stage*channel*dataset_type+(1|dataset)+(1|dataset:subject)'); %winning
-% mdl2_4=fitlme(table_all,'type1auc~1+sleep_stage*channel+dataset_type+(1|dataset)+(1|dataset:subject)'); %winning
-% mdl2_3=fitlme(table_all,'type1auc~1+sleep_stage*channel+(1|dataset)+(1|dataset:subject)'); %winning
-% mdl2_2=fitlme(table_all,'type1auc~1+sleep_stage+channel+(1|dataset)+(1|dataset:subject)'); %winning
-% mdl2_1=fitlme(table_all,'type1auc~1+sleep_stage+(1|dataset)+(1|dataset:subject)'); %winning
-% mdl2_0=fitlme(table_all,'type1auc~1+(1|dataset)+(1|dataset:subject)');
-% 
-% %%
-% for nStage=1:5
-%     mdl3_3{nStage}=fitlme(table_all(table_all.sleep_stage==num2str(nStage),:),'type1auc~1+channel*dataset_type+(1|dataset)+(1|dataset:subject)'); %winning
-%     mdl3_2{nStage}=fitlme(table_all(table_all.sleep_stage==num2str(nStage),:),'type1auc~1+channel+dataset_type+(1|dataset)+(1|dataset:subject)'); %winning
-%     mdl3_1{nStage}=fitlme(table_all(table_all.sleep_stage==num2str(nStage),:),'type1auc~1+channel+(1|dataset)+(1|dataset:subject)'); %winning
-%     mdl3_0{nStage}=fitlme(table_all(table_all.sleep_stage==num2str(nStage),:),'type1auc~1+(1|dataset)+(1|dataset:subject)');
-% end
-% %%
-% for nStage=1:5
-%     [h, pV_byStage(nStage)]=ttest2(table_all.type1auc(table_all.sleep_stage==num2str(nStage) & table_all.dataset_type=='clustering'),table_all.type1auc(table_all.sleep_stage==num2str(nStage) & table_all.dataset_type=='Expert'));
-%     [h, pV_byStage2(nStage)]=ttest2(table_all.type1auc(table_all.sleep_stage==num2str(nStage) & table_all.dataset_type=='clustering'),table_all.type1auc(table_all.sleep_stage==num2str(nStage) & table_all.dataset_type=='Novice'));
-% end

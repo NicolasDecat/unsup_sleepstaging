@@ -429,25 +429,36 @@ uns_one = flip([54.2 56.3 64.0 56.1 58.3 69.4 54.5 62.5 54.2 69.0])';
 sup_all = flip([89.1 92.3 98.2 95.5 86.4 99.5 82.5 93.2 84.1 99.1])';
 sup_one = flip([58.4 59.9 69.7 59.8 57.5 69.7 54.4 64.0 55.6 66.4])';
 
+% Sort from best to worst classifier (based on unsup all)
+[~,I] = sort(uns_all,'ascend');
+uns_all = uns_all(I);
+uns_one = uns_one(I);
+sup_all = sup_all(I);
+sup_one = sup_one(I);
+
 % Line plot
-figure;
-h = plot(uns_all,1:10,'LineWidth',1.3,'Color',[0.3010 0.7450 0.9330]);  % light blue
+figure; 
+h = plot(1:10,uns_all,'LineWidth',1.3,'Color',[0.3010 0.7450 0.9330]);  % light blue
 hold on
-i = plot(sup_all,1:10,'LineWidth',1.3,'Color',[0 0.4470 0.7410]);  % dark blue
+i = plot(1:10,sup_all,'LineWidth',1.3,'Color',[0 0.4470 0.7410]);  % dark blue
 hold on
-j = plot(uns_one,1:10,'LineWidth',1.3,'Color',[0.9350 0.580 0.3840]);  % light red
+j = plot(1:10, uns_one,'LineWidth',1.3,'Color',[0.9350 0.580 0.3840]);  % light red
 hold on
-k = plot(sup_one,1:10,'LineWidth',1.3,'Color',[0.6350 0.0780 0.1840]);  % dark red
+k = plot(1:10,sup_one,'LineWidth',1.3,'Color',[0.6350 0.0780 0.1840]);  % dark red
 hold off
 
-legend('Unsup - using all features','SVM - using all features','Unsup - one feature at a time','SVM - one feature at a time','Location','eastoutside')
-xlabel('Accuracy')
-ylabel('Classifiers')
+% legend('Unsup - using all features','SVM - using all features','Unsup - one feature at a time','SVM - one feature at a time','Location','eastoutside')
+xlabel('Classifiers')
+ylabel('Classification accuracy (%)')
 
 ax = gca;
-ax.YTick = 1:10;
-ax.YTickLabels = {'N3 vs REM','N2 vs REM','N2 vs N3','N1 vs REM','N1 vs N3','N1 vs N2','W vs REM','W vs N3','W vs N2','W vs N1'};
-
+ax.XTick = 1:11;
+ax.XTickLabels = {'N3 vs REM','N2 vs REM','N3 vs N2','N1 vs REM','N3 vs N1','N1 vs N2','W vs REM','N3 vs W','W vs N2','W vs N1',''};
+ax.XTickLabels = ax.XTickLabels(I);
+xtickangle(30)
+ylim([45 100])
+yline(50,'--','chance level');
+ax.FontSize = 14;
 
 %% Rainbow plots %%%%%%%%%%%%
  

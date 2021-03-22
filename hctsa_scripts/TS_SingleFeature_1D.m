@@ -1,4 +1,4 @@
-function [dataCell] = TS_SingleFeature(whatData,featID,makeViolin,makeNewFigure,D)
+function [dataCell] = TS_SingleFeature(whatData,featID,makeViolin,makeNewFigure)
 % TS_SingleFeature  Plot distributions for a single feature given a feature ID
 %
 %---INPUTS:

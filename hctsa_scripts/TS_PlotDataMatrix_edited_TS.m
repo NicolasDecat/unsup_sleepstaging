@@ -1,7 +1,7 @@
 
 %%%%%%% Had to change l.114: Change TimeSeries.Data into cell array 
 
-function TS_PlotDataMatrix_edited(varargin)
+function [ax, ax2] = TS_PlotDataMatrix_edited(varargin)
 % TS_PlotDataMatrix   Plot the data matrix.
 %
 %---EXAMPLE USAGE:
@@ -270,7 +270,7 @@ f = figure('color','w');
 % ------------------------------------------------------------------------------
 %% Plot the data matrix
 % ------------------------------------------------------------------------------
-colormap(customColorMap)
+colormap(customColorMap);
 
 TS_DataMat = TS_DataMat';
 TS_DataMat = TS_DataMat(:,reordered);  % Ordered TS according to cluster decisions
@@ -312,7 +312,7 @@ label_p.Position(2) = 3000;
 
 % Add a color bar:
 cB = colorbar('eastoutside');
-cB.Position = [0.870,0.522,0.015,0.400];  % Change last digit for the height of colorbar
+cB.Position = [0.905,0.522,0.015,0.400];  % Change last digit for the height of colorbar
 cB.Label.String = 'Output';
 
 if numGroups > 0
