@@ -14,7 +14,7 @@ end
 %% Computing kmeans clustering and type1 auc for each feature
 
 
-Subs = {'005'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; %001
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
@@ -94,6 +94,11 @@ for D = 1:length(Subs)   % For each dataset
     end
     
 
+    % Save for each dataset
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/sup_each';
+    save(fullfile(fpath,sprintf('PERC_CLASSIF_EACH_10iter_%s.mat',sub)),'iteration_svm_testing_accuracy_MEAN')  
+
+    disp(sub)
 end
 
 

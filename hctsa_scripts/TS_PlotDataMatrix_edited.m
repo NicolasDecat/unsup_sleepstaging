@@ -101,8 +101,6 @@ TimeSeries.Data = CellData;
 
 %%%% Only EEG, EOG, EMG
 
-
-
 numTS = 4122;
 TimeSeries = TimeSeries(1:numTS,:);
 TS_DataMat = TS_DataMat(1:numTS,:);
@@ -285,8 +283,6 @@ title('Dataset 001')
 yline(1,'k-','EEG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
 yline(6006,'k-','EOG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
 yline(12012,'k-','EMG','LineWidth',2,'LabelHorizontalAlignment','left','LabelVerticalAlignment','bottom','FontSize',15,'FontWeight','bold')
-
-
 
 
 end

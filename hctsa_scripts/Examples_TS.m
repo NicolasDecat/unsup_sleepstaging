@@ -291,5 +291,170 @@ cB.TickLabelInterpreter = 'none';
 
 pos = get(f,'position');
 
+% %% To inspect a couple of TS
+% figure;  
+% [ha, pos] = tight_subplot(2,2,[.090 .1],[.1 .05],[.05 .05]);
+% ax = gca;
+% 
+% corr = 230;
+% fal = 573;
+% 
+% axes(ha(1)); plot(TimeSeries.Data{corr,:})
+% axes(ha(2)); plot(TimeSeries.Data{fal,:})
+% axes(ha(3)); imagesc(TS_DataMat(:,corr));
+% axes(ha(4)); imagesc(TS_DataMat(:,fal));
+% numColorMapGrads = 6; 
+% customColorMap = flipud(BF_GetColorMap('redyellowblue',numColorMapGrads,0));
+% colormap(customColorMap)
+
+%%%%%%%%%%%%%%%%%
+%%%% Agreed epochs
+%%%%%%%%%%%%%%%%%
+
+%%%% Same signature
+SS_wake = 86;
+SS_wake_2 = 1040;
+SS_N2 = 476;
+SS_N2_2 = 162;
+SS_N3 = 195;
+SS_N3_2 = 710;
+
+%%%% No signature
+NS_N1 = 274;
+NS_N1_2 = 275;
+NS_N2 = 285;
+NS_N2_2 = 298;
+NS_R = 1119;
+NS_R_2 = 624;
+
+
+%%%%%%%%%%%%%%%%%
+%%%% Misclassified epochs
+%%%%%%%%%%%%%%%%%
+
+%%%% Same signature
+SS_WN1 = 1056;
+SS_WR= 1039;
+SS_N2R = 670;
+SS_N2N3 = 697;
+SS_N3R = 761;
+SS_N3W = 405;
+
+
+%%%% No signature
+NS_N1W = 157;
+NS_N1N2 = 647;
+NS_N2R = 461;
+NS_N2N3 = 327 ;
+NS_RW = 945;
+NS_RN1 = 918;
+
+
+% Epochs_SS = [SS_wake SS_WN1 SS_wake_2 SS_WR SS_N2 SS_N2R SS_N2_2 SS_N2N3 SS_N3 SS_N3R SS_N3_2 SS_N3W ];
+Epochs_NS = [NS_N1 NS_N1W NS_N1_2 NS_N1N2 NS_N2 NS_N2R NS_N2_2 NS_N2N3 NS_R NS_RW NS_R_2 NS_RN1];
+ 
+TITLE = {'wake','N1','wake','REM','N2','REM','N2','N3','N3','REM','N3','wake'};
+TITLE_NS = {'N1','wake','N1','N2','N2','REM','N2','N3','REM','wake','REM','N1'};
+
+load('HCTSA_N.mat', 'TimeSeries')
+
+%%%%%% Plot TS
+b = figure;  
+[ha, pos] = tight_subplot(6,2,[.05 .12],[.02 .02],[.03 .03]);
+ax = gca;
+
+for subplot = 1:12
+
+    axes(ha(subplot)); 
+    TS = TimeSeries.Data{Epochs_NS(subplot),:};
+    
+    plot(TS)
+    
+    ylim([-0.2 0.2])
+    title(TITLE_NS{subplot},'FontSize',12)
+    xticks([0:1280:3840]);
+    yticks(-0.2:0.2:0.2);
+    xticklabels({'0','10','20','30'})
+  
+end 
+
+%%%%%% Plot value colorbars
+a = figure;  
+[ha, pos] = tight_subplot(6,2,[.05 .05],[.02 .02],[.03 .03]);
+ax = gca;
+
+for subplot = 1:12
+    
+    axes(ha(subplot)); 
+    imagesc(TS_DataMat(:,Epochs_NS(subplot)));
+    numColorMapGrads = 6; 
+    customColorMap = flipud(BF_GetColorMap('redyellowblue',numColorMapGrads,0));
+    colormap(customColorMap)
+    set(gca,'xtick',[]); set(gca,'ytick',[])
+    set(gca,'visible','off')
 
 end
+
+set(a, 'Color', 'w')
+fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms';
+export_fig([fpath filesep 'hypno_EEG_cl(439)_values_NS'],'-r 300')
+
+
+disp('ok')
+
+
+%% Make the selection
+
+load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs_3ch(439)')
+original_labels = statsOut.scoredTest;
+cluster_decision = statsOut.predictTest;
+
+% Give equivalent label for original labels
+a = find(original_labels == 0);
+b = find(original_labels == 1);
+c = find(original_labels == 2);
+d = find(original_labels == 3);
+e = find(original_labels == 5);
+
+% Give equivalent label for original labels
+f = find(cluster_decision == 0);
+g = find(cluster_decision == 1);
+h = find(cluster_decision == 2);
+i = find(cluster_decision == 3);
+j = find(cluster_decision == 5);
+
+
+False = c(find(cluster_decision(c) ~= 2));
+false_ST = cluster_decision(False);
+
+
+load('HCTSA_N.mat','TimeSeries')
+
+STG = {'Wake','N1','N2','N3','','REM'};
+
+%for subplot = 1:length(False)
+for subplot = 200:298
+
+    f = figure;
+    TS = TimeSeries.Data{False(subplot),:};
+
+    plot(TS)
+    
+    ylim([-0.2 0.2])
+    xticks([0:1280:3840]);
+    yticks(-0.2:0.2:0.2);
+    xticklabels({'0','10','20','30'})
+    
+    The_stage = STG(false_ST(subplot)+1);
+    The_ID = string(False(subplot));
+    title([The_stage The_ID])
+    
+    f.Position = [100 300 1300 300];   % [x y width height]
+
+  
+end 
+
+end
+
+
+

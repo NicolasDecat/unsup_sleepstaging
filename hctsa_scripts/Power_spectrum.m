@@ -176,7 +176,8 @@ for i = 1:4   % for each frequency
     B.FaceColor = 'flat';
     B.CData = [Color{1};Color{2};Color{3};Color{4};Color{5}];
     ylabel('Relative power (%)')
-    title(sprintf('%s band',string(freq_band(i))))
+    xlabel('Cluster decisions')
+    title(sprintf('%s',string(freq_band(i))))
 
     
      axes(ha(i));
@@ -190,7 +191,7 @@ for i = 1:4   % for each frequency
         hold on
      end
      
-     title(sprintf('Welch PSD (%s)',string(freq_band(i))))
+     title(sprintf('%s',string(freq_band(i))))
      ylabel('Power (dB)')
      xlim([FREQ{i}(1) FREQ{i}(2)])
      
@@ -201,9 +202,9 @@ for i = 1:4   % for each frequency
     
 end
 
-% set(a, 'Color', 'w')
-% fpath = '/Users/nico/Documents/HCTSA/Analysis/spectral';
-% export_fig([fpath filesep 'power_per_band_relative'],'-r 300')
+set(a, 'Color', 'w')
+fpath = '/Users/nico/Documents/HCTSA/Analysis/spectral';
+export_fig([fpath filesep 'power_per_band_relative'],'-r 300')
 
 
 

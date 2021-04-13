@@ -1,7 +1,7 @@
 
 %%%%%%% Had to change l.114: Change TimeSeries.Data into cell array 
 
-function [ax, ax2] = TS_PlotDataMatrix_edited(varargin)
+function [f] = TS_PlotDataMatrix_edited(varargin)
 % TS_PlotDataMatrix   Plot the data matrix.
 %
 %---EXAMPLE USAGE:
@@ -99,11 +99,16 @@ end
 
 TimeSeries.Data = CellData;
 
-%%%% Only EEG (439)
+ch3 = false;
 
-numTS = 1166;
-TimeSeries = TimeSeries(1:numTS,:);
-TS_DataMat = TS_DataMat(1:numTS,:);
+if ch3 == true
+    numTS = 3498;  %%%% EEG+EOG+EMG (439)
+else
+    numTS = 1166;  %%%% Only EEG (439)
+end
+    TimeSeries = TimeSeries(1:numTS,:);
+    TS_DataMat = TS_DataMat(1:numTS,:);
+
 
 %%% Reorder operations
 load('HCTSA_N.mat', 'op_clust')
@@ -111,7 +116,7 @@ TS_DataMat = TS_DataMat(:,op_clust.ord);
 
 %%% Reorder TS to match cluster decisions
 
-load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs(439)')
+load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs_3ch(439)')
 original_labels = statsOut.scoredTest;
 
 wake_OL = find(original_labels == 0);  
@@ -273,6 +278,11 @@ f = figure('color','w');
 colormap(customColorMap);
 
 TS_DataMat = TS_DataMat';
+
+if ch3
+    TS_DataMat = [TS_DataMat(:,1:1166);TS_DataMat(:,1167:2332);TS_DataMat(:,2333:3498)];
+end
+
 TS_DataMat = TS_DataMat(:,reordered);  % Ordered TS according to cluster decisions
 imagesc(TS_DataMat);
 
@@ -309,10 +319,11 @@ end
 
 label_p = ylabel('Operations');
 label_p.Position(2) = 3000; 
-
+label_p.Position(1) = -93; 
 % Add a color bar:
 cB = colorbar('eastoutside');
-cB.Position = [0.905,0.522,0.015,0.400];  % Change last digit for the height of colorbar
+% cB.Position = [0.902209097887724,0.355280444041201,0.02,0.399115117891817];  % 3ch
+cB.Position = [0.928875764554391,0.367060548753244,0.02,0.399115117891817];
 cB.Label.String = 'Output';
 
 if numGroups > 0
@@ -321,9 +332,11 @@ if numGroups > 0
 	cB.TickLabelInterpreter = 'none';
 end
 
-title('Dataset 439')
-
 ax.FontSize = 14;
+
+% Mark channel conditions
+% yline(6006,'k-','LineWidth',2)
+% yline(12012,'k-','LineWidth',2)
 
 
 end

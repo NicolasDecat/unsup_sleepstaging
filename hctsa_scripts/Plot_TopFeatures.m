@@ -284,7 +284,7 @@ load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat
 
 InsertCol = zeros(10,1);
 
-Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once
 % (use y)
@@ -298,20 +298,20 @@ for D = 1:length(Subs)
     % Go to corresponding current folder
     cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
     
-    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean(Dataset %s)',sub))
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_each/Per_correct_mean(Dataset %s)',sub))
     % Per_correct_mean = iteration_svm_testing_accuracy_MEAN;  % if you want to plot top features from supervised clustering
 
     % I'll insert both the commonly and specifically removed features for
     % this dataset
     spec_common = sort([val specifically_removed{1,y(D)}]);
     
-    for x = 1:length(spec_common)   % comment the for loop if want to have Per_correct_mean_D
-
-        Part1 = Per_correct_mean(:,1:spec_common(x)-1);
-        Part2 = [InsertCol Per_correct_mean(:,spec_common(x):end)];
-        Per_correct_mean = ([Part1 Part2]);
-
-    end
+%     for x = 1:length(spec_common)   % comment the for loop if want to have Per_correct_mean_D
+% 
+%         Part1 = Per_correct_mean(:,1:spec_common(x)-1);
+%         Part2 = [InsertCol Per_correct_mean(:,spec_common(x):end)];
+%         Per_correct_mean = ([Part1 Part2]);
+% 
+%     end
     
     % If want Per_correct_mean_D_excl
 %     load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')  % For each of the 12 cells, only features specifically removed in the corresponding dataset
@@ -1564,3 +1564,164 @@ delete(ha(12,1))
 delete(ha(14,1))
 delete(ha(15,1))
 delete(ha(16,1))
+
+
+
+
+%% sup vs unsup, all datasets
+
+%%%%%%%%%%%%%%
+%%% Unsup each
+%%%%%%%%%%%%%%
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)  
+    
+    sub = Subs{D};
+
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_each/Per_correct_mean(Dataset %s)',sub))
+
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/allfeat_removed')
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+
+    InsertCol = zeros(size(Per_correct_mean,1),1);
+
+    for x = 1:length(removed_feat_idx{1,D})
+
+        Part1 = Per_correct_mean(:,1:removed_feat_idx{1,D}(x)-1);
+        Part2 = [InsertCol Per_correct_mean(:,removed_feat_idx{1,D}(x):end)];
+        Per_correct_mean = ([Part1 Part2]);
+        removed_feat_idx{1,D} = removed_feat_idx{1,D};
+
+    end
+
+    % Remove both the specific and commonly removed features
+    Per_correct_mean(:,spec_and_common_feat) = []; 
+    
+    % Mean for each classifier
+    unsup_each(D,:) = mean(Per_correct_mean');
+    
+end
+
+%%% Average across datasets
+Mean_unsup_each = mean(unsup_each);
+
+
+%%%%%%%%%%%%%%
+%%% Sup each
+%%%%%%%%%%%%%%
+
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)  
+    
+    sub = Subs{D};
+
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/sup_each/PERC_CLASSIF_EACH_10iter_%s',sub))
+
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/allfeat_removed')
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+    
+    Per_correct_mean = iteration_svm_testing_accuracy_MEAN;
+    InsertCol = zeros(size(Per_correct_mean,1),1);
+
+
+    for x = 1:length(removed_feat_idx{1,D})
+
+        Part1 = Per_correct_mean(:,1:removed_feat_idx{1,D}(x)-1);
+        Part2 = [InsertCol Per_correct_mean(:,removed_feat_idx{1,D}(x):end)];
+        Per_correct_mean = ([Part1 Part2]);
+        removed_feat_idx{1,D} = removed_feat_idx{1,D};
+
+    end
+
+    % Remove both the specific and commonly removed features
+    Per_correct_mean(:,spec_and_common_feat) = []; 
+    
+    % Mean for each classifier
+    sup_each(D,:) = mean(Per_correct_mean');
+    
+end
+
+%%% Average across datasets
+Mean_sup_each = mean(sup_each);
+
+
+
+%%%%%%%%%%%%%%
+%%% Unsup all
+%%%%%%%%%%%%%%
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)  
+    
+    sub = Subs{D};
+
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_all/PERC_PER_CLASSIF_10iter_Dataset%s',sub))
+
+    Per_correct_means(D,:) = PERC_PER_CLASSIFIER_10iter;
+end
+
+%%% Average across datasets
+Mean_unsup_all = mean(Per_correct_means);
+
+
+%%%%%%%%%%%%%%
+%%% Sup all
+%%%%%%%%%%%%%%
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)  
+    
+    sub = Subs{D};
+
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/sup_all/PERC_PER_CLASSIF_10iter_Dataset%s',sub))
+
+    Per_correct_meanss(D,:) = iteration_svm_testing_accuracy_MEAN;
+end
+
+%%% Average across datasets
+Mean_sup_all = mean(Per_correct_meanss);
+
+%%%%%%%%%%%%%%%%%
+%%%%% Line plots 
+%%%%%%%%%%%%%%%%%
+
+% Sort from best to worst classifier (based on unsup all)
+[~,I] = sort(Mean_unsup_all,'ascend');
+uns_all = Mean_unsup_all(I);
+uns_one = Mean_unsup_each(I);
+sup_all = Mean_sup_all(I);
+sup_one = Mean_sup_each(I);
+
+% Line plot
+figure; 
+h = plot(1:10,uns_all,'LineWidth',1.3,'Color',[0.3010 0.7450 0.9330]);  % light blue
+hold on
+i = plot(1:10,sup_all,'LineWidth',1.3,'Color',[0 0.4470 0.7410]);  % dark blue
+hold on
+j = plot(1:10,uns_one,'LineWidth',1.3,'Color',[0.9350 0.580 0.3840]);  % light red
+hold on
+k = plot(1:10,sup_one,'LineWidth',1.3,'Color',[0.6350 0.0780 0.1840]);  % dark red
+hold off
+
+% legend('Unsup - using all features','SVM - using all features','Unsup - one feature at a time','SVM - one feature at a time','Location','eastoutside')
+xlabel('Classifiers')
+ylabel('Classification accuracy (%)')
+
+ax = gca;
+ax.XTick = 1:11;
+ax.XTickLabels = {'W vs N1','W vs N2','N3 vs W','W vs REM','N1 vs N2','N3 vs N1','N1 vs REM','N3 vs N2','N2 REM','N3 vs REM'};
+ax.XTickLabels = ax.XTickLabels(I);
+xtickangle(30)
+ylim([45 100])
+yline(50,'--','chance level');
+ax.FontSize = 12;
+
+legend('all features: unsupervised clustering','all features: supervised clustering','single feature: unsupervised clustering','single feature: supervised clustering','Location','southeastoutside')
+legend boxoff
+

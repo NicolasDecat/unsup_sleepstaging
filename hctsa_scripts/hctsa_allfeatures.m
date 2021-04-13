@@ -50,7 +50,7 @@ for D = 1:length(Subs)
 
         %% Run cross-validation code
         % Change the number of operations
-        set(0,'DefaultFigureVisible','off') % Remove this to disable the figure displaying (sometimes it could be lots of figures!)
+        set(0,'DefaultFigureVisible','on') % Remove this to disable the figure displaying (sometimes it could be lots of figures!)
         exps = EXPS_TO_RUN; 
         statistics = [];
 

@@ -6,7 +6,7 @@
 
 %% Function: Count the number of epochs in each stages and recore the epochIDs
 
-function [testMat Nf testTS trainTS trainMat label stats PERC_STAGE] = cross_validation_selectivefeatures_crossval_eachall_SVM(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col)
+function [testMat Nf testTS trainTS trainMat label stats PERC_STAGE] = cross_validation_selectivefeatures_crossval_eachall_SVM(experiment, hctsa_ops, cm_save_dir, number_of_channels_used, epochSelectFunction, selective_feature,sub,v,col,D)
 
 %% Cross-validation code
 
@@ -60,6 +60,41 @@ for Nf = 1:nIterations
     stats.scoredTrain(Nf,:) = label(trainTS)';
     stats.scoredTest(Nf,:) = label(testTS)';
     
+    %% Reconstruct testMat and remove SV features
+    onlyWB = true;
+    
+    if onlyWB == true
+            load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/allfeat_removed')
+            load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+
+            TRY_test = testMat{1,Nf};
+            TRY_train = trainMat{1,Nf};
+
+            InsertCol = zeros(size(TRY_test,1),1);
+            InsertCol_train = zeros(size(TRY_train,1),1);
+
+
+            for x = 1:length(removed_feat_idx{1,D})
+
+                Part1 = TRY_test(:,1:removed_feat_idx{1,D}(x)-1);
+                Part2 = [InsertCol TRY_test(:,removed_feat_idx{1,D}(x):end)];
+                TRY_test = ([Part1 Part2]);
+                removed_feat_idx{1,D} = removed_feat_idx{1,D};
+
+                Part1_train = TRY_train(:,1:removed_feat_idx{1,D}(x)-1);
+                Part2_train = [InsertCol_train TRY_train(:,removed_feat_idx{1,D}(x):end)];
+                TRY_train = ([Part1_train Part2_train]);
+                removed_feat_idx{1,D} = removed_feat_idx{1,D};
+
+            end
+
+            % Remove both the specific and commonly removed features
+            TRY_test(:,spec_and_common_feat) = []; 
+            TRY_train(:,spec_and_common_feat) = []; 
+
+            testMat(1,Nf) = {TRY_test};
+            trainMat(1,Nf) = {TRY_train};
+    end
   
 end % End Nf-th randomisation
 

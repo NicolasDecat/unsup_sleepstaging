@@ -9,7 +9,7 @@
 %% Computing kmeans clustering and type1 auc for each feature
 
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
@@ -85,15 +85,13 @@ for D = 1:length(Subs)
     end
     
     
-    PERC_PER_CLASSIFIER_10iter = mean(PERC_STAGE); 
+    PERC_PER_CLASSIFIER_100iter = mean(PERC_STAGE); 
     
     % Save for each dataset
-%     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy';
-%     save(fullfile(fpath,sprintf('PERC_PER_CLASSIFIER_30iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_10iter')  
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_all';
+    save(fullfile(fpath,sprintf('PERC_PER_CLASSIFIER_100iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_100iter')  
 
     
 end
 
-for C = 1:10
-    MeanC(C) = mean(Per_correct_mean_D_excl{1,1}(C,:))
-end
+

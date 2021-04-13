@@ -79,7 +79,18 @@ if makeNewFigure
 end
 hold('on')
 ax = gca;
-colors = GiveMeColors(numClasses);
+% colors = GiveMeColors(numClasses);
+% 
+[BL] = cbrewer('seq', 'Blues', 12, 'pchip');
+N1C = {BL(5,:)};
+N2C = {BL(7,:)};
+N3C = {BL(9,:)};
+[RE] = cbrewer('div', 'Spectral', 12, 'pchip'); 
+wakeC = {RE(2,:)};
+[GR] = cbrewer('seq', 'YlGn', 12, 'pchip');
+remC = {GR(7,:)};
+
+colors = [wakeC;N1C;N2C;N3C;remC]; 
 
 if makeViolin
     dataCell = cell(numClasses,1);
@@ -92,7 +103,7 @@ if makeViolin
 %     [~,ix] = sort(meanGroup,'descend');
 
    % Re-order groups: wake, N1, N2, N3, REM   
-    ix = [1 2 3 5 4];
+    ix = [1 5 2 3 4];
    
     extraParams = struct();
     extraParams.theColors = colors(ix);
@@ -104,7 +115,7 @@ if makeViolin
     ax = gca;
     ax.XLim = [0.5+extraParams.customOffset,numClasses+0.5+extraParams.customOffset];
     ax.XTick = extraParams.customOffset+(1:numClasses);
-    ax.XTickLabel = {'Wake','N1','N2','REM','N3'};
+    ax.XTickLabel = {'Wake','REM','N1','N2','N3'};
     % ax.XTickLabelRotation = 30;
     ylabel('Output')
     ax.TickLabelInterpreter = 'none';

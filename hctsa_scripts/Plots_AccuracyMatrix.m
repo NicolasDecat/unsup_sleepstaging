@@ -25,8 +25,6 @@ ax.FontSize = 12;
 colormap 'default'
 colorbar
 
-% Save figure
-exportgraphics(gca,'/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/AveragedMatrix_HQ.jpg','Resolution',200)
 
 
 %% Line plot of accuracy for each binary classifier across features

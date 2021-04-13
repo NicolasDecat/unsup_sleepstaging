@@ -9,7 +9,7 @@
 %% Computing kmeans clustering and type1 auc for each feature
 
 
-Subs = {'001'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
@@ -79,7 +79,7 @@ for D = 1:length(Subs)
         SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
 
 
-        [testMat Nf testTS trainTS trainMat label stats PERC_STAGE] = kmeans_mapping_eachfeature_crossval_eachall_SVM(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v);
+        [testMat Nf testTS trainTS trainMat label stats PERC_STAGE] = kmeans_mapping_eachfeature_crossval_eachall_SVM(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,D,D);
 
         
 %          % SUPERVISED (same data)
@@ -116,8 +116,8 @@ for D = 1:length(Subs)
     PERC_PER_CLASSIFIER_10iter = mean(PERC_STAGE); 
     
     % Save for each dataset
-    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy';
-    save(fullfile(fpath,sprintf('PERC_PER_CLASSIFIER_30iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_10iter')  
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_all';
+    save(fullfile(fpath,sprintf('PERC_PER_CLASSIF_10iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_10iter')  
 
     
 end

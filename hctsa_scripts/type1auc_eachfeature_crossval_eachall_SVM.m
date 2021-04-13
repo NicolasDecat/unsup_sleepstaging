@@ -255,8 +255,11 @@ for Cl = 1:10   % For each of the 10 classifiers
     iteration_svm_testing_accuracy_MEAN(Cl) = mean(iteration_svm_testing_accuracy(Cl,:));
 end
     
+%Save for each dataset
+fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/sup_all';
+save(fullfile(fpath,sprintf('PERC_PER_CLASSIF_10iter_Dataset%s.mat',sub)),'iteration_svm_testing_accuracy_MEAN')  
 
-disp('ok')
+disp(sub)
 
   
 
