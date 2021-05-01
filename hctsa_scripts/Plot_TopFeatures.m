@@ -1687,6 +1687,49 @@ end
 %%% Average across datasets
 Mean_sup_all = mean(Per_correct_meanss);
 
+for i = 1:10
+    [h,p] = ttest2(Per_correct_means(:,i),Per_correct_meanss(:,i))
+end
+
+%%%%%%%%%%%%%%
+%%% Unsup catch22
+%%%%%%%%%%%%%%
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)  
+    
+    sub = Subs{D};
+
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_catch22/PERC_PER_CLASSIF_10iter_Dataset%s',sub))
+
+    Per_correct_means_c(D,:) = PERC_PER_CLASSIFIER_10iter;
+end
+
+%%% Average across datasets
+Mean_unsup_catch22 = mean(Per_correct_means_c);
+
+
+%%%%%%%%%%%%%%
+%%% Sup catch22
+%%%%%%%%%%%%%%
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)  
+    
+    sub = Subs{D};
+
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/sup_catch22/PERC_PER_CLASSIF_10iter_Dataset%s',sub))
+
+    Per_correct_means_cc(D,:) = iteration_svm_testing_accuracy_MEAN;
+end
+
+%%% Average across datasets
+Mean_sup_catch22 = mean(Per_correct_means_cc);
+
+
+
 %%%%%%%%%%%%%%%%%
 %%%%% Line plots 
 %%%%%%%%%%%%%%%%%
@@ -1697,16 +1740,23 @@ uns_all = Mean_unsup_all(I);
 uns_one = Mean_unsup_each(I);
 sup_all = Mean_sup_all(I);
 sup_one = Mean_sup_each(I);
+uns_catch22 = Mean_unsup_catch22(I);
+sup_catch22 = Mean_sup_catch22(I);
 
 % Line plot
 figure; 
-h = plot(1:10,uns_all,'LineWidth',1.3,'Color',[0.3010 0.7450 0.9330]);  % light blue
-hold on
 i = plot(1:10,sup_all,'LineWidth',1.3,'Color',[0 0.4470 0.7410]);  % dark blue
 hold on
-j = plot(1:10,uns_one,'LineWidth',1.3,'Color',[0.9350 0.580 0.3840]);  % light red
+h = plot(1:10,uns_all,'LineWidth',1.3,'Color',[0.3010 0.7450 0.9330]);  % light blue
 hold on
-k = plot(1:10,sup_one,'LineWidth',1.3,'Color',[0.6350 0.0780 0.1840]);  % dark red
+k = plot(1:10,sup_catch22,'LineWidth',1.5,'Color',[0 0.45 0],'LineStyle','--');  % light green
+hold on
+j = plot(1:10,uns_catch22,'LineWidth',1.5,'Color','g','LineStyle','--');  % dark green
+hold on
+m = plot(1:10,sup_one,'LineWidth',1.3,'Color',[0.6350 0.0780 0.1840]);  % dark red
+hold on
+l = plot(1:10,uns_one,'LineWidth',1.3,'Color',[0.9350 0.580 0.3840]);  % light red
+
 hold off
 
 % legend('Unsup - using all features','SVM - using all features','Unsup - one feature at a time','SVM - one feature at a time','Location','eastoutside')
@@ -1719,9 +1769,175 @@ ax.XTickLabels = {'W vs N1','W vs N2','N3 vs W','W vs REM','N1 vs N2','N3 vs N1'
 ax.XTickLabels = ax.XTickLabels(I);
 xtickangle(30)
 ylim([45 100])
-yline(50,'--','chance level');
+yline(50,'--','chance level','FontSize',18);
 ax.FontSize = 12;
 
-legend('all features: unsupervised clustering','all features: supervised clustering','single feature: unsupervised clustering','single feature: supervised clustering','Location','southeastoutside')
+legend('All features: supervised clustering','All features: unsupervised clustering','catch22: supervised clustering','catch22: unsupervised clustering','Single feature: supervised clustering','Single feature: unsupervised clustering','Location','eastoutside')
 legend boxoff
+set(gca,'fontsize',20)
+    set(gcf,'color','white')
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis';
+%     export_fig([fpath filesep 'sup unsup catch22'],'-r 300')
+
+%% hctsa based using all features: classification accuracy per stage
+
+Wake_accu = mean(uns_all([4 5 6 9]));  % 79.80
+N1_accu = mean(uns_all([1 2 4 10]));   % 73.67
+N2_accu = mean(uns_all([2 3 6 7]));    % 75.12
+N3_accu = mean(uns_all([7 8 9 10]));   % 87.66
+REM_accu = mean(uns_all([1 3 5 8]));   % 74.48
+
+[h,p,ci,stats] = ttest2(uns_catch22,sup_one)   % 0.04
+
+%% Median rank of ind features
+
+% Load data
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5603)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+
+% All datasets
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+    
+for D = 1:12
+
+    sub = Subs{D};
+
+    % Rank features and get their ID, names, accuracy
+    Per_correct_mean = Per_correct_mean_D_excl{1,D};
+
+    means = mean(Per_correct_mean);
+    [~,I] = sort((means)','descend');
+    Per_correct_mean = Per_correct_mean(:,I);
+    Top_Feat = I(1:5603); 
+
+     % Go to corresponding folder and load data
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))      
+    load('HCTSA_N.mat', 'Operations')
+
+    % From Operations, take only well behaved features
+    equi_Top_Feat = setdiff(Operations.ID,spec_and_common_feat); % remove SV features
+    Idx_WB_Feat = find(ismember(Operations.ID, equi_Top_Feat));  % Index of WB features
+    Operations = Operations(Idx_WB_Feat,:);                      % 'Operations' with WB features only
+
+    % Get the name and keyword associated with these features
+    CodeString = Operations.CodeString;  
+    Keywords = Operations.Keywords;
+    YLabel = Operations.ID;
+
+    Top_name(1:5603) = CodeString(Top_Feat,1);
+    Top_key(1:5603) = Keywords(Top_Feat,1);
+    Top_ID(1:5603) = YLabel(Top_Feat,1);
+
+    Top_5603 = [Top_name' Top_key' num2cell(Top_ID')];
+
+    % Top_mean (mean over classifiers)
+    for F = 1:length(Top_5603)
+        for C = 1:10
+            Accu(F,C) = mean(Per_correct_mean(C,F));
+        end
+    end
+
+    Top_mean = mean(Accu');
+    Top_5603 = [Top_5603 num2cell(Top_mean')];
+    
+    Rank(:,D) = Top_5603(:,3);   % Rank of all features for all datasets
+    
+    clear top_5603
+    
+end
+
+Rank = cell2mat(Rank);
+
+% Now, get the mean rank for each feature
+Feat = sort(Top_ID, 'ascend');
+
+for F = 1:5603
+    
+    for D = 1:12
+    
+        FeatID(D) = find(Feat(F) == Rank(:,D));
+    
+    end
+    
+    % Mean rank across datasets
+    ID_allD(F) = mean(FeatID);
+    
+    FeatID = []; % clear var
+    
+end
+
+% Sort from lowest to highest rank (consistently best to worst)
+[~,I] = sort((ID_allD)','ascend');   % I = top rank (/5603)
+ID_allD_rank = ID_allD(I);
+
+% Convert rank (/5603  ->  /7749)
+Real_ID = Feat(I);
+
+% Now get ID, name and keyword
+Top_10_ID = Real_ID(1:10);
+Top_10_KEY = Keywords(I(1:10));
+Top_10_NAME = CodeString(I(1:10));
+
+Top_10 = [num2cell(Top_10_ID)' Top_10_KEY Top_10_NAME num2cell(ID_allD_rank(1:10))'];
+
+%%% Get the accuracy as well
+for F = 1:10
+    for D = 1:12
+        Accuracy(D,F) = mean(Per_correct_mean_D_excl{1,D}(:,I(F)));
+    end
+end
+
+Mean_Accu_acr_D = mean(Accuracy);
+
+%%% Get ranks across datasets for top 10 features
+for F = 1:10
+    for D = 1:12
+        ranks(D,F) = find(Top_10_ID(F) == Rank(:,D));
+    end
+end
+
+%%% Plot boxplot
+figure; boxplot(ranks)
+title('Median rank of top 10 features')
+xlabel('Features')
+ylabel('Median rank')
+    set(gcf,'color','white')
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis/violin';
+%     export_fig([fpath filesep 'BoxplotTop10'],'-r 300')
+
+%%% Std 
+for i = 1:10
+    STD(i) = std(ranks(:,i))
+end
+
+
+%% Catch 22
+
+% Find the right index of 22 features
+
+FEAT = {'DN_HistogramMode_5','DN_HistogramMode_10','first_1e_ac', ...
+    'first_min_acf', 'CO_HistogramAMI_even_5_2','CO_trev_1_num', ...
+    'MD_hrv_classic_pnn40','SB_BinaryStats_mean_longstretch1', ...
+    'SB_TransitionMatrix_3ac_sumdiagcov','PD_PeriodicityWang_th0.01', ...
+    'CO_Embed2_Dist_tau_d_expfit_meandiff','IN_AutoMutualInfoStats_40_gaussian_fmmi', ...
+    'FC_LocalSimple_mean1_tauresrat','DN_OutlierInclude_p_001_mdrmd', ...
+    'DN_OutlierInclude_n_001_mdrmd','SP_Summaries_welch_rect_area_5_1', ...
+    'SB_BinaryStats_diff_longstretch0','SB_MotifThree_quantile_hh', ...
+    'SC_FluctAnal_2_rsrangefit_50_1_logi_prop_r1','SC_FluctAnal_2_dfa_50_1_2_logi_prop_r1', ...
+    'SP_Summaries_welch_rect_centroid','FC_LocalSimple_mean3_stderr'};
+                
+% Load Operation Names, create separate variable
+load('HCTSA.mat','Operations')
+Name = {Operations.Name}.';
+
+% Get index (/7749) of catch22 
+for F = 1:22
+    Index(F) = find(contains(Name,FEAT(F)));
+end
+
+%%% 18th feature has 3 'duplicate' (because "contains" gets 3) but its 3604
+
+Catch22_idx = [11,12,134,135,243,1121,7634,3477,1406,1585,1965,310,2997,3264,3294,4492,3467,3604,4036,4156,4421,3010];
+
 

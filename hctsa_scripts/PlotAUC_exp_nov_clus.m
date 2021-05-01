@@ -13,6 +13,8 @@ close all
 load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/type1auc_human_scorers_table.mat');
 load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/Table_AUC_100.mat');
 
+type1auc_human_scorers_table(86:90,:) = [];
+
 path_raincloud='/Users/nico/Documents/MATLAB/hctsa-master/RainCloudPlots-master/';
 addpath(genpath(path_raincloud));
 
@@ -197,7 +199,7 @@ end
 
 % fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Figures';
 % saveas(gca,fullfile(fpath,sprintf('CEN_all')),'jpeg')
-% 
-fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Rainbow figures';
-export_fig([fpath filesep 'CEN_all'],'-r 300')
+% % 
+% fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Rainbow figures';
+% export_fig([fpath filesep 'CEN_all'],'-r 300')
 

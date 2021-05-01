@@ -126,9 +126,9 @@ ST = {'500','1000','1500','2000','2500','3000','3500','4000','4500','5000','5500
 lines = [500 1000 1500 2000 2500 3000 3500 4000 4500 5000 5500];
 for L = 1:11
     if L == 1
-        text(-27,lines(L),ST(L),'FontSize',14)
+        text(-30,lines(L),ST(L),'FontSize',18)
     else
-    text(-35,lines(L),ST(L),'FontSize',14)
+    text(-38,lines(L),ST(L),'FontSize',18)
     end
 end
 
@@ -154,7 +154,7 @@ set(gca, 'TickLength',[0 0])
 
 % Cluster decisions
 % hold on
-z = plot(x_time,cluster_decision,'k','LineWidth',1,'Color','r');  % light grey
+%z = plot(x_time,cluster_decision,'k','LineWidth',1,'Color','r');  % light grey
 
 %%% Same figure but 4th-7th hour (magnify)
 
@@ -202,12 +202,13 @@ N3_N1 = 763;
 % legend([y],'\newlineOriginal\newlinelabels','Location','southeastoutside')
 % legend boxoff               
 
-ax.Position = [0.048,0.08,0.90,0.90];
+ax.Position = [0.052,0.08,0.88,0.90];
+
+set(gca, 'fontsize', 24);
 
 % Save
 % fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms';
 % export_fig([fpath filesep 'hypno_EEG_cl(439)_2'],'-r 300')
-
 
 
 %% Plot the time series of (mis)classified epochs
@@ -327,7 +328,7 @@ set(b, 'Color', 'w')
 [f] = TS_PlotDataMatrix_edited_TS('norm');  % reorder TS to match cluster decisions
 
 % Reorder epochs based on their stages (as labeled by original labels)
-load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs_3ch(439)')
+load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs(439)')
 original_labels = statsOut.scoredTest;
 
 wake_OL = find(original_labels == 0);  
@@ -426,17 +427,27 @@ cline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',N2C);
 dline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',N3C);
 eline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',remC);
 
-legend([aline bline cline dline eline],{'Wake','N1','N2','N3','REM'},'Location','southeastoutside','FontSize',10)
+legend([aline bline cline dline eline],{'Wake','N1','N2','N3','REM'},'Location','southeastoutside','FontSize',24)
 
-text(-128,6185,'Original labels','FontSize',11,'FontWeight','bold','Color',[.3 .3 .3]);
-text(-154,6500,'Cluster decisions','FontSize',11,'FontWeight','bold','Color',[.3 .3 .3]);
+text(-215,6185,'Original labels','FontSize',22,'Color',[.3 .3 .3]);
+text(-263,6500,'Cluster decisions','FontSize',22,'Color',[.3 .3 .3]);
 
 
 ax = gca; 
 % ax.XTickLabels = '';
 % ax.YTickLabels = strseq('',1:1000:5946);
-ax.YTick = [1 1000 2000 3000 4000 5000 5946];
-ax.YTickLabels = arrayfun(@(a)num2str(a),[1 1000 2000 3000 4000 5000 5946],'uni',0);
+% ax.YTick = [1 1000 2000 3000 4000 5000 5946];
+ax.YTickLabels = '';
+
+ST = {'500','1000','1500','2000','2500','3000','3500','4000','4500','5000','5500'};
+lines = [500 1000 1500 2000 2500 3000 3500 4000 4500 5000 5500];
+for L = 1:11
+    if L == 1
+        text(-55,lines(L),ST(L),'FontSize',18)
+    else
+    text(-73,lines(L),ST(L),'FontSize',18)
+    end
+end
 
 set(gca,'XTickLabel',[])
 set(ax, 'XTick', []);
@@ -444,18 +455,19 @@ set(ax,'TickLength',[0 0])
 
 ylabel('Operations')
 xlabel('Epochs')
-ax.FontSize = 12;
+ax.FontSize = 24;
 
-ax.Position = [0.11,0.03,0.8,0.96];
-pos = get(gcf,'Position');
+ax.Position = [0.17,0.05,0.71,0.96];
 
 %%% Change format
-f.Position = [0.5 0.5 900 900];   % [x y width height]
+f.Position = [0.5 0.5 1100 900];   % [x y width height]
+
+set(gca, 'fontsize', 24);
 
 %%% Save
 % fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms';
 % export_fig([fpath filesep 'hypnobars_EEG(439)'],'-r 300')
-confmatrix = true; 
+confmatrix = false; 
 
 if confmatrix == true
     

@@ -272,11 +272,11 @@ end
 
 label_p = ylabel('Operations','fontsize',17);
 label_p.Position(2) = 3000; 
-label_p.Position(1) = -45; 
+label_p.Position(1) = -50; 
 
 % Add a color bar:
 cB = colorbar('eastoutside');
-cB.Position = [0.957165258576549,0.4701532324569,0.007680491551459,0.360683760683761];  % Change last digit for the height of colorbar
+cB.Position = [0.941193036354327,0.468764343568011,0.007680491551459,0.360683760683761];  % Change last digit for the height of colorbar
 cB.Label.String = 'Feature value';
 
 

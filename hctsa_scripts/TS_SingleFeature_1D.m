@@ -117,7 +117,7 @@ if makeViolin
     ax.XTick = extraParams.customOffset+(1:numClasses);
     ax.XTickLabel = {'Wake','REM','N1','N2','N3'};
     % ax.XTickLabelRotation = 30;
-    ylabel('Output')
+    ylabel('Feature value')
     ax.TickLabelInterpreter = 'none';
     if makeNewFigure
         f.Position(3:4) = [402,159];

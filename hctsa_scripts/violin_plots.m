@@ -233,14 +233,22 @@ for D = 1:length(Subs)
     grid on
     
     %%% Alone
-    figure; plot(Top_mean(1:10),'LineWidth',2)
+    figure; ax=gca;
+    plot(Top_mean(1:10),'LineWidth',2)
     ylabel('Classificartion accuracy (%)')
 
     ax.XTick = 1:10;
-    xticklabels(string(Top_key(1:10)));
+    % xticklabels(string(Top_key(1:10)));
+    ax.XTickLabel = {'wavelet','correlation','model','spectral','correlation','information','model','correlation','wavelet','forecasting'};
     xtickangle(45)
     ax.FontSize = 10; 
     grid on
+    set(gca,'fontsize',20)
+%     % Save
+%     set(gcf,'color','white')
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis/violin';
+%     export_fig([fpath filesep 'Feat10'],'-r 300')
+
     
 end
 
@@ -275,11 +283,14 @@ end
 % Plot
 [~,cluster_Groupi] = BF_ClusterDown(Dij,'clusterThreshold',clusterThreshold,...
                         'whatDistance',distanceMetric,...
-                        'objectLabels',YLabel);
-title(sprintf('Dependencies between %u top features (organized into %u clusters)',...
-                        numTopFeatures,length(cluster_Groupi)))
+                        'objectLabels',Top_name);
                     
+set(gca,'fontsize',20)
 
+    % Save
+%     set(gcf,'color','white')
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis/violin';
+%     export_fig([fpath filesep 'Feat10_corrmat'],'-r 300')
 
 %% Paper figure: violin plots of representative features
 
@@ -428,21 +439,26 @@ for D = 1:length(Subs)
         TS_SingleFeature_1D(data,featHere(opi),true,false);
 
 
-        title({sprintf('%s \n (%s) %1.1f%%',Top_name{RepFeat(opi)},Top_key{RepFeat(opi)},Top_mean{RepFeat(opi)});...
-                            },'interpreter','none')
-                                                               
+%         title({sprintf('%s \n (%s) %1.1f%%',Top_name{RepFeat(opi)},Top_key{RepFeat(opi)},Top_mean{RepFeat(opi)});...
+%                             },'interpreter','none')
+       set(gca,'fontsize',20)
+     
+       title({sprintf('%s',Top_name{RepFeat(opi)})},'interpreter','none','fontsize',15)
+                        
+                               
     end
 
-   
+
 end
 
 f.Position = [1 300 1430 400];   % [x y width height]
 
-% %save
-%    fpath = '/Users/nico/Documents/HCTSA/Analysis/violin';
-%    export_fig([fpath filesep 'violin_repfeat(439)'],'-r 300')
-% 
-%  
+%Save
+set(gcf,'color','white')
+fpath = '/Users/nico/Documents/HCTSA/Analysis/violin';
+export_fig([fpath filesep 'Feat10_violin'],'-r 300')
+
+
  %% Violin plots for all datasets
 % 
 % %%%%%% Step 1: from all 12 datasets, group the DataMat (feature values

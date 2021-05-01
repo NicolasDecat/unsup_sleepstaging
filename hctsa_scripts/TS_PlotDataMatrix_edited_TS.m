@@ -116,7 +116,7 @@ TS_DataMat = TS_DataMat(:,op_clust.ord);
 
 %%% Reorder TS to match cluster decisions
 
-load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs_3ch(439)')
+load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs(439)')
 original_labels = statsOut.scoredTest;
 
 wake_OL = find(original_labels == 0);  
@@ -323,8 +323,8 @@ label_p.Position(1) = -93;
 % Add a color bar:
 cB = colorbar('eastoutside');
 % cB.Position = [0.902209097887724,0.355280444041201,0.02,0.399115117891817];  % 3ch
-cB.Position = [0.928875764554391,0.367060548753244,0.02,0.399115117891817];
-cB.Label.String = 'Output';
+cB.Position = [0.900852878464819,0.370987250323925,0.013907747496821,0.398646257529478];
+cB.Label.String = 'Feature value';
 
 if numGroups > 0
 	cB.Ticks = 0.5:1:numGroups;
