@@ -203,3 +203,18 @@ SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,
 % save('CF_data','Percent_cf')
 
 toc
+
+%%%% Plot TS closest to k centroid
+
+for C = 1:5   % for each cluster
+   
+    [~,I] = sort(D(:,C),'ascend');   % sort, from closest to furthest from centroid
+    closest(C) = I(1);               % get the closest TS
+    
+    %plot
+    TS = TimeSeries.Data{closest(C),:};
+    figure;plot(TS)
+    
+end
+
+

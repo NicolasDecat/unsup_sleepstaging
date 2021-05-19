@@ -118,7 +118,7 @@ end
 % Split keywords by comma delimiter:
 
 %%%%% Nico modif: Get the keywords 
-load('ccshs_1800001_annot.mat', 'sleepstage')   
+load('ccshs_1800604_annot.mat', 'sleepstage')   
 KW = string(sleepstage);
 % KW = string([sleepstage;sleepstage;sleepstage;sleepstage;sleepstage;sleepstage;sleepstage]);  % If you want to use all 7 channnels 
 Keywords = SUB_cell2cellcell(KW);

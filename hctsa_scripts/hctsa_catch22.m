@@ -13,7 +13,7 @@ Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
  
-for D = 1:length(Subs)
+for D = 1:12
     
     sub = Subs{D};
 
@@ -49,9 +49,14 @@ for D = 1:length(Subs)
         
         clear Equi_Catch22
         Equi_Catch22 = find(ismember(ID,Catch22_idx));
+        
+        BestFeat = [6644 4449 4325 2763 40 2039 923 4556 1009 4360];
 
-        feat_id = Equi_Catch22;  %To include all features
+        Equi_BestFeat = find(ismember(ID,BestFeat));
 
+        % feat_id = Equi_Catch22;  %To include all features
+        feat_id = Equi_BestFeat;
+        
         [timeseries,features]=size(datamat);
         hctsa_ops = datamat(:,feat_id);
 
@@ -122,12 +127,12 @@ for D = 1:length(Subs)
     
     
     PERC_PER_CLASSIFIER_10iter = mean(PERC_STAGE); 
-    
-    % Save for each dataset
-    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_catch22';
-    save(fullfile(fpath,sprintf('PERC_PER_CLASSIF_10iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_10iter')  
-
-    
+%     
+% %     % Save for each dataset
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Best_Feat_Class_try';
+%     save(fullfile(fpath,sprintf('PERC_PER_CLASSIF_10iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_10iter')  
+% 
+% %     
 end
 
 

@@ -333,8 +333,8 @@ NS_R_2 = 624;
 %%%%%%%%%%%%%%%%%
 
 %%%% Same signature
-SS_WN1 = 1056;
-SS_WR= 1039;
+SS_WN1 = 1049;
+SS_WR= 1051;
 SS_N2R = 670;
 SS_N2N3 = 697;
 SS_N3R = 761;
@@ -351,53 +351,87 @@ NS_RN1 = 918;
 
 
 % Epochs_SS = [SS_wake SS_WN1 SS_wake_2 SS_WR SS_N2 SS_N2R SS_N2_2 SS_N2N3 SS_N3 SS_N3R SS_N3_2 SS_N3W ];
-Epochs_NS = [NS_N1 NS_N1W NS_N1_2 NS_N1N2 NS_N2 NS_N2R NS_N2_2 NS_N2N3 NS_R NS_RW NS_R_2 NS_RN1];
+Epochs_NS = [SS_wake SS_WN1 SS_wake_2 SS_WR  NS_N1 NS_N1W NS_N1_2 NS_N1N2 NS_N2 NS_N2R NS_N2_2 NS_N2N3 NS_R NS_RW NS_R_2 NS_RN1];
  
 TITLE = {'wake','N1','wake','REM','N2','REM','N2','N3','N3','REM','N3','wake'};
-TITLE_NS = {'N1','wake','N1','N2','N2','REM','N2','N3','REM','wake','REM','N1'};
+TITLE_NS = {'wake','N1','wake','REM','N1','wake','N1','N2','N2','REM','N2','N3','REM','wake','REM','N1'};
+Epochs_NS_str = {'SS_wake' 'SS_WN1' 'SS_WR' 'SS_wake_2'  'NS_N1' 'NS_N1W' 'NS_N1_2' 'NS_N1N2' 'NS_N2' 'NS_N2R' 'NS_N2_2' 'NS_N2N3' 'NS_R' 'NS_RW' 'NS_R_2' 'NS_RN1'};
 
-load('HCTSA_N.mat', 'TimeSeries')
+
+% load('HCTSA_N.mat', 'TimeSeries')
 
 %%%%%% Plot TS
-b = figure;  
-[ha, pos] = tight_subplot(6,2,[.05 .12],[.02 .02],[.03 .03]);
-ax = gca;
+for subplot = 1:16
 
-for subplot = 1:12
-
-    axes(ha(subplot)); 
     TS = TimeSeries.Data{Epochs_NS(subplot),:};
     
-    plot(TS)
-    
-    ylim([-0.2 0.2])
-    title(TITLE_NS{subplot},'FontSize',12)
+    f = figure; ax=gca; 
+    plot(TS,'LineWidth',1.5)
+    % plot(TS)
+
+    title(TITLE_NS{subplot},'FontSize',55)
     xticks([0:1280:3840]);
-    yticks(-0.2:0.2:0.2);
-    xticklabels({'0','10','20','30'})
-  
+    ax.XTickLabels = {'0','','','30'};
+    
+    % Label on the right axis for the  plotson the right
+    if subplot == 2 || subplot ==4  || subplot ==6 || subplot == 8 || subplot ==10 || subplot ==12 || subplot ==14 || subplot ==16
+        ax.YAxisLocation = 'right';
+        ax.Position = [0.04,0.23,0.85,0.55];
+    else
+        ax.Position = [0.090,0.23,0.85,0.55];
+    end
+    
+    % Y axis limit for wake
+    if subplot == 1 || subplot == 2  || subplot == 3 || subplot == 4
+         ylim([-0.15 0.15])
+         yticks(-0.15:0.15:0.15);
+    % Y axis limit for N1
+    elseif subplot == 5 || subplot == 6 || subplot == 7 || subplot == 8
+        ylim([-0.40 0.2])
+        yticks(-0.40:0.2:0.2);
+    % Y axis limit for N2
+    elseif subplot == 9 || subplot == 10 || subplot == 11 || subplot == 12
+         ylim([-0.15 0.15])
+         yticks(-0.15:0.15:0.15);
+    % Y axis limit for REM
+    elseif subplot == 13 || subplot == 14 || subplot == 15 || subplot == 16
+         ylim([-0.15 0.15])
+         yticks(-0.15:0.15:0.15);
+    end
+    
+    f.Position = [1,377,1449,275];
+    set(gca,'box','off') 
+    ax.FontSize = 45;
+
+    set(f, 'Color', 'w')
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms/EachTS';
+    export_fig([fpath filesep sprintf('%s',Epochs_NS_str{subplot})],'-r 300')
+
 end 
 
 %%%%%% Plot value colorbars
-a = figure;  
-[ha, pos] = tight_subplot(6,2,[.05 .05],[.02 .02],[.03 .03]);
-ax = gca;
-
-for subplot = 1:12
+for subplot = 1:16
     
-    axes(ha(subplot)); 
+    g = figure; ax = gca; 
     imagesc(TS_DataMat(:,Epochs_NS(subplot)));
+
     numColorMapGrads = 6; 
     customColorMap = flipud(BF_GetColorMap('redyellowblue',numColorMapGrads,0));
     colormap(customColorMap)
+    
     set(gca,'xtick',[]); set(gca,'ytick',[])
     set(gca,'visible','off')
+    g.Position = [274,332,97,188];
+    set(g, 'Color', 'w')
+    
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms/EachFV';
+    export_fig([fpath filesep sprintf('%s',Epochs_NS_str{subplot})],'-r 300')
 
 end
 
 set(a, 'Color', 'w')
-fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms';
-export_fig([fpath filesep 'hypno_EEG_cl(439)_values_NS'],'-r 300')
+% fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms';
+% export_fig([fpath filesep 'hypno_EEG_cl(439)_values_NS'],'-r 300')
 
 
 disp('ok')
@@ -424,37 +458,63 @@ i = find(cluster_decision == 3);
 j = find(cluster_decision == 5);
 
 
-False = c(find(cluster_decision(c) ~= 2));
+False = a(find(cluster_decision(a) ~= 0));
 false_ST = cluster_decision(False);
 
 
-load('HCTSA_N.mat','TimeSeries')
+% load('HCTSA_N.mat','TimeSeries')
 
 STG = {'Wake','N1','N2','N3','','REM'};
 
 %for subplot = 1:length(False)
-for subplot = 200:298
+for subplot = 80:150
 
-    f = figure;
+    f = figure; ax=gca;
     TS = TimeSeries.Data{False(subplot),:};
 
     plot(TS)
     
-    ylim([-0.2 0.2])
     xticks([0:1280:3840]);
-    yticks(-0.2:0.2:0.2);
     xticklabels({'0','10','20','30'})
-    
-    The_stage = STG(false_ST(subplot)+1);
+    ylim([-0.15 0.15])
+    yticks(-0.15:0.15:0.15);
+
+
+    The_stage = cellstr(STG(false_ST(subplot)+1));
     The_ID = string(False(subplot));
     title([The_stage The_ID])
     
-    f.Position = [100 300 1300 300];   % [x y width height]
-
-  
+    ax.Position = [0.08,0.23,0.88,0.40];
+    f.Position = [1,400,1449,275];
+    set(gca,'box','off') 
+    ax.FontSize = 45;
+    
 end 
+
+
+%% CTL epoch
+
+CTL = 139;
+
+f = figure; ax=gca;
+TS = TimeSeries.Data{CTL,:};
+
+plot(TS)
+
+xticks([0:1280:3840]);
+xticklabels({'0','','','30'})
+ylim([-0.15 0.15])
+yticks(-0.15:0.15:0.15);
+
+ax.Position = [0.08,0.23,0.88,0.40];
+f.Position = [1,10,1449,275];
+set(gca,'box','off') 
+ax.FontSize = 45;
 
 end
 
 
+
+
+ 
 

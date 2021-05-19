@@ -146,8 +146,8 @@ for D = 1:length(Subs)
     
         chan = Channels{NUM_CHANNELS_TO_RUN}; 
         fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/ConfusionMatrix';
-        saveas(gca,fullfile(fpath,sprintf('CF_%s_%s', sub, chan)),'jpeg')
-        
+%         saveas(gca,fullfile(fpath,sprintf('CF_%s_%s', sub, chan)),'jpeg')
+%         
         set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
         s=save_stats; [UA, ~, idx] = unique(s(:,[1 6]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A;
         

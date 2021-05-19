@@ -301,7 +301,7 @@ if plotFreeForm
 
     pHandles = zeros(numToPlot,1); % keep plot handles
 	for i = 1:numToPlot
-        x = TimeSeries.Data{iPlot(i)};
+        x = cell2mat(TimeSeries.Data{iPlot(i)});
         % x = TimeSeries.Data(iPlot(i));    % to solve the issue
 	    N0 = length(x);
 		if ~isempty(maxN) && (N0 > maxN)

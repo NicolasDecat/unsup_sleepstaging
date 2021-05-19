@@ -1,4 +1,4 @@
-
+2
 %% Compute the mean type-1 AUC
 
 load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/Table_AUC_100.mat');

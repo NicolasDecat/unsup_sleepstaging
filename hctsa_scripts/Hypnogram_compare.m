@@ -644,68 +644,68 @@ f.Position = [0.5 0.5 900 900];   % [x y width height]
 
 
 %% Same; data matrix with top 40 features only
-
-
-%%% Example of Dataset 001, EEG+EOG+EMG
-      
-set(0,'DefaultFigureVisible','on')
-
-%%%%%%% Plot the Data matrix
-TS_PlotDataMatrix_edited_top40('norm')
-
-%%%%%%% Plot the hypnogram
-load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs(439)')
-original_labels = statsOut.scoredTest;
-cluster_decision = statsOut.predictTest;
-
-% Give equivalent label for original labels
-a = find(original_labels == 0);
-b = find(original_labels == 1);
-c = find(original_labels == 2);
-d = find(original_labels == 3);
-e = find(original_labels == 5);
-
-original_labels(a) = 45;
-original_labels(b) = 55;
-original_labels(c) = 65;
-original_labels(d) = 75;
-original_labels(e) = 85;
-
-% Give equivalent label for original labels
-f = find(cluster_decision == 0);
-g = find(cluster_decision == 1);
-h = find(cluster_decision == 2);
-i = find(cluster_decision == 3);
-j = find(cluster_decision == 5);
-
-cluster_decision(f) = 45;
-cluster_decision(g) = 55;
-cluster_decision(h) = 65;
-cluster_decision(i) = 75;
-cluster_decision(j) = 85;
-
-%%%%%%% Plot the hypnogram: Original Labels
-x_time = 1:1166;
-
-
-% Plot
-hold on
-ax = gca;
-
-y = plot(x_time,original_labels,'r','LineWidth',2.8,'Color',[1 .5 .5]);  % light red
-
-ax.XTick = 1:120:1166;
-ax.XTickLabels = arrayfun(@(a)num2str(a),0:12,'uni',0);
-
-ax.YTick = 45:10:85;
-ax.YTickLabels = {'Wake','N1','N2','N3','REM'};
-ylim([0 90])
-
-a = get(gca,'YTickLabel');  
-set(gca,'YTickLabel',a,'fontsize',14)
-
-% Cluster decisions
-hold on
-z = plot(x_time,cluster_decision,'k','LineWidth',1,'Color',[.3 .3 .3]);  % light grey
-
-legend([y z],'Original labels','Cluster decisions','Location','southwest')
+% 
+% 
+% %%% Example of Dataset 001, EEG+EOG+EMG
+%       
+% set(0,'DefaultFigureVisible','on')
+% 
+% %%%%%%% Plot the Data matrix
+% TS_PlotDataMatrix_edited_top40('norm')
+% 
+% %%%%%%% Plot the hypnogram
+% load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs(439)')
+% original_labels = statsOut.scoredTest;
+% cluster_decision = statsOut.predictTest;
+% 
+% % Give equivalent label for original labels
+% a = find(original_labels == 0);
+% b = find(original_labels == 1);
+% c = find(original_labels == 2);
+% d = find(original_labels == 3);
+% e = find(original_labels == 5);
+% 
+% original_labels(a) = 45;
+% original_labels(b) = 55;
+% original_labels(c) = 65;
+% original_labels(d) = 75;
+% original_labels(e) = 85;
+% 
+% % Give equivalent label for original labels
+% f = find(cluster_decision == 0);
+% g = find(cluster_decision == 1);
+% h = find(cluster_decision == 2);
+% i = find(cluster_decision == 3);
+% j = find(cluster_decision == 5);
+% 
+% cluster_decision(f) = 45;
+% cluster_decision(g) = 55;
+% cluster_decision(h) = 65;
+% cluster_decision(i) = 75;
+% cluster_decision(j) = 85;
+% 
+% %%%%%%% Plot the hypnogram: Original Labels
+% x_time = 1:1166;
+% 
+% 
+% % Plot
+% hold on
+% ax = gca;
+% 
+% y = plot(x_time,original_labels,'r','LineWidth',2.8,'Color',[1 .5 .5]);  % light red
+% 
+% ax.XTick = 1:120:1166;
+% ax.XTickLabels = arrayfun(@(a)num2str(a),0:12,'uni',0);
+% 
+% ax.YTick = 45:10:85;
+% ax.YTickLabels = {'Wake','N1','N2','N3','REM'};
+% ylim([0 90])
+% 
+% a = get(gca,'YTickLabel');  
+% set(gca,'YTickLabel',a,'fontsize',14)
+% 
+% % Cluster decisions
+% hold on
+% z = plot(x_time,cluster_decision,'k','LineWidth',1,'Color',[.3 .3 .3]);  % light grey
+% 
+% legend([y z],'Original labels','Cluster decisions','Location','southwest')

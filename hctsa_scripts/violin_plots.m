@@ -455,9 +455,9 @@ f.Position = [1 300 1430 400];   % [x y width height]
 
 %Save
 set(gcf,'color','white')
-fpath = '/Users/nico/Documents/HCTSA/Analysis/violin';
-export_fig([fpath filesep 'Feat10_violin'],'-r 300')
-
+% fpath = '/Users/nico/Documents/HCTSA/Analysis/violin';
+% export_fig([fpath filesep 'Feat10_violin'],'-r 300')
+% 
 
  %% Violin plots for all datasets
 % 
@@ -671,7 +671,7 @@ export_fig([fpath filesep 'Feat10_violin'],'-r 300')
 
 % Go to corresponding current folder
 SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
-Dataset = 3;
+Dataset = 2;
 sub = SUB{Dataset};
     
 cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
@@ -687,8 +687,6 @@ Operations = Operations(equi_Top_Feat,:);                      % 'Operations' wi
 CodeString = {Operations.CodeString}.';  
 Keywords = {Operations.Keywords}.';
 YLabel = {Operations.ID}.';
-
-TOP = 40;
 
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
 
@@ -714,7 +712,18 @@ for C = 1:10
     Top_mean(1:TOP) = Per_correct_mean(Top_Feats{C});
 
     Top_10{C} = [Top_name' Top_key' Top_ID' num2cell(Top_mean')];
+    
+    %%% Try somthing
 
+% end
+% 
+% for i = 1:10
+%     IDX = find(contains(Top_10{1,i}(:,1),'FC_LocalSimple_mean1.ac2'));
+%     Accu(i) = Top_10{1,i}(IDX,4);
+% end
+
+
+        
     %%%%% Line plot of top 10 features
     axes(ha(C)); 
     
@@ -835,6 +844,210 @@ for C = 1:10
          
                                       
 end
+
+
+%% Violin plot of best feature for each classifier (one dataset) 
+
+% Go to corresponding current folder
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+Dataset = 1;
+sub = SUB{Dataset};
+    
+cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+    
+%%%%%%  Prepare top 10
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+load HCTSA.mat   
+Operations_ID = [Operations.ID].';
+
+equi_Top_Feat = setdiff(Operations_ID,spec_and_common_feat); % remove SV features
+Operations = Operations(equi_Top_Feat,:);                      % 'Operations' with WB features only (from HCTSA_N)
+
+CodeString = {Operations.CodeString}.';  
+Keywords = {Operations.Keywords}.';
+YLabel = {Operations.ID}.';
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+
+CL = {'Wake vs N1', 'Wake vs N2', 'Wake vs N3', 'Wake vs REM', 'N1 vs N2', 'N1 vs N3', 'N1 vs REM', 'N2 vs N3', 'N2 vs REM', 'N3 vs REM'};
+
+
+TOP = 500;
+
+%%%%% Select a classifier 
+for C = 1:10
+    
+    Per_correct_mean = Per_correct_mean_D_excl{1,Dataset}(C,:);
+
+    [~,I] = sort(Per_correct_mean','descend');
+    Top_Feats{C} = I(1:TOP);   
+                    
+    % Get the name and keyword associated with these features
+    Top_name(1:TOP) = CodeString(Top_Feats{C},1);
+    Top_key(1:TOP) = Keywords(Top_Feats{C},1);
+    Top_ID(1:TOP) = YLabel(Top_Feats{C},1);
+    Top_mean(1:TOP) = Per_correct_mean(Top_Feats{C});
+
+    Top_10{C} = [Top_name' Top_key' Top_ID' num2cell(Top_mean')];
+    
+end
+    
+ %%% Violin plot
+
+numClasses = 5; 
+subPerFig = 1; % subplots per figure
+numFeaturesDistr = 1;  % How many top features I want to plot
+
+ifeat = Top_ID';
+
+% Set the colors to be assigned to groups:
+colors = GiveMeColors(numClasses);
+
+%     % Space the figures out properly:
+%     numFigs = ceil(numFeaturesDistr/subPerFig);
+
+load HCTSA_N
+
+% Make data structure for TS_SingleFeature
+data = struct('TS_DataMat',TS_DataMat,'TimeSeries',TimeSeries,...
+            'Operations',Operations);
+
+figure;    
+[ha, pos] = tight_subplot(2,5,[.115 .05],[.1 .05],[.05 .05]);
+
+for C = 1:10
+    
+    axes(ha(C)); 
+
+    featHere = cell2mat(ifeat(C)); % features to plot on this figure
+
+    NameFeat = Top_10{1,C}{1,1};
+    TS_SingleFeature_1D(data,featHere,true,false);
+
+    if numel(NameFeat) > 25
+       NameFeat = NameFeat(1:25);
+    end
+    title({sprintf('[%u] %s: %1.1f%%',featHere,string(NameFeat),string(Top_10{1,C}{1,4}));...
+                    ['(',Top_10{1,C}{1,2},')']},'interpreter','none')
+    
+
+end
+    
+                  
+%% Spectral feature [4449] from all datasets 
+
+%%% 1) Get the mean of 4449 across the datasets
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5603)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+[~,y] = ismember(Subs,SUB);
+
+for D = 1:length(Subs)  
+ 
+    sub = Subs{D};
+    
+    % Go to corresponding current folder
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+        
+    Per_correct_mean = Per_correct_mean_D_excl{1,y(D)};
+
+    means = mean(Per_correct_mean);
+    [~,I] = sort((means)','descend');
+    Per_correct_mean = Per_correct_mean(:,I);
+
+    TOP = 500;
+    % Get the best 40 features
+    Top_Feat = I(1:TOP);   
+
+    % Load Data
+    load HCTSA_N.mat
+
+    % From Operations, take only well behaved features
+    equi_Top_Feat = setdiff(Operations.ID,spec_and_common_feat); % remove SV features
+    Idx_WB_Feat = find(ismember(Operations.ID, equi_Top_Feat));  % Index of WB features
+    Operations = Operations(Idx_WB_Feat,:);                      % 'Operations' with WB features only
+
+    % Get the name and keyword associated with these features
+    CodeString = Operations.CodeString;  
+    Keywords = Operations.Keywords;
+    YLabel = Operations.ID;
+
+    Top_name(1:TOP) = CodeString(Top_Feat,1);
+    Top_key(1:TOP) = Keywords(Top_Feat,1);
+    Top_ID(1:TOP) = YLabel(Top_Feat,1);
+
+    Top_40 = [Top_name' Top_key' num2cell(Top_ID')];
+
+    % Top_mean (mean over classifiers)
+    for F = 1:length(Top_40)
+        for C = 1:10
+            Top_40_Acc(F,C) = mean(Per_correct_mean(C,F));
+        end
+    end
+
+    Top_mean = mean(Top_40_Acc');
+    Top_40 = [Top_40 num2cell(Top_mean')];
+
+    mean_equi_feat(D) = Top_40(find(cell2mat(Top_40(:,3)) == 2762),4);
+
+
+end
+
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+[~,y] = ismember(Subs,SUB);
+
+
+% Parameters
+numClasses = 5; 
+subPerFig = 1; % subplots per figure
+numFeaturesDistr = 1;  % How many top features I want to plot
+colors = GiveMeColors(numClasses);
+CL = {'Wake vs N1', 'Wake vs N2', 'Wake vs N3', 'Wake vs REM', 'N1 vs N2', 'N1 vs N3', 'N1 vs REM', 'N2 vs N3', 'N2 vs REM', 'N3 vs REM'};
+
+figure;    
+[ha, pos] = tight_subplot(2,6,[.115 .05],[.1 .05],[.05 .05]);
+
+for D = 1:length(Subs)  
+ 
+    sub = Subs{D};
+    
+    % Go to corresponding current folder
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+
+    load HCTSA_N
+
+    % Make data structure for TS_SingleFeature
+    data = struct('TS_DataMat',TS_DataMat,'TimeSeries',TimeSeries,...
+                'Operations',Operations);
+    
+    axes(ha(D)); 
+    
+    ifeat = 2762;
+    featHere = ifeat; 
+    equi_feat = find(Operations.ID == ifeat);
+
+    NameFeat = Operations.Name(equi_feat,:);
+    TS_SingleFeature_1D(data,featHere,true,false);
+
+    % title({sprintf('[%u] %s: %1.1f',featHere,string(NameFeat),cell2mat(mean_equi_feat(D)))},'interpreter','none')
+    title({sprintf('%1.1f%%',cell2mat(mean_equi_feat(D)))},'interpreter','none')
+
+end
+    
+                  
+
+
+
+
+
 
 
 

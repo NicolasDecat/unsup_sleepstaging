@@ -565,7 +565,7 @@ load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
 
-Subs = {'001'};  % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'005'};  % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
 % This is just to obtain the right index when not all Subs are ran at once (use y)
 SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
@@ -598,22 +598,25 @@ CodeString = Operations.CodeString;
 Keywords = Operations.Keywords;
 YLabel = Operations.ID;
 
+TOP = 1;
+
 for C = 1:10
     
     % Reorder features: from yielding theg highest to lowest accuracy
     [~,I] = sort(Per_correct_mean(C,:)','descend');
-    Top_Feats{C} = I(1:40);   
+    Top_Feats{C} = I(1:TOP);   
                      
     % Get the name and keyword associated with these features
-    Top_name(1:40) = CodeString(Top_Feats{C},1);
-    Top_key(1:40) = Keywords(Top_Feats{C},1);
-    Top_ID(1:40) = YLabel(Top_Feats{C},1);
-    Top_mean(1:40) = Per_correct_mean(C,Top_Feats{C});
+    Top_name(1:TOP) = CodeString(Top_Feats{C},1);
+    Top_key(1:TOP) = Keywords(Top_Feats{C},1);
+    Top_ID(1:TOP) = YLabel(Top_Feats{C},1);
+    Top_mean(1:TOP) = Per_correct_mean(C,Top_Feats{C});
 
     Top_40{C} = [Top_name' Top_key' num2cell(Top_ID') num2cell(Top_mean')];
 
 end
 
+% [7104 6329 142 2065 2673 92 1009 7011];
 
 % Indices of classifiers
 wake = 0; N1 = 1; N2 = 3; N3 = 3; rem = 5;
@@ -865,7 +868,8 @@ for D = 1:12
     end   
    
 end
-    
+
+
 
 %% How many top features of a spe classifier are present across all datasets?
 
@@ -1728,6 +1732,23 @@ end
 %%% Average across datasets
 Mean_sup_catch22 = mean(Per_correct_means_cc);
 
+%%%%%%%%%%%%%%
+%%% Unsup - best feature of each classifier
+%%%%%%%%%%%%%%
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:length(Subs)  
+    
+    sub = Subs{D};
+
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/clustering_using_best_feat/Best_Feat_Class/PERC_PER_CLASSIF_10iter_Dataset%s',sub))
+
+    Per_correct_means_B(D,:) = PERC_PER_CLASSIFIER_10iter;
+end
+
+%%% Average across datasets
+Mean_unsup_best = mean(Per_correct_means_B);
 
 
 %%%%%%%%%%%%%%%%%
@@ -1742,6 +1763,7 @@ sup_all = Mean_sup_all(I);
 sup_one = Mean_sup_each(I);
 uns_catch22 = Mean_unsup_catch22(I);
 sup_catch22 = Mean_sup_catch22(I);
+uns_best = Mean_unsup_best(I);
 
 % Line plot
 figure; 
@@ -1779,6 +1801,48 @@ set(gca,'fontsize',20)
 %     fpath = '/Users/nico/Documents/HCTSA/Analysis';
 %     export_fig([fpath filesep 'sup unsup catch22'],'-r 300')
 
+
+%%% Just 4 line plots
+% Line plot
+figure; 
+% i = plot(1:10,sup_all,'LineWidth',1.3,'Color',[0 0.4470 0.7410]);  % dark blue
+% hold on
+h = plot(1:10,uns_all,'LineWidth',1.3,'Color',[0.3010 0.7450 0.9330]);  % light blue
+% hold on
+% j = plot(1:10,uns_catch22,'LineWidth',1.5,'Color',[0 0.65 0]);  % dark green
+% hold on
+% l = plot(1:10,uns_one,'LineWidth',1.3,'Color',[0.65 0 0]);  % light red
+hold on
+g = plot(1:10,uns_best,'LineWidth',1.3,'Color','g');  % light red
+
+hold off
+
+% legend('Unsup - using all features','SVM - using all features','Unsup - one feature at a time','SVM - one feature at a time','Location','eastoutside')
+xlabel('Classifiers')
+ylabel('Classification accuracy (%)')
+
+ax = gca;
+ax.XTick = 1:11;
+ax.XTickLabels = {'W vs N1','W vs N2','N3 vs W','W vs REM','N1 vs N2','N3 vs N1','N1 vs REM','N3 vs N2','N2 REM','N3 vs REM'};
+ax.XTickLabels = ax.XTickLabels(I);
+xtickangle(30)
+ylim([45 100])
+yline(50,'--','chance level','FontSize',18);
+ax.FontSize = 12;
+
+% legend('Full set of features (supervised clustering)','Full set of features (unsupervised clustering)','catch22','Single feature','Location','eastoutside')
+legend('Full set of features','Top feature from each classifier')
+legend boxoff
+set(gca,'fontsize',20)
+    set(gcf,'color','white')
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis';
+%     export_fig([fpath filesep 'sup unsup catch22_2'],'-r 300')
+
+
+%%% Bar chart, average across pairs
+
+
+
 %% hctsa based using all features: classification accuracy per stage
 
 Wake_accu = mean(uns_all([4 5 6 9]));  % 79.80
@@ -1787,9 +1851,9 @@ N2_accu = mean(uns_all([2 3 6 7]));    % 75.12
 N3_accu = mean(uns_all([7 8 9 10]));   % 87.66
 REM_accu = mean(uns_all([1 3 5 8]));   % 74.48
 
-[h,p,ci,stats] = ttest2(uns_catch22,sup_one)   % 0.04
+[h,p,ci,stats] = ttest2(uns_catch22,uns_all)   % 0.04
 
-%% Median rank of ind features
+%% Mean rank of ind features
 
 % Load data
 load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5603)_all_datasets')
@@ -1889,6 +1953,8 @@ for F = 1:10
 end
 
 Mean_Accu_acr_D = mean(Accuracy);
+%STD across datasets for each feature
+Accu_STD = std(Accuracy)
 
 %%% Get ranks across datasets for top 10 features
 for F = 1:10
@@ -1911,6 +1977,149 @@ for i = 1:10
     STD(i) = std(ranks(:,i))
 end
 
+%%% Plot the std
+
+% Plot std (variance across classifiers)
+figure; ax = gca;
+stdshade(Accuracy,0.5,'r');
+title('Mean accuracy across features')
+xlabel('features sorted from best to worst')
+ylabel('Percentage Accuracy')
+
+
+%% Mean rank of best feature for each classifier (1800005)
+
+% Matrices with only WB features
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5603)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+
+Subs = {'005'};  % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+% This is just to obtain the right index when not all Subs are ran at once (use y)
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+[~,y] = ismember(Subs,SUB);
+
+for D = 1:length(Subs)  
+ 
+    sub = Subs{D};
+    
+    % Go to corresponding current folder
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+    
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+    % Per_correct_mean = iteration_svm_testing_accuracy_MEAN;  % if you want to plot top features from supervised clustering
+    
+end
+
+Per_correct_mean = Per_correct_mean_D_excl{y};
+
+% Load Data
+load HCTSA_N.mat
+
+% From Operations, take only well behaved features
+equi_Top_Feat = setdiff(Operations.ID,spec_and_common_feat); % remove SV features
+Idx_WB_Feat = find(ismember(Operations.ID, equi_Top_Feat));  % Index of WB features
+Operations = Operations(Idx_WB_Feat,:);  
+
+% Get the name and keyword associated with these features
+CodeString = Operations.CodeString;  
+Keywords = Operations.Keywords;
+YLabel = Operations.ID;
+
+TOP = 5603;
+
+for C = 1:10
+    
+    % Reorder features: from yielding theg highest to lowest accuracy
+    [~,I] = sort(Per_correct_mean(C,:)','descend');
+    Top_Feats{C} = I(1:TOP);   
+                     
+    % Get the name and keyword associated with these features
+    Top_name(1:TOP) = CodeString(Top_Feats{C},1);
+    Top_key(1:TOP) = Keywords(Top_Feats{C},1);
+    Top_ID(1:TOP) = YLabel(Top_Feats{C},1);
+    Top_mean(1:TOP) = Per_correct_mean(C,Top_Feats{C});
+
+    Top_5603{C} = [Top_name' Top_key' num2cell(Top_ID') num2cell(Top_mean')];
+
+end
+
+% Index of classifier involving each stage
+Wake = [1 2 3 4];    
+N1 = [1 5 6 7];    
+N2 = [2 5 8 9];    
+N3 = [3 6 8 10];    
+REM = [4 7 9 10];    
+
+ST = [{Wake} {N1} {N2} {N3} {REM}];
+
+% Now for each stage, get the mean rank across the4 corresponding
+% classifiers
+
+% load index of 5603 features
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ID5603')
+ 
+for F = 1:5603   % for each feature
+    
+    for S = 1:5    % for each stage 
+    
+        Classif = ST{S};
+        
+        for C = 1:4     % for each of the 4 classifier
+                        
+            Rank = Top_5603{1,Classif(C)}(:,3);
+            
+            FeatID(C) = find(ID5603(F) == cell2mat(Rank));
+            
+        end
+
+        % Mean across 4 classifiers (1 stage) for 1 Feature
+        Mean_stage(F,S) = mean(FeatID);
+        
+    end
+    
+end
+
+for S = 1:5
+    
+    % Sort from lowest to highest rank (consistently best to worst)
+    % Say, N1
+    [~,Y] = sort(Mean_stage(:,S)','ascend');   % I = top rank (/5603)
+    Mean_stage(:,S) = Mean_stage(Y,S);
+
+    % Now get ID, name and keyword
+    Top_10_ID = table2cell(Operations(Y(1:10),4));
+    Top_10_KEY = table2cell(Operations(Y(1:10),3));
+    Top_10_NAME = table2cell(Operations(Y(1:10),1));
+
+    Top_10 = [Top_10_ID Top_10_KEY Top_10_NAME];
+
+    %%% Get the accuracy as well
+    for F = 1:10   % for each feature
+
+
+        Classif = ST{S};
+
+        for C = 1:4     % for each of the 4 classifier
+
+            IDX = find(cell2mat(Top_5603{1,Classif(C)}(:,3)) == cell2mat(Top_10_ID(F))) ;
+            MEANS(C) = Top_5603{1,Classif(C)}(IDX,4);
+
+        end
+
+        % Mean across 4 classifiers (1 stage) for 1 Feature
+        THEMEAN_stage(F,1) = mean(cell2mat(MEANS));
+
+    end
+
+Top_10 = [Top_10_ID Top_10_KEY Top_10_NAME num2cell(THEMEAN_stage) num2cell(Mean_stage(1:10,S))];
+
+TOPP{S} = Top_10;
+
+clear Top_10 Top_10_ID Top_10_KEY Top_10_NAME THEMEAN_stage
+
+end
 
 %% Catch 22
 
@@ -1939,5 +2148,340 @@ end
 %%% 18th feature has 3 'duplicate' (because "contains" gets 3) but its 3604
 
 Catch22_idx = [11,12,134,135,243,1121,7634,3477,1406,1585,1965,310,2997,3264,3294,4492,3467,3604,4036,4156,4421,3010];
+
+
+%% TRYYY
+
+load('/Users/nico/Documents/HCTSA/Analysis/clustering_using_best_feat/BestFeat_unsup')
+load('/Users/nico/Documents/HCTSA/Analysis/clustering_using_best_feat/AllofThem_2')
+
+[~,I] = sort(AllofThem_2,'ascend');
+AllofThem_2 = AllofThem_2(I);
+PERC_PER_CLASSIFIER_10iter = PERC_PER_CLASSIFIER_10iter(I);
+
+% Line plot
+figure; 
+h = plot(1:10,AllofThem_2,'LineWidth',1.3,'Color',[0.3010 0.7450 0.9330]);  % light blue
+hold on
+i = plot(1:10,PERC_PER_CLASSIFIER_10iter,'LineWidth',1.3,'Color','g');  % green 
+hold off
+
+
+
+% legend('Unsup - using all features','SVM - using all features','Unsup - one feature at a time','SVM - one feature at a time','Location','eastoutside')
+xlabel('Classifiers')
+ylabel('Classification accuracy (%)')
+
+ax = gca;
+ax.XTick = 1:11;
+ax.XTickLabels = {'W vs N1','W vs N2','N3 vs W','W vs REM','N1 vs N2','N3 vs N1','N1 vs REM','N3 vs N2','N2 REM','N3 vs REM'};
+ax.XTickLabels = ax.XTickLabels(I);
+xtickangle(30)
+ylim([45 100])
+yline(50,'--','chance level','FontSize',18);
+ax.FontSize = 12;
+
+legend('Full set of features','Best features','Location','eastoutside')
+legend boxoff
+set(gca,'fontsize',20)
+    set(gcf,'color','white')
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis';
+%     export_fig([fpath filesep 'sup unsup catch22_2'],'-r 300')
+
+
+%% Corr Mat and Violin Plot from top 10 Feat across datasets, in one dataset
+
+
+%%%% CorrMat
+
+% Matrices with only WB features
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+
+Subs = {'005'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+% This is just to obtain the right index when not all Subs are ran at once (use y)
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+[~,y] = ismember(Subs,SUB);
+
+for D = 1:length(Subs)  
+ 
+    sub = Subs{D};
+    
+    % Go to corresponding current folder
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+
+    % Load Data
+    load('HCTSA_N.mat','Operations')
+
+    % Top 10 Feat across datasets
+    Top10Feat = [4449 4325 2133 363 2033 2059 6594 2762 2149 4477]';
+    NAME = {'SPE1' 'SPE2','STA1','INF','NET1','NET2','WAV','ENT','STA2','SPE3'};
+    
+    % Get equivalent index for corresponding dataset
+    for i = 1:10    
+        equi_feat(i) = find(ismember(Operations.ID,Top10Feat(i)));
+    end
+
+    Top_name = Operations.CodeString(equi_feat);
+    Top_key = Operations.Keywords(equi_feat);
+    Top_ID = Operations.ID(equi_feat);
+
+    Top_10 = [Top_name Top_key num2cell(Top_ID)];
+
+    % Top_mean 
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_each/Per_correct_mean(Dataset %s)',sub))
+    for F = 1:10
+        Top_10_Acc(F) = mean(Per_correct_mean(:,equi_feat(F)));
+    end
+
+    Top_10 = [Top_10 num2cell(Top_10_Acc')];
+
+end
+
+load('HCTSA_N.mat','TS_DataMat')
+
+% Parameters
+numTopFeatures = 10;   
+op_ind = equi_feat';      
+distanceMetric = 'abscorr';
+clusterThreshold = 0.2;
+
+% Compute correlations based on hctsa responses
+EEGonly = 1:size(TS_DataMat,1)/7;
+TS_DataMat = TS_DataMat(EEGonly,op_ind);    
+Dij = BF_pdist(TS_DataMat','abscorr');  
+
+% Ylabels
+YLabel = [];
+for i = 1:length(op_ind)
+    YLabel = [YLabel {sprintf('%s (%1.1f%%)',NAME{i},Top_10_Acc(i))}];
+end
+
+% Plot the correlation matrix
+[~,cluster_Groupi] = BF_ClusterDown(Dij,'clusterThreshold',clusterThreshold,...
+                        'whatDistance',distanceMetric,...
+                        'objectLabels',YLabel);
+set(gca,'fontsize',22)
+
+% set(gcf,'color','white')
+% fpath = '/Users/nico/Documents/HCTSA/Analysis/violin';
+% export_fig([fpath filesep 'CorrMattop10_on_D5_paper'],'-r 300')
+    
+%%%%% Violin plot
+
+ifeat = equi_feat';
+
+load HCTSA_N.mat
+% Make data structure for TS_SingleFeature
+data = struct('TS_DataMat',TS_DataMat,'TimeSeries',TimeSeries,...
+                'Operations',Operations);
+            
+% Set the colors to be assigned to groups:
+numClasses = 5;
+colors = GiveMeColors(numClasses);
+
+% Space the figures out properly:
+numClasses = 5; 
+subPerFig = 10; % subplots per figure
+numFeaturesDistr = 10;  % How many top features I want to plot
+numFigs = ceil(numFeaturesDistr/subPerFig);
+
+    % rearrange according to corrmat
+    % arr = [1 10 2 3 9 6 7 4 5 8];
+    arr = [2 1 10 5 6 8 7 4 9 3];
+    equi_feat = equi_feat(arr);
+    Top_10 = Top_10(arr,:);
+    NAME = NAME(arr);
+
+    ifeat = equi_feat;
+
+    for figi = 1:10
+
+        % Get the indices of features to plot
+        r = ((figi-1)*subPerFig+1:figi*subPerFig);
+
+        if figi==numFigs % filter down for last one
+            r = r(r<=numFeaturesDistr);
+        end
+
+        featHere = ifeat(r); % features to plot on this figure
+
+        % Make the figure
+        f = figure('color','w');
+        f.Position(3:4) = [1353, 857];
+        % Loop through features
+        for opi = 1:length(featHere)
+            subplot(ceil(length(featHere)/5),5,opi);
+            TS_SingleFeature_1D_2(data,featHere(opi),true,false,opi);
+           if numel(Top_10{opi,1}) > 25
+               Top_10{opi,1} = Top_10{opi,1}(1:25);
+           end
+            title({sprintf('%s (%1.1f%%)',NAME{opi},string(Top_10{opi,4}))},'interpreter','none');
+           set(gca,'fontsize',16)
+
+        end
+
+
+    end
+
+        set(gcf,'color','white')
+        fpath = '/Users/nico/Documents/HCTSA/Analysis/violin';
+        export_fig([fpath filesep 'Violintop10_on_D5_paper'],'-r 300')
+
+%%%%% Accuracy across classifiers
+    
+load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_each/Per_correct_mean(Dataset %s)',sub))
+for F = 1:10
+    Mean_FEAT(:,F) = Per_correct_mean(:,equi_feat(F));
+end
+
+%% Violin plot, best feature from each classifier across datasets, on Dataset 1
+
+% Matrices with only WB features
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Matrix_excl_all_feat_removed(5603)_all_datasets')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/ALL_removed_feat(2146)')
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+% This is just to obtain the right index when not all Subs are ran at once (use y)
+SUB = {'001','005','439','458','596','748','749','752','604','807','821','870'};
+[~,y] = ismember(Subs,SUB);
+
+for D = 1:length(Subs)  
+ 
+    sub = Subs{D};
+    
+    % Go to corresponding current folder
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
+    
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Per_correct_mean_D_excl')
+    % Per_correct_mean = iteration_svm_testing_accuracy_MEAN;  % if you want to plot top features from supervised clustering
+    
+end
+
+Per_correct_mean = Per_correct_mean_D_excl{y};
+
+% Load Data
+load HCTSA_N.mat
+
+% From Operations, take only well behaved features
+equi_Top_Feat = setdiff(Operations.ID,spec_and_common_feat); % remove SV features
+Idx_WB_Feat = find(ismember(Operations.ID, equi_Top_Feat));  % Index of WB features
+Operations = Operations(Idx_WB_Feat,:);  
+
+% Get the name and keyword associated with these features
+CodeString = Operations.CodeString;  
+Keywords = Operations.Keywords;
+YLabel = Operations.ID;
+TOP = 5603;
+
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+
+for D = 1:12
+    
+    sub = Subs{D};
+   
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))      
+
+    for C = 1:10
+
+        % Features reordering: from best to worst feature
+        [~,I] = sort(Per_correct_mean_D_excl{1,D}(C,:)','descend');
+        Top_Feats{C} = I(1:TOP);
+
+        % Get the name and keyword associated with these features
+        Top_name(1:TOP) = CodeString(Top_Feats{C},1);
+        Top_key(1:TOP) = Keywords(Top_Feats{C},1);
+        Top_ID(1:TOP) = YLabel(Top_Feats{C},1);
+        Top_mean(1:TOP) = Per_correct_mean_D_excl{1,D}(C,Top_Feats{C});
+
+        Top_40{D}{C} = [Top_name' Top_key' num2cell(Top_ID') num2cell(Top_mean')];
+
+    end   
+   
+end
+
+%%% For each dataset, each classifier, get rank of each feature
+Feat = sort(Top_ID, 'ascend');
+
+for C = 1:10
+    
+    for D = 1:12
+ 
+        Rank(:,D) = cell2mat(Top_40{1,D}{1,C}(:,3));
+
+    end
+    
+    % Average rank across datasets
+    
+    for F = 1:5603
+        
+        for D = 1:12
+        
+            FeatID(D) = find(Feat(F) == Rank(:,D));
+         
+        end
+        
+        % Mean rank across datasets
+        ID_allD(F,1) = mean(FeatID);
+        
+    end
+    
+    ID_Feat_Class(:,C) = ID_allD;
+
+end
+
+
+%%% Now, find in each classifier what feature has the lowest rank
+
+for C = 1:10
+    
+    [~,I] = sort(ID_Feat_Class(:,C),'ascend');
+    Rank_Classif(:,C) = I;
+    ID_Feat_Class(:,C) = ID_Feat_Class(Rank_Classif(:,C),C);
+    ID_BEST(C,:) = [Rank_Classif(1,C)' ID_Feat_Class(1,C)'];  % Get lowest rank
+
+end
+
+
+% Table
+
+for C = 1:10
+    
+    the_feat = ID_BEST(C,1);
+    
+    NAMES(C,:) = Operations.CodeString(the_feat);
+    KEYS(C,:) = Operations.Keywords(the_feat);
+    ID(C,:) = Operations.ID(the_feat);
+    
+end
+    
+    
+% Mean accu of top features, across datasets for each classifier
+
+    
+for C = 1:10
+
+    for D = 1:12
+
+        Per_correct_mean = Per_correct_mean_D_excl{1,D};
+        Accu(:,D) = Per_correct_mean(C,ID_BEST(C,1));
+
+    end
+
+    Mean_Accu(C) = mean(Accu);
+
+end
+
+Classif = {'Wake N1','Wake N2','Wake N3','Wake REM','N1 N2','N1 N3','N1 REM','N2 N3','N2 REM','N3 REM'};
+Table2 = array2table([Classif' num2cell(ID) num2cell(KEYS) NAMES num2cell(Mean_Accu') num2cell(ID_BEST(:,2))],'VariableNames',{'Classifier','ID','Keyword','Name','Accuracy','Rank'});
+
+% fpath = '/Users/nico/Documents/HCTSA/Analysis/';
+% writetable(Table2, [fpath filesep 'Table_top1Classif.csv'])  % save
+% 
+
+
 
 

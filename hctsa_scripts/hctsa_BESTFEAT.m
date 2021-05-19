@@ -36,14 +36,19 @@ for D = 1:length(Subs)   % For each dataset
     datam = load(hctsafile,'TS_DataMat');   % Load TS_DataMat (epochsxfeatures)
     load('HCTSA_N.mat')
     
+    BestFeat = [6644 4449 4325 2763 40 2039 923 4556 1009 4360];
+    ID = Operations{:,4};
+    Equi_BestFeat = find(ismember(ID,BestFeat));
+        
     for v = 1:1  % For each channel condition
 
-        for FF = 1:size(Operations,1)    % For each feature
+        %for FF = 1:size(Operations,1)    % For each feature
         % for FF = 1:1
+        for FF = 1:10
        
             % Load data matrix for one feature
             datamat = datam;
-            datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
+            datamat = datamat.TS_DataMat(:,Equi_BestFeat(FF));   % Take data points for 1 feature
 
             feat_id = 1:size(datamat,2);  
 
@@ -83,7 +88,7 @@ for D = 1:length(Subs)   % For each dataset
             SELECT_TOP_200_FEATURES=size(hctsa_ops,2);
 
 
-            [testMat Nf testTS Per_correct_mean] = kmeans_mapping_eachfeature_crossval(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
+            [testMat Nf testTS Per_correct_mean] = kmeans_BESTFEAT(k, hctsa_ops, CM_SAVE_DIR, c, epochSelectFunc, SELECT_TOP_200_FEATURES,sub,v,FF,FF);
 
             % [~, statsOut.complexity]=size(hctsa_ops);
             

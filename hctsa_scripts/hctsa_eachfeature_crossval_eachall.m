@@ -14,7 +14,7 @@ Channels = {'1ch' '2ch' '3ch'};  % used for saveas
 NumIter = compose('%diter',(1:100)); % used for saveas
 
 
-for D = 1:length(Subs)
+for D = 2
     
     sub = Subs{D};
 
@@ -89,7 +89,7 @@ for D = 1:length(Subs)
     
     % Save for each dataset
     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_all';
-    save(fullfile(fpath,sprintf('PERC_PER_CLASSIFIER_100iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_100iter')  
+%     save(fullfile(fpath,sprintf('PERC_PER_CLASSIFIER_100iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_100iter')  
 
     
 end

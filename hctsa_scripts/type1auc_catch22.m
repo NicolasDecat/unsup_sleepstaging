@@ -257,7 +257,7 @@ end
     
 %Save for each dataset
 fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/sup_catch22';
-save(fullfile(fpath,sprintf('PERC_PER_CLASSIF_10iter_Dataset%s.mat',sub)),'iteration_svm_testing_accuracy_MEAN')  
+% save(fullfile(fpath,sprintf('PERC_PER_CLASSIF_10iter_Dataset%s.mat',sub)),'iteration_svm_testing_accuracy_MEAN')  
 
 disp(sub)
 

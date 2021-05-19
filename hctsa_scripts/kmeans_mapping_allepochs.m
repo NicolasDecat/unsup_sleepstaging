@@ -102,7 +102,7 @@ for Nf = 1:nIterations
     % Record cluster ID and centre of each cluster
 
     %% UNSUPERVISED
-    [clustID,block(Nf).Kcentre,sse] = kmeans(trainMat,NUM_CLUSTERS,'Distance','sqeuclidean',...
+    [clustID,block(Nf).Kcentre,sse,D] = kmeans(trainMat,NUM_CLUSTERS,'Distance','sqeuclidean',...
                         'Display','off','Replicates',50,'MaxIter',500);
 
 
@@ -254,7 +254,82 @@ predictTest = stats.predictTest;
 %clearvars -except Output datamat feat_id features k complexity CM_SAVE_DIR exps statsOut
 
 %% Run AUC
-   run('type1aucc.m')
+run('type1aucc.m')
+
+
+
+%% Plot TS closest to k centroid
+
+set(0,'DefaultFigureVisible','on')
+addpath '/Users/nico/Documents/MATLAB/hctsa-master/export_fig-master'
+
+% Load TimeSeries
+load('HCTSA_N.mat', 'TimeSeries')
+
+Raw_index = [1 2 3 4 5];  
+Name = {'CW','C1','C2','C3','CR'};    % Name of Cluster
+Equi_index = [0 1 2 3 5];             % Index of stages
+Dist = D;                             % Distance of each TS from each centroid
+
+%%% For each cluster, plot the time series that are the most representative
+%%% (i.e., the closest to the k centroid)
+
+for C = 1:5
+  
+    % For Cluster C, sort TS from closest to furthest from centroid
+    [~,I] = sort(Dist(:,C),'ascend');  
+    closest = I(1:5);        % get the 5 closest TS
+    
+    % Which stage this cluster has been assigned to?
+    StageIndex = equi_stage(C);
+    x = find(StageIndex == Equi_index); 
+    Cluster_ID = Name(x);
+    
+    add = 0.2;
+    
+    % Figure
+    f = figure; ax=gca; 
+        
+    %%% For Cluster C, plot the 5 representative TS
+    for i = 1:5
+
+        TS = TimeSeries.Data{closest(i),:}+add;
+        add = add+0.2;
+
+        plot(TS,'LineWidth',1.5,'Color',[0, 0.4470, 0.7410])
+        hold on
+
+        ax.Position = [0.080,0.23,0.90,0.65];
+        
+    end
+    
+    % Parameters
+    title(sprintf('%s',string(Cluster_ID)))
+    xticks([0:1280:3840]);
+    ax.XTickLabels = {'0','','','30'};
+    ylim([0 1.1])
+    ylabel('Amplitude (V)')
+    
+    if C == 5
+        xlabel('Time (s)')
+    end
+        
+    TS = TS+1;
+    yticks(0:0.2:1);
+
+    f.Position = [1,227,1352,450];
+    set(gca,'box','off') 
+    ax.FontSize = 35;
+
+    set(f, 'Color', 'w')
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Clusters';
+    export_fig([fpath filesep sprintf('%s',string(Cluster_ID))],'-r 300')
+
+
+end
+    
+
+
 
 
 end

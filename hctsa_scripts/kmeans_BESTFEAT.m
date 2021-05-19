@@ -22,7 +22,7 @@ stgLab = {'W','N1','N2','N3','R'};
 
 % Training
 trainingProportion = TRAINING_PERCENTAGE;
-nIterations = 1;
+nIterations = 10;
 
 %% Multiple iteration of randomisation and cross-validation
 % Initialise result struct
@@ -36,11 +36,7 @@ for Nf = 1:nIterations
     
     [block(Nf).trainTS,block(Nf).testTS]=epochSelect(stgID,trainingProportion);
     
-%     % If want EOG only (+ length(label)) or EMg only (+ (2*length(label))
-%     block(Nf).trainTS = block(Nf).trainTS + (2*length(label));  % Move it to 1374 rows to get to EOG
-%     block(Nf).testTS = block(Nf).testTS + (2*length(label));  
-    
-    
+
     % The following turn the nxm matrix to 1x(n*m) matrix
     trainTS = block(Nf).trainTS.';
     trainTS = trainTS(:).';
@@ -195,7 +191,7 @@ end % End Nf-th randomisation
 
 %% Compute type1AUC
 
-   run('type1auc_eachfeature_crossval.m')
+   run('type1auc_BESTFEAT.m')
 
 
 end
