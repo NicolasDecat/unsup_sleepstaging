@@ -100,7 +100,7 @@ end
 
 TimeSeries.Data = CellData;
 
-%%%% Only EEG (439)
+%%%% Only EEG (439)  
 
 numTS = 1166;
 TimeSeries = TimeSeries(1:numTS,:);
@@ -270,7 +270,7 @@ if numOps < 1000 % if too many operations, it's too much to list them all...
     ax2.XTickLabelRotation = 90;
 end
 
-label_p = ylabel('Operations','fontsize',17);
+label_p = ylabel('Features','fontsize',17);
 label_p.Position(2) = 3000; 
 label_p.Position(1) = -50; 
 

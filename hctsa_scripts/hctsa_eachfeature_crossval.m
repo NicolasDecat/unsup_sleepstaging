@@ -36,14 +36,27 @@ for D = 1:length(Subs)   % For each dataset
     datam = load(hctsafile,'TS_DataMat');   % Load TS_DataMat (epochsxfeatures)
     load('HCTSA_N.mat')
     
+    
+    % Take 5%
+    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Top_5perc')
+    idx_feat = cell2mat((Top_5perc(:,1)));
+
+    % Equivalent index 
+    for i=1:numel(idx_feat)
+        BestFeat(i) = find(Operations.ID == idx_feat(i));
+    end
+               
+    
     for v = 1:1  % For each channel condition
 
-        for FF = 1:size(Operations,1)    % For each feature
-        % for FF = 1:1
+        %for FF = 1:size(Operations,1)    % For each feature
+        for FF = 1:280
        
+          
             % Load data matrix for one feature
             datamat = datam;
-            datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
+            % datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
+            datamat = datamat.TS_DataMat(:,BestFeat(FF));   % Take data points for 1 feature
 
             feat_id = 1:size(datamat,2);  
 
@@ -123,14 +136,14 @@ for D = 1:length(Subs)   % For each dataset
 %                         statistics.scoredTest, statistics.predictTest, CM_SAVE_DIR);
 %             end
 
-             chan = Channels{NUM_CHANNELS_TO_RUN}; 
+             %chan = Channels{NUM_CHANNELS_TO_RUN}; 
     %         fpath = '/Users/nico/Documents/HCTSA/Analysis/CF_v2(10iter)';
     %         saveas(gca,fullfile(fpath,sprintf('CF_%s_%s', sub, chan)),'jpeg')
 
             % Average percentages of confusion matrices (perResponse)
             % run('Plot_CF_mean')
 
-             set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
+             %set(0,'DefaultFigureVisible','on') % Uncomment this to enable the figure displaying
              % s=save_stats; [UA, ~, idx] = unique(s(:,[1 6]));NEW_A = [UA,array2table(accumarray(idx,double(table2array(s(:,4))),[],@mean))]; NEW_A;
 
             % Average percentages of confusion matrices (perResponse)
@@ -155,38 +168,41 @@ for D = 1:length(Subs)   % For each dataset
        
     end
     
+    gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_Top_5perc/average_univariate(280)';
+    save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean')  % Save all columns in AUC folder
+
 
     %% Plot Data matrix
 
-    figure;
-    imagesc(Per_correct_mean)
-    title(sprintf('Classification performance per feature (Dataset %s)',sub));
-    % title('Classification performance per feature (Dataset 001)');
-
-    ax = gca;
-    ax.XTick = 1:500:size(Operations,1);
-    ax.YTick = 1:10;
-    % ax.XTickLabels = strseq('f',1:100)';
-    ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1),'uni',0);
-    ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
-    % ax.YTickLabels = {'Wake vs all', 'N1 vs all', 'N2 vs all', 'N3 vs all', 'REM vs all'};
-    ylabel('Binary classifiers');
-    xlabel('features');
-    ax.XAxisLocation = 'bottom';
-
-    colormap 'default'
-    colorbar
-
-%    % Save figure
-    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Figure_accuracy_per_feat';
-%     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'fig')
-%     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'jpg')
- 
-%   % Save matrix
-%     gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat';
-%     save(fullfile(gpath,sprintf('Per_correct_mean_OVA(Dataset %s).mat',sub)),'Per_correct_mean') 
-       gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/OVA';
-%        save(fullfile(gpath,sprintf('Per_correct_mean_OVA(Dataset %s).mat',sub)),'Per_correct_mean')
+%     figure;
+%     imagesc(Per_correct_mean)
+%     title(sprintf('Classification performance per feature (Dataset %s)',sub));
+%     % title('Classification performance per feature (Dataset 001)');
+% 
+%     ax = gca;
+%     ax.XTick = 1:500:size(Operations,1);
+%     ax.YTick = 1:10;
+%     % ax.XTickLabels = strseq('f',1:100)';
+%     ax.XTickLabels = arrayfun(@(a)num2str(a),0:500:size(Operations,1),'uni',0);
+%     ax.YTickLabels = {'W vs N1', 'W vs N2', 'W vs N3', 'W vs REM', 'N1 vs N2','N1 vs N3','N1 vs REM','N2 vs N3','N2 vs REM','N3 vs REM'};
+%     % ax.YTickLabels = {'Wake vs all', 'N1 vs all', 'N2 vs all', 'N3 vs all', 'REM vs all'};
+%     ylabel('Binary classifiers');
+%     xlabel('features');
+%     ax.XAxisLocation = 'bottom';
+% 
+%     colormap 'default'
+%     colorbar
+% 
+% %    % Save figure
+%     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Figure_accuracy_per_feat';
+% %     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'fig')
+% %     saveas(gca,fullfile(fpath,sprintf('AccperFeat(100)_%s_crossval',sub)),'jpg')
+%  
+% %   % Save matrix
+% %     gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat';
+% %     save(fullfile(gpath,sprintf('Per_correct_mean_OVA(Dataset %s).mat',sub)),'Per_correct_mean') 
+%        gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy/Matrix_accuracy_per_feat/OVA';
+% %        save(fullfile(gpath,sprintf('Per_correct_mean_OVA(Dataset %s).mat',sub)),'Per_correct_mean')
 
 
 end

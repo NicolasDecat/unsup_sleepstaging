@@ -48,9 +48,9 @@ for Nf = 1:nIterations
     
     % The following turn the nxm matrix to 1x(n*m) matrix
     % trainTS = block(Nf).trainTS.';
-    trainTS = 1:1166;
+    trainTS = 1:1396;
     % testTS = block(Nf).testTS.';
-    testTS = 1:1166;
+    testTS = 1:1396;
 
     if DEBUG_CROSSVALIDATION
         debug_folder =  strcat('Exp_', sprintf('%d', experiment), '_iteration_', num2str(Nf), '_channel_', num2str(number_of_channels_used));
@@ -258,7 +258,7 @@ run('type1aucc.m')
 
 
 
-%% Plot TS closest to k centroid
+% %% Plot TS closest to k centroid
 
 set(0,'DefaultFigureVisible','on')
 addpath '/Users/nico/Documents/MATLAB/hctsa-master/export_fig-master'
@@ -274,11 +274,13 @@ Dist = D;                             % Distance of each TS from each centroid
 %%% For each cluster, plot the time series that are the most representative
 %%% (i.e., the closest to the k centroid)
 
+NumTS = 10;
+
 for C = 1:5
   
     % For Cluster C, sort TS from closest to furthest from centroid
     [~,I] = sort(Dist(:,C),'ascend');  
-    closest = I(1:5);        % get the 5 closest TS
+    closest = I(1:NumTS);        % get the 5 closest TS
     
     % Which stage this cluster has been assigned to?
     StageIndex = equi_stage(C);
@@ -291,38 +293,55 @@ for C = 1:5
     f = figure; ax=gca; 
         
     %%% For Cluster C, plot the 5 representative TS
-    for i = 1:5
+    for i = 1:NumTS
 
-        TS = TimeSeries.Data{closest(i),:}+add;
+        TS = TimeSeries.Data(closest(i),:)+add;
         add = add+0.2;
 
         plot(TS,'LineWidth',1.5,'Color',[0, 0.4470, 0.7410])
         hold on
 
-        ax.Position = [0.080,0.23,0.90,0.65];
+        ax.Position = [0.09,0.23,0.89,0.65];
         
     end
     
-    % Parameters
+    % Title    
     title(sprintf('%s',string(Cluster_ID)))
+    
+    % Xticks
     xticks([0:1280:3840]);
     ax.XTickLabels = {'0','','','30'};
-    ylim([0 1.1])
-    ylabel('Amplitude (V)')
     
-    if C == 5
-        xlabel('Time (s)')
-    end
+    % Yticks
+    % Labels = {'','TS10','TS9','TS8','TS7','TS6','TS5','TS4','TS3','TS2','TS1'};
+    % Labels(2:2:end) = NaN; % remove every other one
+    % ax.YAxis.TickLabels = Labels; % set
+      ax.YAxis.TickLabels = ''; % set
+    % Labels(1) = '';
+    % yticks([0:0.2:2]);
+    ax.YAxis.TickLength = [0 0];
+    ax.YRuler.Axle.Visible = 'off'; 
+
+    ylim([0 2.2])
+    xlim([0 3840])
+
+    %ylabel('Amplitude (V)')
+           
+    xh = get(gca,'xlabel');
+    p = get(xh,'position') % get the current position property
+    p(2) = -0.1 ;
+    xlabel('Time (s)')
+    set(xh,'position',p)   % set the 
+
         
     TS = TS+1;
-    yticks(0:0.2:1);
 
-    f.Position = [1,227,1352,450];
+    f.Position = [710,80,731,717];
     set(gca,'box','off') 
-    ax.FontSize = 35;
+    ax.FontSize = 25;
 
     set(f, 'Color', 'w')
-    fpath = '/Users/nico/Documents/HCTSA/Analysis/Clusters';
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Clusters/005';
     export_fig([fpath filesep sprintf('%s',string(Cluster_ID))],'-r 300')
 
 

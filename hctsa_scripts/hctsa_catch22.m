@@ -41,18 +41,22 @@ for D = 1:12
         %% Use feat_id to select data from full op
         datamat = load(hctsafile,'TS_DataMat');
         datamat = datamat.TS_DataMat;
-        
-        Catch22_idx = [11,12,134,135,243,1121,7634,3477,1406,1585,1965,310,2997,3264,3294,4492,3467,3604,4036,4156,4421,3010];
-       
+                
         % Convert 7749->6006
         ID = all_op.Operations{:,4};
         
-        clear Equi_Catch22
-        Equi_Catch22 = find(ismember(ID,Catch22_idx));
+        % Catch 22
+%          Catch22_idx = [11,12,134,135,243,1121,7634,3477,1406,1585,1965,310,2997,3264,3294,4492,3467,3604,4036,4156,4421,3010];
+%          Equi_Catch22 = find(ismember(ID,Catch22_idx));
         
-        BestFeat = [6644 4449 4325 2763 40 2039 923 4556 1009 4360];
-
-        Equi_BestFeat = find(ismember(ID,BestFeat));
+        % Top 10
+        % BestFeat = [6644 4449 4325 2763 40 2039 923 4556 1009 4360];
+        
+        % Best 5%
+        load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Top_5perc')
+        Top_5perc_idx = cell2mat(Top_5perc(:,1));
+        
+        Equi_BestFeat = find(ismember(ID,Top_5perc_idx));
 
         % feat_id = Equi_Catch22;  %To include all features
         feat_id = Equi_BestFeat;
@@ -129,8 +133,8 @@ for D = 1:12
     PERC_PER_CLASSIFIER_10iter = mean(PERC_STAGE); 
 %     
 % %     % Save for each dataset
-%     fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Best_Feat_Class_try';
-%     save(fullfile(fpath,sprintf('PERC_PER_CLASSIF_10iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_10iter')  
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_Top_5perc';
+    save(fullfile(fpath,sprintf('PERC_PER_CLASSIF_10iter_Dataset%s.mat',sub)),'PERC_PER_CLASSIFIER_10iter')  
 % 
 % %     
 end

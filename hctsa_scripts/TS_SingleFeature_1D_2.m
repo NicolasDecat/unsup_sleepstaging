@@ -82,14 +82,21 @@ hold('on')
 ax = gca;
 % colors = GiveMeColors(numClasses);
 % 
-[BL] = cbrewer('seq', 'Blues', 12, 'pchip');
-N1C = {BL(5,:)};
-N2C = {BL(7,:)};
-N3C = {BL(9,:)};
+
 [RE] = cbrewer('div', 'Spectral', 12, 'pchip'); 
-wakeC = {RE(2,:)};
+   wakeC = {RE(2,:)};
+   
+[BR] = cbrewer('div', 'PuOr', 12, 'pchip');
+   N1C = {BR(3,:)};
+
+[BL] = cbrewer('seq', 'Blues', 12, 'pchip');
+   N2C = {BL(8,:)};
+   
+[PU] = cbrewer('div', 'PRGn', 12, 'pchip');
+   N3C = {PU(2,:)};
+
 [GR] = cbrewer('seq', 'YlGn', 12, 'pchip');
-remC = {GR(7,:)};
+   remC = {GR(7,:)};
 
 colors = [wakeC;N1C;N2C;N3C;remC]; 
 

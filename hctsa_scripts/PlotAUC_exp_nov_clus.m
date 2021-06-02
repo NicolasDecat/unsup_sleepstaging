@@ -203,3 +203,171 @@ end
 % fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Rainbow figures';
 % export_fig([fpath filesep 'CEN_all'],'-r 300')
 
+
+
+
+%%%%%%% Compute rainbow graphs to visualize the distribution of agreeement (type1auc)
+%%%%%%% across datasets, for both EEG and EEG+EOG+EMG and for expert,
+%%%%%%% novices and algorithm
+
+%% Without Novices
+
+clear all
+close all
+
+load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/type1auc_human_scorers_table.mat');
+load('/Users/nico/Documents/HCTSA/Analysis/AUC_100/Table_AUC_100.mat');
+
+type1auc_human_scorers_table(86:90,:) = [];
+
+addpath '/Users/nico/Documents/MATLAB/cbrewer/cbrewer/cbrewer';
+path_raincloud='/Users/nico/Documents/MATLAB/hctsa-master/RainCloudPlots-master/';
+addpath(genpath(path_raincloud));
+
+[cb] = cbrewer('qual', 'Set3', 12, 'pchip');
+cl(1, :) = cb(4, :);
+cl(2, :) = cb(1, :);
+cl(3, :) = cb(2, :);
+
+
+path_export='/Users/nico/Documents/MATLAB/hctsa-master/export_fig-master';
+addpath(genpath(path_export));
+
+path_LSCPtools='/Users/nico/Documents/MATLAB/hctsa-master/LSCPtools-master/';
+addpath(genpath(path_LSCPtools));
+
+
+% To adapt my data
+Table_AUC_100.Dataset = num2str(Table_AUC_100.Dataset);
+for b = 1:1500
+    Table_AUC_100.Dataset(b,:) = '001';
+end
+for bb = 1510:3000
+    Table_AUC_100.Dataset(bb,:) = '005';
+end
+   
+type1auc_algorithm_table=Table_AUC_100;   % Now, Dataset "1" and "2" are now "001 and "005"
+
+
+% read into cell array of the appropriate dimensions
+data=[];
+cond=[1 3];
+for i = 1:2
+    
+    data{i, 3} = [];
+    for nset=[1 5]     % D1 ch1, D2 ch1, D1 ch3, D2 ch3
+        temp=double(type1auc_algorithm_table.AUC(type1auc_algorithm_table.NumChannels == cond(i) & ...   % All AUC for channel 1 (then channel 3)
+            ismember(str2num(type1auc_algorithm_table.Dataset),nset)));   % All AUC for Dataset 1 (then D5)   --> AUC of Dataset 001, 1 channel (50 rows, 10 iterations)
+        % tempS=(type1auc_algorithm_table.Dataset(double(type1auc_algorithm_table.NumChannels) == cond(i) & ...  % All dataset for channel 1 (then channel 3)
+            % ismember(str2num(type1auc_algorithm_table.Dataset),nset)));   % Dataset is Dataset 1 (then D5)    --> name of Dataset 001 ('0') (50 rows, 10 iterations)
+        tempS=(type1auc_algorithm_table.Dataset((double(type1auc_algorithm_table.NumChannels) == cond(i) & ...  % All dataset for channel 1 (then channel 3)
+            ismember(str2num(type1auc_algorithm_table.Dataset),nset)),1:3));
+        tempS = cellstr(tempS);
+        uS=unique(tempS);
+        temp2=[];
+        for nSt=1:length(unique(uS))
+            temp2=[temp2 nanmean(temp(strcmp(tempS,uS(nSt))))];   % mean AUC (from temp), of all AUC which are from dataset uS (of all temp, in the end)
+        end
+        data{i, 3} = [data{i, 3} temp2];    %     first row, 3rd col = [mean AUC D1ch1, mean AUC D5ch1].     second row, 3rd col = [mean AUC D1ch2, mean AUC D5ch2]
+    end
+    
+     temp=double(type1auc_algorithm_table.AUC(double(type1auc_algorithm_table.NumChannels) == cond(i) & ...
+        ~ismember(str2num(type1auc_algorithm_table.Dataset),[1 5])));      % --> AUC of the 10 other Datasets, 1 channel (50 rows, 10 iterations) (that's good they identified '0', to separate 001 and 005 at once)
+    tempS=(type1auc_algorithm_table.Dataset((double(type1auc_algorithm_table.NumChannels) == cond(i) & ...
+        ~ismember(str2num(type1auc_algorithm_table.Dataset),[1 5])),1:3));
+    tempS = cellstr(tempS);
+    uS=unique(tempS);
+    temp2=[];
+    for nSt=1:length(unique(uS))
+        temp2=[temp2 nanmean(temp(strcmp(tempS,uS(nSt))))];   % mean AUC of all datasets starting with 4, then with 5, 6, 7, 8 (intentional to group them like this? Or shouldn't we make average of each of the 10 datasets
+    end
+    data{i, 3} = [data{i, 3} temp2];    % at this point: row1, col3, first 2 numbers = AUC for D1 and D5, and the rest 5 is AUC for D4s, D5s, D6s, D7s, D8s (for channel 1). Row2, col3 = same but channel 3
+end
+for i = 1:2
+    data{i, 1} =[];
+    dataset{i, 1} =[];
+    for nset=[1 5]
+        temp=double(type1auc_human_scorers_table.type1auc(double(type1auc_human_scorers_table.channel) == cond(i) & ... 
+            type1auc_human_scorers_table.dataset_type=='Novice' & type1auc_human_scorers_table.dataset==num2str(nset))); % All AUC for channel 1 (then channel 3), Novice, and Dataset 1 ((then D5)
+        tempS=(type1auc_human_scorers_table.subject(double(type1auc_human_scorers_table.channel) == cond(i) & ...   
+            type1auc_human_scorers_table.dataset_type=='Novice' & type1auc_human_scorers_table.dataset==num2str(nset)));  % Get subjects  for AUC rows named above (temp)
+        uS=unique(tempS);
+        temp2=[];
+        for nSt=1:length(unique(uS))
+            temp2=[temp2 nanmean(temp(tempS==uS(nSt)))];   % mean AUC from all subjects involved in dataset 1 (then (), channel 1, Novice (4 subjects)
+        end
+        data{i, 1} = [data{i, 1} temp2];   % at this point: row1, col3, first 2 numbers = AUC for all novice 4 subjects involved in D1, ch1 (row1, col1: [mean 4 novice AUC D1ch1, mean 4 novice AUC D5ch1]
+        dataset{i, 1} = [dataset{i, 1} nset*ones(1,length(temp2))];   
+    end
+    
+    data{i, 2} = [];     % Same but for experts here (only 2, compared to 4 novices)
+      dataset{i, 2} =[];
+  for nset=[1 5]
+    temp=double(type1auc_human_scorers_table.type1auc(double(type1auc_human_scorers_table.channel) == cond(i) & ...
+        type1auc_human_scorers_table.dataset_type=='Expert' & type1auc_human_scorers_table.dataset==num2str(nset)));
+    tempS=(type1auc_human_scorers_table.subject(double(type1auc_human_scorers_table.channel) == cond(i) & ...
+        type1auc_human_scorers_table.dataset_type=='Expert' & type1auc_human_scorers_table.dataset==num2str(nset)));
+    uS=unique(tempS);
+    temp2=[];
+    for nSt=1:length(unique(uS))
+        temp2=[temp2 nanmean(temp(tempS==uS(nSt)))];
+    end
+         data{i, 2} = [data{i, 2} temp2];    % at this point: row1, col3, first 2 numbers = AUC for all novice 4 subjects involved in D1, ch1 (row1, col1: [mean 4 experts AUC D1ch1, mean 2 experts AUC D5ch1].   For ch3: [mean 3 experts AUC D1ch3, mean 2 experts AUC D5ch3]
+         dataset{i, 2} = [dataset{i, 2} nset*ones(1,length(temp2))];
+ end
+end
+
+% data --> rows = [novice_D1 novice_D5], [expert_D1 expert_D5], [clust_D1_&_D5 clust_other_Ds]
+%      --> cols = ch1 (col1) and ch3 (col2)
+
+
+%% make figure
+
+figure; ax=gca;
+set(gcf,'Position',[1 117 400 680]);
+
+for ncond=1:2
+    
+    subplot(2, 1, ncond); 
+    
+    h2 = raincloud_plot(data{ncond,2}, 'box_on', 1, 'color', cb(6,:), 'alpha', 0.5,...
+        'box_dodge', 1, 'box_dodge_amount', .20, 'dot_dodge_amount', .20, 'box_col_match', 0,'band_width',.04);
+    scatter(h2{2}.XData(1:end),h2{2}.YData(1:end),'Marker','o','MarkerFaceColor',cb(6,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
+
+    h3 = raincloud_plot(data{ncond,3}, 'box_on', 1, 'color', cb(5,:), 'alpha', 0.5,...
+        'box_dodge', 1, 'box_dodge_amount', .45, 'dot_dodge_amount', .45,...
+        'box_col_match', 0,'band_width',.04);
+    scatter(h3{2}.XData(1:end),h3{2}.YData(1:end),'SizeData',72,'Marker','o','MarkerFaceColor',cb(5,:),'MarkerEdgeColor',[1 1 1]*0.5,'LineWidth',1,'SizeData',100,'MarkerFaceAlpha',0.7);
+    
+    set(gca,'XLim', [0.45 1], 'YLim', ylim.*[.65 1.5]);
+    line([1 1]*.5,ylim,'Color',[1 1 1]*0.7,'LineStyle','--','LineWidth',2)
+    yticks(0:2:8)
+    
+
+    set(h2{2},'SizeData',54)
+    set(h3{2},'SizeData',54)
+    
+    box off
+    set(gcf,'Color','w')
+    set(gca,'FontSize',14);
+   
+    xlabel('Type-1 AUC')
+
+    % Non visible graph to insert additional legend        
+    bline = line(NaN,NaN,'LineWidth',10,'LineStyle','-','Color',cb(5,:));
+    cline = line(NaN,NaN,'LineWidth',10,'LineStyle','-','Color',cb(6,:));
+
+    if ncond == 1
+        ylabel({'EEG-only'})
+        legend([bline cline],{'Clustering','Human scorers'},'Location','northwest','FontSize',12)
+    else 
+        ylabel({'EEG+EOG+EMG'}) 
+    end
+    
+    % Save
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/Rainbow figures';
+%      export_fig([fpath filesep 'CEN_all_paper'],'-r 300')
+    
+end
+
+

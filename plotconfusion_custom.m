@@ -1,5 +1,5 @@
 function [perResponse] = plotconfusion_custom(answer, predict, ttl)
-
+% 
 %    answer = g_labelTest;
 %    predict = g_clustTest;
 %    ttl = strcat('Confusion Matrix - Testing', optional_title);
@@ -18,13 +18,13 @@ function [perResponse] = plotconfusion_custom(answer, predict, ttl)
     totalTarget = sum(confmat, 2);
     perResponse = confmat./repmat(totalTarget, 1, max_elem)*100;
     
-        % CF paper
-%     perResponse = [61.0 26.6 3.1 0.4 8.9;...
-%         10.7 53.3 7.7 0.7 27.6;...
-%         5.7 15.3 43.1 20.9 15.0;...
-%         1.6 1.0 16.4 77.4 3.6;...
-%         6.6 21.3 10.4 1.6 60.2];
-%     
+        %%%% CF paper
+    perResponse = [61.0 26.6 3.1 0.4 8.9;...
+        10.7 53.3 7.7 0.7 27.6;...
+        5.7 15.3 43.1 20.9 15.0;...
+        1.6 1.0 16.4 77.4 3.6;...
+        6.6 21.3 10.4 1.6 60.2];
+    
     t = cell(max_elem, max_elem);
     for i=1:max_elem
         for j=1:max_elem
@@ -42,9 +42,9 @@ function [perResponse] = plotconfusion_custom(answer, predict, ttl)
     ax = gca;
     ax.XTick = 1:max_elem;
     ax.YTick = 1:max_elem;
-    ax.XTickLabels = {'Wake', 'N1', 'N2', 'N3', 'REM'};
+    ax.XTickLabels = {'CW', 'C1', 'C2', 'C3', 'CR'};
     ax.YTickLabels = {'Wake', 'N1', 'N2', 'N3', 'REM'};
-    ylabel('Original labels');
+    ylabel('AASM labels');
     xlabel('Cluster decisions');
     ax.XAxisLocation = 'top';
     
@@ -58,8 +58,11 @@ function [perResponse] = plotconfusion_custom(answer, predict, ttl)
     cmap(:,end+1:end+n2)=[linspace(c2(1),c3(1),n2);linspace(c2(2),c3(2),n2);linspace(c2(3),c3(3),n2)];
     colormap(cmap')
     C = colorbar;
-    ylabel(C, '% Accuracy','FontSize',15)
+    ylabel(C, '% Overlap','FontSize',15)
     
     ax.FontSize = 14; 
-
+    set(gcf,'color','white')
+% 
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/Clusters';
+    export_fig([fpath filesep 'CF Paper'],'-r 300')
 end
