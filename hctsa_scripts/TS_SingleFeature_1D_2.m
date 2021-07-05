@@ -1,4 +1,4 @@
-function [dataCell] = TS_SingleFeature(whatData,featID,makeViolin,makeNewFigure,opi)
+function [dataCell] = TS_SingleFeature(whatData,featID,makeViolin,makeNewFigure,opi,DD)
 % TS_SingleFeature  Plot distributions for a single feature given a feature ID
 %
 %---INPUTS:
@@ -46,6 +46,14 @@ if nargin < 6
     beVocal = true;
 end
 
+datasets = [ ...
+    1, 334, 1374; 5, 380, 1442; 439, 150, 1164; 458, 277, 1374; ...
+  596, 266, 1396; 604, 502, 1457; 748, 488, 1191; 749,  69, 1009; ...
+  752, 147, 1096; 807, 329, 1232; 821, 314, 1316; 870, 282, 1286];
+
+A = find(datasets(:,1) == DD);
+MIN = datasets(A,2);   % to remove period wake before sleep
+
 %-------------------------------------------------------------------------------
 % Load data:
 [TS_DataMat,TimeSeries,Operations,whatDataSource] = TS_LoadData(whatData);
@@ -57,21 +65,24 @@ else
 end
 numClasses = length(classLabels);
 
-TS = size(TS_DataMat,1)/7;
-TS_DataMat = TS_DataMat(1:TS,:);
-TimeSeries = TimeSeries(1:TS,:);
+TS = (size(TS_DataMat,1)/7)-1;
+TS_DataMat = TS_DataMat(MIN:TS,:);  
+TimeSeries = TimeSeries(MIN:TS,:);
 
 %-------------------------------------------------------------------------------
-load('HCTSA_N.mat','Operations')
-% op_ind = find(Operations.ID==featID);
+addpath '/Users/nico/Documents/MATLAB/cbrewer/cbrewer/cbrewer';
+
+% load('HCTSA_N.mat','Operations')
+load('HCTSA.mat','Operations')
+
 op_ind = featID;
 
 if isempty(op_ind)
     error('Operation with ID %u not found in %s',featID,whatDataSource);
 end
-if beVocal
-    fprintf(1,'[%u] %s (%s)\n',featID,Operations.Name{op_ind},Operations.Keywords{op_ind});
-end
+% if beVocal
+%     fprintf(1,'[%u] %s (%s)\n',featID,Operations.Name{op_ind},Operations.Keywords{op_ind});
+% end
 
 %-------------------------------------------------------------------------------
 % Plot this stuff:
@@ -125,7 +136,7 @@ if makeViolin
     ax.XTick = extraParams.customOffset+(1:numClasses);
     ax.XTickLabel = {'W','R','N1','N2','N3'};
     % ax.XTickLabelRotation = 30;
-    if opi ==1  || opi == 6
+    if opi ==1  || opi == 5
         ylabel('Feature value')
     end
     ax.TickLabelInterpreter = 'none';
@@ -142,9 +153,9 @@ if makeViolin
     ax.YLim(1) = min(TS_DataMat(:,op_ind))-0.02*range(TS_DataMat(:,op_ind));
     ax.YLim(2) = max(TS_DataMat(:,op_ind))+0.02*range(TS_DataMat(:,op_ind));
 
-    if meanGroup(1) == max(meanGroup)
-        set(gca, 'YDir','reverse')
-    end
+%     if meanGroup(1) == max(meanGroup)
+%         set(gca, 'YDir','reverse')
+%     end
 
     
 else

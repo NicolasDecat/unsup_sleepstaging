@@ -163,24 +163,17 @@ datasets = [1, 334, 1374; 5, 380, 1442; 439, 150, 1164; 458, 277, 1374; ...
 for D = 1:length(Subs)   
     
     sub = Subs{D};
-
+    
     % Get the name of all 7749 features 
     cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub)) 
     
-    % Labels
-    load(sprintf('ccshs_1800%s_annot.mat',sub),'sleepstage')
-    
-    % Remove wakefulness
+    load(sprintf('ccshs_1800%s_annot.mat',sub), 'sleepstage')
     LengthTS = numel(sleepstage);
     
-    A = find(datasets(:,1) == str2num(sub));
-    MIN = datasets(A,2);   % start of sleep (remove period wake)
-    MAX = LengthTS;
-    TS = MIN:MAX;
+    % Labels
+    load(sprintf('ccshs_1800%s_annot.mat',sub),'sleepstage')
     sleepstage = sleepstage(TS);
     labels = sleepstage;
-    
-
     
     load('HCTSA_N.mat','TS_DataMat')
 
@@ -193,18 +186,14 @@ for D = 1:length(Subs)
     %%% Plot results
 
     % Index for each cluster (CW,C1,C2,C3,CR) -> Colors
-    % load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Table_balanced_%s',sub))
-    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/hypnograms/allepochs/statsOut_allepochs_3ch(%s)',sub))
-    % cluster_decision = table2array(Table(:,3));
-    cluster_decision = statsOut.predictTest;
-    cluster_decision = cluster_decision(TS);
-
+    load(sprintf('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Table_balanced_%s',sub))
+    cluster_decision = table2array(Table(:,3));
     CW = find(cluster_decision == 0);
     C1 = find(cluster_decision == 1);
     C2 = find(cluster_decision == 2);
     C3 = find(cluster_decision == 3);
     CR = find(cluster_decision == 5);
-        
+    
     Clusters = [{CW} {C1} {C2} {C3} {CR}];
     
    % Index for each conventional stage (W,N1,N2,N3,R) -> markers

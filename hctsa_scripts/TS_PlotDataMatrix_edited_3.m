@@ -1,9 +1,10 @@
 
 %%%%%%% Had to change l.114: Change TimeSeries.Data into cell array 
 
-function [F] = TS_PlotDataMatrix_edited(varargin)
+function [F] = TS_PlotDataMatrix_edited_3(CHAN,varargin)
 
-CHAN =1;
+TSS = 140;
+
 % TS_PlotDataMatrix   Plot the data matrix.
 %
 %---EXAMPLE USAGE:
@@ -104,15 +105,16 @@ TimeSeries.Data = CellData;
 
 %%%% EEG, EOG and EMG
 
+
 if CHAN == 1
-    TimeSeries = TimeSeries(1:1166,:);
-    TS_DataMat = TS_DataMat(1:1166,:);
+    TimeSeries = TimeSeries(1+140:1166,:);
+    TS_DataMat = TS_DataMat(1+140:1166,:);
 elseif CHAN == 2
-    TimeSeries = TimeSeries(1167:2332,:);
-    TS_DataMat = TS_DataMat(1167:2332,:);
+    TimeSeries = TimeSeries(1167+140:2332,:);
+    TS_DataMat = TS_DataMat(1167+140:2332,:);
 elseif CHAN == 3
-    TimeSeries = TimeSeries(2333:3498,:);
-    TS_DataMat = TS_DataMat(2333:3498,:);
+    TimeSeries = TimeSeries(2333+140:3498,:);
+    TS_DataMat = TS_DataMat(2333+140:3498,:);
 end
 % ------------------------------------------------------------------------------
 %% Reorder according to customOrder
@@ -284,9 +286,9 @@ label_p.Position(1) = -50;
 
 % Add a color bar:
 
-cB = colorbar('southoutside');
-cB.Position = [0.130357142857143,0.188652866680432,0.183950910309393,0.029626436781609];  % Change last digit for the height of colorbar
-cB.Label.String = 'Normalised feature value';
+% cB = colorbar('southoutside');
+% cB.Position = [0.130357142857143,0.188652866680432,0.183950910309393,0.029626436781609];  % Change last digit for the height of colorbar
+% cB.Label.String = 'Normalised feature value';
 
 
 cB.Ticks = 0:0.2:1;

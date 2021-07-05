@@ -1,7 +1,9 @@
 
 %%%%%%% Had to change l.114: Change TimeSeries.Data into cell array 
 
-function [f] = TS_PlotDataMatrix_edited(varargin)
+function [f] = TS_PlotDataMatrix_edited(CHAN,NumTS,sub,varargin)
+
+
 % TS_PlotDataMatrix   Plot the data matrix.
 %
 %---EXAMPLE USAGE:
@@ -87,7 +89,7 @@ clear('inputP');
 % You always want to retrieve and plot the clustered data if it exists
 getClustered = false;
 [TS_DataMat,TimeSeries,Operations] = TS_LoadData(whatData,getClustered);
-[numTS,numOps] = size(TS_DataMat); % size of the data matrix
+[~,numOps] = size(TS_DataMat); % size of the data matrix
 
 %%%%%%%% Nico modification: Change TimeSeries.Data into cell array (ONLY
 %%%%%%%% FOR HCTSA_N FILES -- HCTSA.mat files already in cell array)
@@ -99,25 +101,24 @@ end
 
 TimeSeries.Data = CellData;
 
-ch3 = false;
+numTS = NumTS{CHAN};  
 
-if ch3 == true
-    numTS = 3498;  %%%% EEG+EOG+EMG (439)
-else
-    numTS = 1166;  %%%% Only EEG (439)
-end
-    TimeSeries = TimeSeries(1:numTS,:);
-    TS_DataMat = TS_DataMat(1:numTS,:);
+TimeSeries = TimeSeries(numTS,:);
+TS_DataMat = TS_DataMat(numTS,:);
 
 
 %%% Reorder operations
 load('HCTSA_N.mat', 'op_clust')
 TS_DataMat = TS_DataMat(:,op_clust.ord);
 
-%%% Reorder TS to match cluster decisions
+% %%% Reorder TS to match cluster decisions
+% load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Table_balanced_439')
+% original_labels = table2array(Table(:,2))';
 
-load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs(439)')
-original_labels = statsOut.scoredTest;
+load(sprintf('/Users/nico/Documents/HCTSA/Analysis/hypnograms/allepochs/statsOut_allepochs_3ch(%s)',sub))
+original_labels = [statsOut.scoredTest statsOut.scoredTest statsOut.scoredTest] ;
+original_labels = original_labels(numTS);
+
 
 wake_OL = find(original_labels == 0);  
 N1_OL = find(original_labels == 1);
@@ -129,7 +130,9 @@ rem_OL = find(original_labels == 5);
 stage_ordered = [wake_OL N1_OL N2_OL N3_OL rem_OL];
 
 % Get cluster decisions
-cluster_decision = statsOut.predictTest;
+% cluster_decision = table2array(Table(:,3))';
+cluster_decision =[statsOut.predictTest statsOut.predictTest statsOut.predictTest];
+cluster_decision = cluster_decision(numTS);
 
 stage_ordered = [{wake_OL} {N1_OL} {N2_OL} {N3_OL} {rem_OL}];
 
@@ -279,10 +282,6 @@ colormap(customColorMap);
 
 TS_DataMat = TS_DataMat';
 
-if ch3
-    TS_DataMat = [TS_DataMat(:,1:1166);TS_DataMat(:,1167:2332);TS_DataMat(:,2333:3498)];
-end
-
 TS_DataMat = TS_DataMat(:,reordered);  % Ordered TS according to cluster decisions
 imagesc(TS_DataMat);
 
@@ -321,10 +320,9 @@ label_p = ylabel('Operations');
 label_p.Position(2) = 3000; 
 label_p.Position(1) = -93; 
 % Add a color bar:
-cB = colorbar('eastoutside');
-% cB.Position = [0.902209097887724,0.355280444041201,0.02,0.399115117891817];  % 3ch
-cB.Position = [0.864793071956465,0.378850946261015,0.013907747496821,0.398646257529478];
-cB.Label.String = 'Feature value';
+% cB = colorbar('eastoutside');
+% cB.Position = [0.864793071956465,0.378850946261015,0.013907747496821,0.398646257529478];
+% cB.Label.String = 'Feature value';
 
 if numGroups > 0
 	cB.Ticks = 0.5:1:numGroups;

@@ -16,7 +16,7 @@ NumIter = compose('%diter',(1:100)); % used for save
 
 
 for D = 1:length(Subs)
-    
+
     sub = Subs{D};
 
     % File selection

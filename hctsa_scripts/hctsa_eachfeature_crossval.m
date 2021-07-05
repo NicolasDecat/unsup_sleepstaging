@@ -38,25 +38,25 @@ for D = 1:length(Subs)   % For each dataset
     
     
     % Take 5%
-    load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Top_5perc')
-    idx_feat = cell2mat((Top_5perc(:,1)));
+    %load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Top_5perc')
+    %idx_feat = cell2mat((Top_5perc(1:56,1))); % Top 1 %
 
     % Equivalent index 
-    for i=1:numel(idx_feat)
-        BestFeat(i) = find(Operations.ID == idx_feat(i));
-    end
+%     for i=1:numel(idx_feat)
+%         BestFeat(i) = find(Operations.ID == idx_feat(i));
+%     end
                
     
     for v = 1:1  % For each channel condition
 
-        %for FF = 1:size(Operations,1)    % For each feature
-        for FF = 1:280
+        for FF = 1:size(Operations,1)    % For each feature
+        %for FF = 1:numel(idx_feat)
        
           
             % Load data matrix for one feature
             datamat = datam;
-            % datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
-            datamat = datamat.TS_DataMat(:,BestFeat(FF));   % Take data points for 1 feature
+            datamat = datamat.TS_DataMat(:,FF);   % Take data points for 1 feature
+            %datamat = datamat.TS_DataMat(:,BestFeat(FF));   % Take data points for 1 feature
 
             feat_id = 1:size(datamat,2);  
 
@@ -168,7 +168,7 @@ for D = 1:length(Subs)   % For each dataset
        
     end
     
-    gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_Top_5perc/average_univariate(280)';
+    gpath = '/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/unsup_Top_1perc';
     save(fullfile(gpath,sprintf('Per_correct_mean(Dataset %s).mat',sub)),'Per_correct_mean')  % Save all columns in AUC folder
 
 

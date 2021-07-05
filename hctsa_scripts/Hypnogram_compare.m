@@ -165,21 +165,23 @@ set(gca, 'fontsize', 24);
 
 %% Dataset 439, EEG+EOG+EMG
 
+TSS = 140;
 set(0,'DefaultFigureVisible','on')
+sub = '439';
 
-for C = 1  % figure for the EEG, then EOG and EMG
+for C = 1:3  % figure for the EEG, then EOG and EMG
     
     CHAN = C;
 
     cd('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_439')
 
     %%%%%%% Plot the Data matrix (439)
-    [F] = TS_PlotDataMatrix_edited_3('norm');
+    [F] = TS_PlotDataMatrix_edited_3(CHAN,'norm');
 
     %%%%%%% Plot the hypnogram
     load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs_3ch(439)')
-    original_labels = statsOut.scoredTest;
-    cluster_decision = statsOut.predictTest;
+    original_labels = statsOut.scoredTest(1+TSS:end);
+    cluster_decision = statsOut.predictTest(1+TSS:end);
 
     % Give equivalent label for original labels
     a = find(original_labels == 0);
@@ -188,11 +190,11 @@ for C = 1  % figure for the EEG, then EOG and EMG
     d = find(original_labels == 3);
     e = find(original_labels == 5);
 
-    original_labels(a) = 6200;
-    original_labels(b) = 6700;
+    original_labels(a) = 8200;
+    original_labels(b) = 7700;
     original_labels(c) = 7200;
-    original_labels(d) = 7700;
-    original_labels(e) = 8200;
+    original_labels(d) = 6700;
+    original_labels(e) = 6200;
 
     % Give equivalent label for original labels
     f = find(cluster_decision == 0);
@@ -215,12 +217,13 @@ for C = 1  % figure for the EEG, then EOG and EMG
         text(-38,lines(L),ST(L),'FontSize',18)
     end
 
-    ax.XTick = 1:120:1166;
+    ax.XTick = 1:120:1166-TSS;
     ax.XTickLabels = arrayfun(@(a)num2str(a),0:12,'uni',0);
 
     ax.YTick = 6200:500:8200;
 
     ylim([0 5946])
+    xlim([0 1166-TSS])  %cut first 2 hours of wake
     
     xlabel('')
     xticklabels('')
@@ -229,30 +232,31 @@ for C = 1  % figure for the EEG, then EOG and EMG
     set(gca,'YTickLabel',a,'fontsize',17)
     set(gca, 'TickLength',[0 0])
 
-    ax.Position = [0.057,0.09,0.88,0.90];
+    ax.Position = [0.07,0.09,0.88,0.90];
     % ax.Position = [0.057,0.3,0.88,0.90];  % for colorbar
 
     set(gca, 'fontsize', 24);
 
-    F.Position = [1,296,1440,501];
+    F.Position = [1,378,1300,419];
 
     chan = {'EEG','EOG','EMG'};
-    h = text(1190,3250,chan(CHAN),'FontSize',30);
+    h = text(1190-TSS,3250,chan(CHAN),'FontSize',30);
     set(h,'Rotation',90);
     
     % Save
-    fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms';
-    %export_fig([fpath filesep sprintf('hypno(439)_%s',string(chan(C)))],'-r 300')
-
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms/SM';
+    addpath '/Users/nico/Documents/MATLAB/hctsa-master/export_fig-master'
+    % export_fig([fpath filesep sprintf('hypno(%s)_%s',sub,string(chan(C)))],'-r 300')
 
 end
 
 %%%%%%% Plot the hypnogram: Original Labels
-  
-    figure; ax = gca;
+
+    
+    f = figure; ax = gca;
     rectangle('Position', [0 5946 1166 8200], 'FaceColor',[.96 .96 .96]);
 
-    x_time = 1:1166;
+    x_time = 1+140:1166;
 
     hold on
     y = plot(x_time,original_labels,'LineWidth',2,'Color',[.3 .3 .3]);  % light red
@@ -263,17 +267,22 @@ end
         line([0 1166], [LINE(L) LINE(L)],'LineStyle','-','Color',[.75 .75 .75],'LineWidth',.3);
     end
     
-     ax.YTickLabels = {'Wake','N1','N2','N3','REM'};
-     ylim([0 8400])
+     ax.YTickLabels = {'REM','N3','N2','N1','Wake'};
+     ax.YTick = 6200:500:8200;
+     ylim([6000 8400])
+     xlim([140 1166])  %cut first 2 hours of wake
+     set(gca, 'fontsize', 20);
+     ax.XTick = 1+TSS:120:1166;
+     ax.XTickLabels = arrayfun(@(a)num2str(a),0:12,'uni',0);
+     xlabel('time (hours)')
+     set(gca,'box','off') 
+     set(gcf,'color','white')
+     f.Position = [1,507,1300,290];
+     ax.XRuler.Axle.Visible = 'off'; % ax is axis handle
 
-
-% Save
-% fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms';
-% export_fig([fpath filesep 'hypno_EEG_cl(439)_2'],'-r 300')
-
-
-
-
+    % Save
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms/SM';
+    %export_fig([fpath filesep sprintf('HYPNO(%s)',sub)],'-r 300')
 
 
 
@@ -389,13 +398,20 @@ set(b, 'Color', 'w')
 
 
 %% Other paper figure (data matrix with color bar below)
+
 addpath '/Users/nico/Documents/MATLAB/cbrewer/cbrewer/cbrewer';
 %%%%%%% Plot the Data matrix (439)
 [f] = TS_PlotDataMatrix_edited_TS('norm');  % reorder TS to match cluster decisions
 
 % Reorder epochs based on their stages (as labeled by original labels)
-load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs(439)')
+% load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Table_balanced_439')
+% original_labels = table2array(Table(:,2))';
+
+numTS = 151:1163;  %%%% Only EEG (439), without wakefulness before
+
+load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs_3ch(439)')
 original_labels = statsOut.scoredTest;
+original_labels = original_labels(numTS);
 
 wake_OL = find(original_labels == 0);  
 N1_OL = find(original_labels == 1);
@@ -406,7 +422,9 @@ rem_OL = find(original_labels == 5);
 stage_ordered = [wake_OL N1_OL N2_OL N3_OL rem_OL];
 
 % Reorder epochs based on their stages (as labeled by cluster decisions)
+% cluster_decision = table2array(Table(:,3))';
 cluster_decision = statsOut.predictTest;
+cluster_decision = cluster_decision(numTS);
 
 stage_ordered = [{wake_OL} {N1_OL} {N2_OL} {N3_OL} {rem_OL}];
 
@@ -500,9 +518,9 @@ ST = {'500','1000','1500','2000','2500','3000','3500','4000','4500','5000','5500
 lines = [500 1000 1500 2000 2500 3000 3500 4000 4500 5000 5500];
 for L = 1:11
     if L == 1
-        text(-55,lines(L),ST(L),'FontSize',18)
+        text(-45,lines(L),ST(L),'FontSize',18)
     else
-    text(-73,lines(L),ST(L),'FontSize',18)
+    text(-59,lines(L),ST(L),'FontSize',18)
     end
 end
 
@@ -510,7 +528,8 @@ set(gca,'XTickLabel',[])
 set(ax, 'XTick', []);
 set(ax,'TickLength',[0 0])
 
-ylabel('Features')
+Y = ylabel('Features');
+Y.Position = [-76.10583707504806,2990.838068181818,1];
 xlabel('Epochs (ordered by sleep stage)')
 ax.FontSize = 24;
 
@@ -523,183 +542,288 @@ set(gca, 'fontsize', 24);
 
 %%% Save
 fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms';
-% export_fig([fpath filesep 'hypnobars_EEG(439)'],'-r 300')
+%export_fig([fpath filesep 'hypnobars_EEG(439)_balanced'],'-r 300')
 
 confmatrix = false; 
 
 if confmatrix == true
-    
-    figure;
-    C = [Wake_per;N1_per;N2_per;N3_per;rem_per]';
-    C_all = [53.2 27.1 6.6 0.5 12.7; 9.3 48.6 7.7 1.0 33.5; 5.0 14.1 43.0 18.6 19.3; 1.3 1.4 14.1 78.9 4.4; 5.6 28.5 10.5 1.4 54.0];
+
+    f = figure;
+    C_all = [61.0 26.6 3.1 0.4 8.9;10.7 53.3 7.7 0.7 27.6;5.7 15.3 43.1 20.9 15.0;1.6 1.0 16.4 77.4 3.6;6.6 21.3 10.4 1.6 60.2];
     imagesc(C_all)
     colorbar
 
     for i = 1:5
         for j = 1:5
-            t(i,j) = {strcat(num2str(C_all(i,j)),' %')};
+            t(i,j) = string(C_all(i,j));
         end
     end
 
-
+    xline(1.5);
+    xline(2.5);
+    xline(3.5);
+    xline(4.5);
+    yline(1.5);
+    yline(2.5);
+    yline(3.5);
+    yline(4.5);
+    
+    
     x = repmat(1:5,5,1);
     y = x';
-    text(x(:), y(:), t, 'HorizontalAlignment', 'Center', 'FontSize', 12, ...
-        'FontWeight', 'bold');
+    text(x(:), y(:), t, 'HorizontalAlignment', 'Center', 'FontSize', 20);
     ax = gca;
     ax.XTick = 1:5;
     ax.YTick = 1:5;
-    ax.XTickLabels = {'W', 'N1', 'N2', 'N3', 'R'};
     ax.YTickLabels = {'W', 'N1', 'N2', 'N3', 'R'};
-    ylabel('Original labels');
-    xlabel('Cluster decisions');
+    ax.XTickLabels = {'CW', 'C1', 'C2', 'C3', 'CR'};
+    set(ax.XAxis,'fontweight','bold');
+    set(ax.YAxis,'fontweight','bold');
+
+    Y = ylabel('AASM labels');
+    Y.Position = [-0.05875,2.999997615814208,1];
+    X = xlabel('Cluster decisions');
+    X.Position = [3.000002384185791,-0.017090650231275,1];
     ax.XAxisLocation = 'top';
 
-    %Define colormap
-    c1=[0 0.65 0]; %G
-    c2=[1 1 0]; %Y
-    c3=[1 0 0]; %R
+
+    c1=[0.8784 0.9176 0.9569]; % W
+    c2=[0.5176 0.6471 0.8314]; % light blue
+    c3=[0.2667 0.4157 0.7098]; % dark blue
+    
     n1=20;
     n2=20;
     cmap=[linspace(c1(1),c2(1),n1);linspace(c1(2),c2(2),n1);linspace(c1(3),c2(3),n1)];
     cmap(:,end+1:end+n2)=[linspace(c2(1),c3(1),n2);linspace(c2(2),c3(2),n2);linspace(c2(3),c3(3),n2)];
     colormap(cmap')
-    colorbar
+    cB = colorbar;
+    cB.Position = [0.885503297963867,0.050515463917526,0.025236593059937,0.8];
+    cB.Label.String = 'Percentage overlap';
+    cB.Label.FontSize = 20;
 
+    ax.FontSize = 20;
+    set(gca,'TickLength',[0 0])
+ 
+    f.Position = [440 298 649 499];
+    ax.Position = [0.13 0.05 0.7 0.8];
+
+    addpath '/Users/nico/Documents/MATLAB/hctsa-master/export_fig-master'
+    set(gcf,'color','white')
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/AUC_100/ConfusionMatrix';
+  %  export_fig([fpath filesep 'CF_all_3ch_paper_3'],'-r 300')
 end
 
 %% Same: but 3 channel derivations
 
+datasets = [1, 334, 1374; 5, 380, 1442; 439, 150, 1164; 458, 277, 1374; ...
+  596, 266, 1396; 604, 502, 1457; 748, 488, 1191; 749,  69, 1009; ...
+  752, 147, 1096; 807, 329, 1232; 821, 314, 1316; 870, 282, 1286];
 
-%%%%%%% Plot the Data matrix (439)
-[f] = TS_PlotDataMatrix_edited_TS('norm');  % reorder TS to match cluster decisions
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 
-% Reorder epochs based on their stages (as labeled by original labels)
-load('/Users/nico/Documents/HCTSA/Analysis/hypnograms/statsOut_allepochs_3ch(439)')
-original_labels = statsOut.scoredTest;
+for D = 1:12
 
-wake_OL = find(original_labels == 0);  
-N1_OL = find(original_labels == 1);
-N2_OL = find(original_labels == 2);
-N3_OL = find(original_labels == 3);
-rem_OL = find(original_labels == 5);
-
-stage_ordered = [wake_OL N1_OL N2_OL N3_OL rem_OL];
-
-% Reorder epochs based on their stages (as labeled by cluster decisions)
-cluster_decision = statsOut.predictTest;
-
-stage_ordered = [{wake_OL} {N1_OL} {N2_OL} {N3_OL} {rem_OL}];
-
-% Get the future rectangle positions for cluster decisions
-for i = 1:5  
+    sub = Subs{D};
     
-    stage = stage_ordered{1,i};
-    clust_dec = cluster_decision(stage);
+    cd(sprintf('/Users/nico/Documents/MATLAB/hctsa-master/HCTSA_%s',sub))
     
-    wake_L = length(find(clust_dec == 0));
-    N1_L = length(find(clust_dec == 1));
-    N2_L = length(find(clust_dec == 2));
-    N3_L = length(find(clust_dec == 3));
-    rem_L = length(find(clust_dec == 5));
+    load(sprintf('ccshs_1800%s_annot.mat',sub), 'sleepstage')
+    LengthTS = numel(sleepstage);
 
-    clust_dec_ordered(i,:) = [wake_L N1_L N2_L N3_L rem_L];
+    A = find(datasets(:,1) == str2num(sub));
+    MIN = datasets(A,2);   % start of sleep (remove period wake)
+    MAX = LengthTS;
+    
+    numTS = [{MIN:MAX} {MIN+LengthTS:MAX*2} {MIN+(LengthTS*2):MAX*3}]; % EEG or EOG or EMG without wakefulness 
+    
+    
+    for C = 3  % figure for the EEG, then EOG and EMG
 
-end
-  
-% Perform cumulative addition to get right rect positions
-clust_dec_ordered = reshape(clust_dec_ordered',[1 25]);
-PosRect = cumsum(clust_dec_ordered')';
-PosRect = reshape(PosRect',[5 5]);
-clust_dec_ordered = reshape(clust_dec_ordered,[5 5])';
-PosRect = PosRect';
+        CHAN = C;
 
-% Draw the rectangles: original labels
-[BL] = cbrewer('seq', 'Blues', 12, 'pchip');
-N1C = BL(5,:);
-N2C = BL(7,:);
-N3C = BL(9,:);
-[RE] = cbrewer('div', 'Spectral', 12, 'pchip'); 
-wakeC = RE(2,:);
-[GR] = cbrewer('seq', 'YlGn', 12, 'pchip');
-remC = GR(7,:);
+        addpath '/Users/nico/Documents/MATLAB/cbrewer/cbrewer/cbrewer';
 
+        %%%%%%% Plot the Data matrix (439)
+        [f] = TS_PlotDataMatrix_edited_TS(CHAN,numTS,sub,'norm');  % reorder TS to match cluster decisions
 
-hold on
-a = rectangle('Position',[0 18000 length(wake_OL) 800],'FaceColor',wakeC,'EdgeColor','none');
-b = rectangle('Position',[a.Position(3) 18000 length(N1_OL) 800],'FaceColor',N1C,'EdgeColor','none');
-c = rectangle('Position',[b.Position(1)+b.Position(3) 18000 length(N2_OL) 800],'FaceColor',N2C,'EdgeColor','none');
-d = rectangle('Position',[c.Position(1)+c.Position(3) 18000 length(N3_OL) 800],'FaceColor',N3C,'EdgeColor','none');
-e = rectangle('Position',[d.Position(1)+d.Position(3) 18000 length(rem_OL) 800],'FaceColor',remC,'EdgeColor','none');
+        % Reorder epochs based on their stages (as labeled by original labels)
+        % load('/Users/nico/Documents/HCTSA/Analysis/Accuracy_100/Matrix_accuracy_per_feat/Table_balanced_439')
+        % original_labels = table2array(Table(:,2))';
 
-% Draw the rectangles: cluster decisions
+        load(sprintf('/Users/nico/Documents/HCTSA/Analysis/hypnograms/allepochs/statsOut_allepochs_3ch(%s)',sub))
+        original_labels = [statsOut.scoredTest statsOut.scoredTest statsOut.scoredTest];
+        original_labels = original_labels(numTS{C});
 
-% xline(a.Position(3),'k-','Linewidth',2)
-% xline(b.Position(1)+b.Position(3),'k-','Linewidth',2)
-% xline(c.Position(1)+c.Position(3),'k-','Linewidth',2)
-% xline(d.Position(1)+d.Position(3),'k-','Linewidth',2)
+        wake_OL = find(original_labels == 0);  
+        N1_OL = find(original_labels == 1);
+        N2_OL = find(original_labels == 2);
+        N3_OL = find(original_labels == 3);
+        rem_OL = find(original_labels == 5);
 
+        stage_ordered = [wake_OL N1_OL N2_OL N3_OL rem_OL];
 
-hold on
+        % Reorder epochs based on their stages (as labeled by cluster decisions)
+        % cluster_decision = table2array(Table(:,3))';
+        cluster_decision = [statsOut.predictTest statsOut.predictTest statsOut.predictTest];
+        cluster_decision = cluster_decision(numTS{C});
 
-for i = 1:5
+        stage_ordered = [{wake_OL} {N1_OL} {N2_OL} {N3_OL} {rem_OL}];
 
-    if i == 1
-        rectangle('Position',[0 18800 clust_dec_ordered(i,1) 800],'FaceColor',wakeC,'EdgeColor','none');
-    else
-        rectangle('Position',[PosRect(i-1,5) 18800 clust_dec_ordered(i,1) 800],'FaceColor',wakeC,'EdgeColor','none');
+        % Get the future rectangle positions for cluster decisions
+        for i = 1:5  
+
+            stage = stage_ordered{1,i};
+            clust_dec = cluster_decision(stage);
+
+            wake_L = length(find(clust_dec == 0));
+            N1_L = length(find(clust_dec == 1));
+            N2_L = length(find(clust_dec == 2));
+            N3_L = length(find(clust_dec == 3));
+            rem_L = length(find(clust_dec == 5));
+
+            clust_dec_ordered(i,:) = [wake_L N1_L N2_L N3_L rem_L];
+
+            %%% Gets % 
+            Wake_per(i) = round(wake_L/numel(stage_ordered{1,i})*100,1);
+            N1_per(i) = round(N1_L/numel(stage_ordered{1,i})*100,1);
+            N2_per(i) = round(N2_L/numel(stage_ordered{1,i})*100,1);
+            N3_per(i) = round(N3_L/numel(stage_ordered{1,i})*100,1);
+            rem_per(i) = round(rem_L/numel(stage_ordered{1,i})*100,1);
+
+        end
+
+        % Perform cumulative addition to get right rect positions
+        clust_dec_ordered = reshape(clust_dec_ordered',[1 25]);
+        PosRect = cumsum(clust_dec_ordered')';
+        PosRect = reshape(PosRect',[5 5]);
+        clust_dec_ordered = reshape(clust_dec_ordered,[5 5])';
+        PosRect = PosRect';
+
+        if CHAN == 3
+
+            % Draw the rectangles: original labels
+            % color
+            addpath '/Users/nico/Documents/MATLAB/cbrewer/cbrewer/cbrewer';
+
+            [RE] = cbrewer('div', 'Spectral', 12, 'pchip'); 
+               wakeC = RE(2,:);
+
+            [BR] = cbrewer('div', 'PuOr', 12, 'pchip');
+               N1C = BR(3,:);
+
+            [BL] = cbrewer('seq', 'Blues', 12, 'pchip');
+               N2C = BL(8,:);
+
+            [PU] = cbrewer('div', 'PRGn', 12, 'pchip');
+               N3C = PU(2,:);
+
+            [GR] = cbrewer('seq', 'YlGn', 12, 'pchip');
+               remC = GR(7,:);
+
+            Colors = [{wakeC} {N1C} {N2C} {N3C} {remC}];
+            
+            load('HCTSA_N.mat', 'op_clust')
+            Border = numel(op_clust.ord) +150;
+
+            hold on
+
+            for i = 1:5
+
+                if i == 1
+                    rectangle('Position',[0 Border clust_dec_ordered(i,1) 900],'FaceColor',wakeC,'EdgeColor','none');
+                else
+                    rectangle('Position',[PosRect(i-1,5) Border clust_dec_ordered(i,1) 900],'FaceColor',wakeC,'EdgeColor','none');
+                end
+
+                rectangle('Position',[PosRect(i,1) Border clust_dec_ordered(i,2) 900],'FaceColor',N1C,'EdgeColor','none');
+                rectangle('Position',[PosRect(i,2) Border clust_dec_ordered(i,3) 900],'FaceColor',N2C,'EdgeColor','none');
+                rectangle('Position',[PosRect(i,3) Border clust_dec_ordered(i,4) 900],'FaceColor',N3C,'EdgeColor','none');
+                rectangle('Position',[PosRect(i,4) Border clust_dec_ordered(i,5) 900],'FaceColor',remC,'EdgeColor','none');
+
+            end
+
+            ylim([0 Border+800])
+
+            % Legend
+            aline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',wakeC);
+            bline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',N1C);
+            cline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',N2C);
+            dline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',N3C);
+            eline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',remC);
+
+            legend([aline bline cline dline eline],{'CW','C1','C2','C3','CR'},'Location','southoutside','FontSize',22,'Orientation','Horizontal')
+            legend boxoff
+
+        end
+
+        ax = gca; 
+        % ax.XTickLabels = '';
+        % ax.YTickLabels = strseq('',1:1000:5946);
+        % ax.YTick = [1 1000 2000 3000 4000 5000 5946];
+        ax.YTickLabels = '';
+
+        load('HCTSA_N.mat', 'op_clust')
+        
+        if numel(op_clust.ord) > 6000
+            
+            ST = {'1000','2000','3000','4000','5000','6000'};
+            lines = [1000 2000 3000 4000 5000 5900];
+            for L = 1:6
+                text(-45,lines(L),ST(L),'FontSize',18)
+            end
+            
+        else
+            
+            ST = {'1000','2000','3000','4000','5000'};
+            lines = [1000 2000 3000 4000 5000];
+            for L = 1:5
+                text(-45,lines(L),ST(L),'FontSize',18)
+            end
+        
+        end
+
+        set(gca,'XTickLabel',[])
+        set(ax, 'XTick', []);
+        set(ax,'TickLength',[0 0])
+
+        Y = ylabel('Features');
+        Y.Position = [-62.974355593566656,2990.838068181818,1];
+
+        if CHAN == 3
+             xlabel('Epochs (ordered by sleep stage)')
+        else
+             xlabel('')
+        end
+
+        ax.FontSize = 24;
+        ax.Position = [0.09,0.15,0.85,0.8];
+
+        chan = {'EEG','EOG','EMG'};
+        h = text(numel(numTS{1})+18,3250,chan(CHAN),'FontSize',30);
+        set(h,'Rotation',90);
+
+        %%% Change format
+        if CHAN == 3
+           f.Position = [1,191,1440,680];
+        else
+           f.Position = [1,191,1440,589];
+        end
+
+        set(gca,'box','off')
+        ax.XRuler.Axle.Visible = 'off'; % ax is axis handle
+        ax.YRuler.Axle.Visible = 'off'; 
+        set(gca, 'fontsize', 24);
+
+        chan = {'EEG','EOG','EMG'};
+
+        %%% Save
+        addpath '/Users/nico/Documents/MATLAB/hctsa-master/export_fig-master'
+        fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms/SM';
+        export_fig([fpath filesep sprintf('hypnobars_(%s)_balanced_%s',sub,string(chan(CHAN)))],'-r 300')
+
     end
-    
-    rectangle('Position',[PosRect(i,1) 18800 clust_dec_ordered(i,2) 800],'FaceColor',N1C,'EdgeColor','none');
-    rectangle('Position',[PosRect(i,2) 18800 clust_dec_ordered(i,3) 800],'FaceColor',N2C,'EdgeColor','none');
-    rectangle('Position',[PosRect(i,3) 18800 clust_dec_ordered(i,4) 800],'FaceColor',N3C,'EdgeColor','none');
-    rectangle('Position',[PosRect(i,4) 18800 clust_dec_ordered(i,5) 800],'FaceColor',remC,'EdgeColor','none');
 
 end
-
-ylim([0 19600])
-
-% Legend
-aline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',wakeC);
-bline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',N1C);
-cline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',N2C);
-dline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',N3C);
-eline = line(NaN,NaN,'LineWidth',25,'LineStyle','-','Color',remC);
-
-legend([aline bline cline dline eline],{'Wake','N1','N2','N3','REM'},'Location','southeastoutside','FontSize',10)
-
-% text(-128,18300,'Original labels','FontSize',11,'FontWeight','bold','Color',[.3 .3 .3]);
-% text(-154,18800,'Cluster decisions','FontSize',11,'FontWeight','bold','Color',[.3 .3 .3]);
-text(-190,18400,'Original labels','FontSize',11,'FontWeight','bold','Color',[.3 .3 .3]);
-text(-220,19000,'Cluster decisions','FontSize',11,'FontWeight','bold','Color',[.3 .3 .3]);
-
-
-ax = gca; 
-% ax.XTickLabels = '';
-% ax.YTickLabels = strseq('',1:1000:5946);
-ax.YTick = [1000 3000 5000 5946+1000 5946+3000 5946+5000 5946*2+1000 5946*2+3000 5946*2+5000];
-ax.YTickLabels = arrayfun(@(a)num2str(a),[1000 3000 5000 1000 3000 5000 1000 3000 5000],'uni',0);
-
-set(gca,'XTickLabel',[])
-set(ax, 'XTick', []);
-set(ax,'TickLength',[0 0])
-
-ylabel('Operations')
-xlabel('Epochs')
-ax.FontSize = 12;
-
-% ax.Position = [0.11,0.09,0.8,0.88];
-ax.Position = [0.15,0.03,0.72,0.96];
-
-pos = get(gcf,'Position');
-
-%%% Change format
-f.Position = [0.5 0.5 900 900];   % [x y width height]
-
-%%% Save
-% fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms';
-% export_fig([fpath filesep 'hypnobars_EEG_3ch(439)'],'-r 300')
-
 
 %% Same; data matrix with top 40 features only
 % 

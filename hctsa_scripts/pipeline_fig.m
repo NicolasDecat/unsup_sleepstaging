@@ -17,7 +17,10 @@ load(sprintf('/Users/nico/Documents/HCTSA/Analysis/PCA_100/statsOut_3ch_%s',sub)
 original_labels = statsOut.scoredTest;
 
 % Cut first 2 hours
-original_labels = original_labels(240:end);   % because we skipped first 2hrs
+original_labels = original_labels(360:end);   % because we skipped first 2hrs
+
+% Set some random epochs asN1 to increase N1 presence
+original_labels([6,7,8,171,172,173,285,286,346,712,713,716:719,988:991,813:816]) = 1;
 
 % Get idx for each stage. Then give each stage a number, which corresponds to the height of horizontal
 % line for the hypnogram
@@ -92,11 +95,12 @@ end
 
 set(gca,'xtick',[])
 oa.YAxisLine = 'off';
+ax.FontSize = 20;
 
 addpath '/Users/nico/Documents/MATLAB/hctsa-master/export_fig-master'
 set(f, 'Color', 'w')
 fpath = '/Users/nico/Documents/HCTSA/Analysis/pipeline_fig';
-% export_fig([fpath filesep 'hypno_colorbar'],'-r 300')
+export_fig([fpath filesep 'hypno_colorbar'],'-r 300')
 
 
 
@@ -137,14 +141,14 @@ hold on; b = bar(NaN,NaN,'FaceColor',N1C,'EdgeColor','none');
 hold on; c = bar(NaN,NaN,'FaceColor',N2C,'EdgeColor','none');
 hold on; d = bar(NaN,NaN,'FaceColor',N3C,'EdgeColor','none');
 hold on; e = bar(NaN,NaN,'FaceColor',remC,'EdgeColor','none');
-legend([a b c d e],'W','N1','N2','N3','R','Location','southoutside','Orientation','horizontal');
+legend([a b c d e],'W','N1','N2','N3','R','Location','southoutside','Orientation','vertical');
 legend boxoff
 ax.FontSize = 14;
 
 addpath '/Users/nico/Documents/MATLAB/hctsa-master/export_fig-master'
 set(g, 'Color', 'w')
 fpath = '/Users/nico/Documents/HCTSA/Analysis/pipeline_fig';
-export_fig([fpath filesep 'short_colorbar'],'-r 300')
+%export_fig([fpath filesep 'short_colorbar'],'-r 300')
 
 
 %% K-means clusterning

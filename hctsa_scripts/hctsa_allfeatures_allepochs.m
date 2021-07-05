@@ -10,7 +10,7 @@ end
 
 tic
 
-Subs = {'005'}; % '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
+Subs = {'001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'}; % '001' '005' '439' '458' '596' '748' '749' '752' '604' '807' '821' '870'};
 Channels = {'1ch' '2ch' '3ch'};  % used for save
 NumIter = compose('%diter',(1:100)); % used for save
 
@@ -168,7 +168,10 @@ for D = 1:length(Subs)
         end
   
 
-   end
+    end
+   
+    fpath = '/Users/nico/Documents/HCTSA/Analysis/hypnograms/allepochs';
+    save([fpath sprintf('/statsOut_allepochs_3ch(%s)',sub)],'statsOut')
 
 end
 
@@ -205,16 +208,16 @@ SummaryTable = table(Iteration,NumChannels,Dataset,Sleep_stage,Testing_accuracy,
 toc
 
 %%%% Plot TS closest to k centroid
-
-for C = 1:5   % for each cluster
-   
-    [~,I] = sort(D(:,C),'ascend');   % sort, from closest to furthest from centroid
-    closest(C) = I(1);               % get the closest TS
-    
-    %plot
-    TS = TimeSeries.Data{closest(C),:};
-    figure;plot(TS)
-    
-end
-
+% 
+% for C = 1:5   % for each cluster
+%    
+%     [~,I] = sort(D(:,C),'ascend');   % sort, from closest to furthest from centroid
+%     closest(C) = I(1);               % get the closest TS
+%     
+%     %plot
+%     TS = TimeSeries.Data{closest(C),:};
+%     figure;plot(TS)
+%     
+% end
+% 
 
